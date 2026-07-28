@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developer docs | OneGov AI</title>
+<meta name="description" content="Use the OneGov AI API to query Zimbabwe's laws from your own software.">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#f9f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131316" media="(prefers-color-scheme: dark)">
+<style>
+  :root {
+    --bg: #f9f9fb; --ink: #18181b; --muted: #71717a; --card: #ffffff;
+    --line: #e4e4e7; --accent: #4f46e5;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+    line-height: 1.7; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 34px 20px 70px; }
+  .brand { display: flex; align-items: center; gap: 10px;
+    margin-bottom: 30px; font-weight: 700; font-size: 16px;
+    text-decoration: none; color: var(--ink); }
+  .mark { width: 34px; height: 34px; border-radius: 10px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    background: linear-gradient(135deg, #4f46e5, #8b5cf6); }
+  h1 { font-size: 28px; margin: 0 0 6px; }
+  h2 { font-size: 18px; margin: 30px 0 8px; }
+  p, li, td { font-size: 14.5px; }
+  a { color: var(--accent); }
+  code { background: #eef0fe; border-radius: 6px; padding: 1px 6px;
+    font-size: 13px; }
+  pre { background: #18181b; color: #e4e4e7; border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto; font-size: 13px;
+    line-height: 1.55; }
+  pre code { background: none; padding: 0; color: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  td, th { border: 1px solid var(--line); padding: 7px 10px;
+    text-align: left; font-size: 13.5px; }
+  th { background: var(--card); }
+  .note { background: #fff7ed; border: 1px solid #fed7aa;
+    border-radius: 10px; padding: 10px 14px; font-size: 13.5px; }
+  .back { display: inline-block; margin-top: 34px; padding: 11px 20px;
+    color: #fff; border-radius: 12px; text-decoration: none;
+    font-weight: 600; font-size: 14px;
+    background: linear-gradient(135deg, #4f46e5, #8b5cf6); }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131316; --ink: #ececee; --muted: #9d9da6;
+      --line: #27272c; --border: #27272c; --card: #1a1a1f;
+      --accent: #818cf8; --accent-ink: #a5b4fc; --accent-soft: #232345;
+      --ring: rgba(129,140,248,.3); --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --grad: linear-gradient(135deg, #6366f1, #a78bfa);
+    }
+  }
+  html { color-scheme: light dark; }
+
+  @media (prefers-color-scheme: dark) {
+    code { background: #232345; }
+    pre code { background: none; }
+    .note { background: #33290f; border-color: #6b5d33; color: #e7d9a8; }
+    th { background: var(--card); }
+  }
+
+  .topnav { display: flex; align-items: center; margin-bottom: 30px; }
+  .topnav .brand { margin-bottom: 0; }
+  .topnav .links { margin-left: auto; display: flex; gap: 16px;
+    font-size: 13.5px; }
+  .topnav .links a { color: var(--muted); text-decoration: none; }
+  .topnav .links a:hover { color: var(--ink); }
+  .topnav .links a.app { color: var(--accent); font-weight: 600; }
+  @media (max-width: 520px) { .topnav .links { gap: 11px;
+    font-size: 12.5px; } }
+  .pagefoot { margin-top: 44px; padding-top: 16px;
+    border-top: 1px solid var(--line); color: var(--muted);
+    font-size: 12.5px; }
+  .pagefoot a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav">
+    <a class="brand" href="/"><span class="mark">ZW</span>OneGov AI</a>
+    <div class="links">
+      <a href="/#pricing">Pricing</a>
+      <a class="app" href="/app.html">Open the app</a>
+    </div>
+  </div>
+  <h1>Developer docs</h1>
+  <p>The OneGov AI API lets your software ask questions about Zimbabwe's
+  Constitution, Acts of Parliament, statutory instruments, general
+  notices, Government Gazettes and national policies, and get back an
+  answer with exact section citations.</p>
+
+  <h2>Getting a key</h2>
+  <p>API access is part of the <strong>Pro plan</strong> (US$15 per
+  30 days). In the <a href="/app.html">app</a>, sign in, open your
+  account menu and choose <strong>API keys</strong> to create a key.
+  Keys look like <code>ogk_...</code>. You can hold up to 5 active keys
+  and revoke any of them at any time.</p>
+  <div class="note">Treat keys like passwords. Anyone with your key can
+  spend your monthly call allowance.</div>
+
+  <h2>Authentication</h2>
+  <p>Send the key in the <code>Authorization</code> header on every
+  request:</p>
+  <pre><code>Authorization: Bearer ogk_your_key_here</code></pre>
+
+  <h2>Ask a question</h2>
+  <p><code>POST https://onegovai.app/api/v1/ask</code></p>
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>question</code></td><td>string, required</td>
+      <td>The question, 1 to 8000 characters.</td></tr>
+    <tr><td><code>lang</code></td><td>string, optional</td>
+      <td><code>en</code> (default), <code>sn</code> for Shona, or
+      <code>nd</code> for Ndebele.</td></tr>
+  </table>
+  <p>Example request:</p>
+  <pre><code>curl -X POST https://onegovai.app/api/v1/ask \
+  -H "Authorization: Bearer ogk_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What does section 61 of the Constitution say?"}'</code></pre>
+  <p>Example response:</p>
+  <pre><code>{
+  "answer": "Section 61 of the Constitution protects ... (Markdown)",
+  "searches": ["section 61 Constitution freedom of expression"],
+  "sources": [
+    {"instrument": "Constitution of Zimbabwe", "citation": "s 61"}
+  ],
+  "share_url": "https://onegovai.app/s/ab12cd34ef"
+}</code></pre>
+  <table>
+    <tr><th>Field</th><th>Description</th></tr>
+    <tr><td><code>answer</code></td><td>The answer in Markdown, with
+      section citations.</td></tr>
+    <tr><td><code>searches</code></td><td>The corpus searches run to
+      produce the answer.</td></tr>
+    <tr><td><code>sources</code></td><td>The instruments consulted while
+      answering, with citations where available.</td></tr>
+    <tr><td><code>share_url</code></td><td>A public page showing this
+      exact question and answer.</td></tr>
+  </table>
+
+  <h2>Search the corpus</h2>
+  <p><code>POST https://onegovai.app/api/v1/search</code>: the
+  same hybrid (vector + keyword) retrieval the agent uses, without the
+  LLM. Fast, and ideal for building your own features on the corpus.
+  Counts toward the monthly call limit.</p>
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>query</code></td><td>string, required</td>
+      <td>Search text, 1 to 1000 characters.</td></tr>
+    <tr><td><code>top_k</code></td><td>int, optional</td>
+      <td>Results to return, 1&ndash;20 (default 8).</td></tr>
+    <tr><td><code>doc_type</code></td><td>string, optional</td>
+      <td><code>constitution</code>, <code>act</code>, <code>si</code>,
+      <code>gn</code>, <code>gazette</code> or <code>policy</code>.</td></tr>
+    <tr><td><code>year</code></td><td>int, optional</td>
+      <td>Restrict results to instruments of a year.</td></tr>
+  </table>
+  <pre><code>curl -X POST https://onegovai.app/api/v1/search \
+  -H "Authorization: Bearer ogk_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "minimum wage domestic workers", "top_k": 5}'</code></pre>
+  <p>Each result carries <code>instrument</code>, <code>citation</code>,
+  <code>doc_type</code>, <code>section</code>, <code>section_title</code>,
+  <code>text</code>, a relevance <code>score</code> and a
+  <code>download_url</code> for the original gazetted document.</p>
+
+  <h2>Check your usage</h2>
+  <p><code>GET https://onegovai.app/api/v1/usage</code>: the
+  key's consumption this month. Free: does <em>not</em> count as a
+  call.</p>
+  <pre><code>{"month": "2026-07", "used": 143, "limit": 1000,
+ "remaining": 857}</code></pre>
+
+  <h2>Python example</h2>
+  <pre><code>import requests
+
+r = requests.post(
+    "https://onegovai.app/api/v1/ask",
+    headers={"Authorization": "Bearer ogk_your_key_here"},
+    json={"question": "What is the minimum wage law in Zimbabwe?"},
+    timeout=60,
+)
+r.raise_for_status()
+print(r.json()["answer"])</code></pre>
+
+  <h2>JavaScript example</h2>
+  <pre><code>const r = await fetch("https://onegovai.app/api/v1/ask", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer ogk_your_key_here",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ question: "How do I register a company?" }),
+});
+const data = await r.json();
+console.log(data.answer);</code></pre>
+
+  <h2>Limits</h2>
+  <ul>
+    <li><strong>1000 calls per key per calendar month.</strong> Usage
+    per key is shown in the API keys screen in the app.</li>
+    <li><strong>8 requests per minute per IP</strong> (shared with the
+    web app).</li>
+    <li>Answers can take 5 to 20 seconds; use a generous timeout.</li>
+  </ul>
+
+  <h2>Errors</h2>
+  <table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td><code>400</code></td><td>Bad request, for example an empty
+      or too-long question.</td></tr>
+    <tr><td><code>401</code></td><td>Missing, unknown or revoked API
+      key.</td></tr>
+    <tr><td><code>402</code></td><td>The Pro plan on the key's account
+      has expired.</td></tr>
+    <tr><td><code>429</code></td><td>Monthly call limit or per-minute
+      rate limit reached.</td></tr>
+    <tr><td><code>502 / 503</code></td><td>Temporary problem answering;
+      retry after a short wait.</td></tr>
+  </table>
+  <p>Error bodies are JSON: <code>{"detail": "..."}</code>.</p>
+
+  <h2>Public endpoints (no key needed)</h2>
+  <p>These read-only endpoints back the web app and are free to use for
+  light, non-abusive traffic. They share the per-IP rate limit.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Returns</th></tr>
+    <tr><td><code>GET /api/catalog</code></td>
+      <td>Every instrument in the corpus, newest first. Optional filters:
+      <code>?doc_type=act|si|notice|...</code> and
+      <code>?year=2025</code>.</td></tr>
+    <tr><td><code>GET /api/whatsnew?n=12</code></td>
+      <td>The <code>n</code> most recently gazetted instruments.</td></tr>
+    <tr><td><code>GET /api/meta</code></td>
+      <td>Corpus size and the date it was last updated.</td></tr>
+    <tr><td><code>GET /api/source?q=Labour+Act</code></td>
+      <td>Best-matching source document for a title, with its download
+      URL.</td></tr>
+    <tr><td><code>GET /api/download/{file}</code></td>
+      <td>The raw gazetted PDF/HTML itself.</td></tr>
+    <tr><td><code>GET /api/answer/{id}</code></td>
+      <td>A stored question and answer (the JSON behind
+      <code>share_url</code>).</td></tr>
+  </table>
+  <p>Example: list this year's statutory instruments:</p>
+  <pre><code>curl "https://onegovai.app/api/catalog?doc_type=si&amp;year=2026"</code></pre>
+
+  <h2>Good to know</h2>
+  <ul>
+    <li>Each call is independent; there is no conversation state. Put
+    all needed context in the question.</li>
+    <li>Answers are general information from the gazetted texts,
+    <strong>not legal advice</strong>.</li>
+    <li>Do not send personal details such as identity numbers in
+    questions. See the <a href="/privacy.html">privacy policy</a> and
+    <a href="/terms.html">terms of service</a>.</li>
+  </ul>
+
+  <h2>Support</h2>
+  <p>Questions, bug reports or higher-volume needs:
+  <a href="mailto:kudziezhuwaki@gmail.com?subject=OneGov%20AI%20API">kudziezhuwaki@gmail.com</a>.
+  Breaking API changes will be announced on this page ahead of time.</p>
+
+  <a class="back" href="/app.html">Back to the app</a>
+  <div class="pagefoot">&copy; OneGov AI &middot; <a href="/about.html">About</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="mailto:kudziezhuwaki@gmail.com">Contact</a></div>
+</div>
+</body>
+</html>

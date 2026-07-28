@@ -1,0 +1,15 @@
+{"q": "freedom of expression", "expect_any": ["Constitution"]}
+{"q": "rights of arrested and detained persons", "expect_any": ["Constitution"]}
+{"q": "termination of employment", "expect_any": ["Labour"]}
+{"q": "what does the Labour Act say about maternity leave", "expect_any": ["Labour"]}
+{"q": "voter registration requirements", "expect_any": ["Electoral"]}
+{"q": "registering a private company", "expect_any": ["Companies"]}
+{"q": "use of breathalysers on drivers", "expect_any": ["Breathalyser", "Road Traffic"]}
+{"q": "speed limiting devices for vehicles", "expect_any": ["Speed Limiting", "Road Traffic"]}
+{"q": "SI 118 of 2023", "expect_any": ["2023-118"]}
+{"q": "section 71 of the Constitution property rights", "expect_any": ["Constitution"]}
+{"q": "income tax exemption Deka pumping station", "expect_any": ["Deka"]}
+{"q": "protection of children criminal law amendment", "expect_any": ["Protection Of Children", "Criminal"]}
+{"q": "licensing of drivers", "expect_any": ["Licensing Of Drivers", "Road Traffic"]}
+{"q": "Constitution of Zimbabwe Amendment No 3", "expect_any": ["Amendment Act No 6", "Amendment No 3"]}
+{"q": "insolvent companies reconstruction", "expect_any": ["Insolvent", "Reconstruction"]}

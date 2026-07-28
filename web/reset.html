@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reset password | OneGov AI</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#f9f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131316" media="(prefers-color-scheme: dark)">
+<style>
+  :root { --bg: #f9f9fb; --ink: #18181b; --muted: #71717a;
+    --line: #e4e4e7; --accent: #4f46e5; }
+  * { box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+    line-height: 1.6; }
+  .wrap { max-width: 420px; margin: 0 auto; padding: 40px 20px; }
+  .brand { display: flex; align-items: center; gap: 10px;
+    margin-bottom: 26px; font-weight: 700; font-size: 16px; }
+  .mark { width: 34px; height: 34px; border-radius: 10px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    background: linear-gradient(135deg, #4f46e5, #8b5cf6); }
+  h1 { font-size: 22px; margin: 0 0 14px; }
+  .card { background: var(--card, #fff); border: 1px solid var(--line);
+    border-radius: 18px; padding: 24px 22px;
+    box-shadow: var(--shadow, 0 1px 3px rgba(0,0,0,.06)); }
+  .hero { text-align: center; margin-bottom: 16px; }
+  .hero .mark { margin: 0 auto 10px; width: 44px; height: 44px;
+    border-radius: 13px; font-size: 14px; }
+  .hero p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  label { display: block; font-size: 12px; font-weight: 600;
+    color: var(--muted); margin: 10px 0 2px; }
+  input { width: 100%; padding: 12px 14px; margin: 2px 0;
+    border: 1px solid var(--line); border-radius: 10px; font-size: 14px;
+    font-family: inherit; background: var(--bg); color: var(--ink); }
+  input:focus { outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring, rgba(79,70,229,.25)); }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 56px; }
+  .pw-eye { position: absolute; right: 5px; top: 50%; width: auto;
+    margin: 0; transform: translateY(-50%); border: 0; background: none;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--muted); padding: 6px 9px; border-radius: 8px; }
+  .pw-eye:hover { color: var(--ink); }
+  button { width: 100%; margin-top: 12px; padding: 12px; border: 0;
+    border-radius: 12px; color: #fff; font-weight: 600; font-size: 14px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4f46e5, #8b5cf6); }
+  button:disabled { opacity: .6; cursor: default; }
+  .err { color: #b91c1c; font-size: 13px; min-height: 18px;
+    margin-top: 8px; }
+  .ok { color: #15803d; font-size: 14px; margin-top: 10px; }
+  a { color: var(--accent); }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131316; --ink: #ececee; --muted: #9d9da6;
+      --line: #27272c; --border: #27272c; --card: #1a1a1f;
+      --accent: #818cf8; --accent-ink: #a5b4fc; --accent-soft: #232345;
+      --ring: rgba(129,140,248,.3); --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --grad: linear-gradient(135deg, #6366f1, #a78bfa);
+    }
+  }
+  html { color-scheme: light dark; }
+
+  @media (prefers-color-scheme: dark) {
+    input { background: var(--card); color: var(--ink); }
+  }
+
+  .pagefoot { margin-top: 34px; color: var(--muted); font-size: 12.5px; }
+  .pagefoot a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/" style="text-decoration:none;color:inherit"><div class="mark">ZW</div>OneGov AI</a>
+  <div class="card">
+    <div class="hero">
+      <div class="mark">ZW</div>
+      <h1 style="margin:0">Choose a new password</h1>
+      <p>At least 8 characters. You will use it to sign in.</p>
+    </div>
+    <div id="form">
+      <label for="pw1">New password</label>
+      <div class="pw-wrap">
+        <input id="pw1" type="password" placeholder="At least 8 characters"
+          autocomplete="new-password">
+        <button type="button" class="pw-eye" aria-label="Show password"
+          onclick="togglePw(this)">Show</button>
+      </div>
+      <label for="pw2">Repeat new password</label>
+      <input id="pw2" type="password" placeholder="Same password again"
+        autocomplete="new-password"
+        onkeydown="if (event.key === 'Enter') submitReset()">
+      <div class="err" id="err" role="alert"></div>
+      <button id="go" onclick="submitReset()">Set new password</button>
+    </div>
+    <div class="ok" id="done" style="display:none">Your password has been
+      changed. <a href="/app.html?auth=login">Sign in</a> with it now.</div>
+  </div>
+<div class="pagefoot">&copy; OneGov AI &middot; <a href="/">Home</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></div>
+</div>
+<script>
+const token = new URLSearchParams(location.search).get('token') || '';
+const err = document.getElementById('err');
+if (!token) err.textContent = 'This link is missing its token. Use the '
+  + 'full link from the email.';
+function togglePw(btn) {
+  const pw = document.getElementById('pw1');
+  const show = pw.type === 'password';
+  pw.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+  btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+}
+async function submitReset() {
+  const p1 = document.getElementById('pw1').value;
+  const p2 = document.getElementById('pw2').value;
+  err.textContent = '';
+  if (p1.length < 8) { err.textContent =
+    'Password must be at least 8 characters.'; return; }
+  if (p1 !== p2) { err.textContent =
+    'The two passwords do not match.'; return; }
+  const btn = document.getElementById('go');
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/auth/reset', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password: p1 }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const d = data.detail;
+      err.textContent = (typeof d === 'string' ? d : (d && d.message))
+        || 'Something went wrong. Please try again.';
+      btn.disabled = false;
+      return;
+    }
+    document.getElementById('form').style.display = 'none';
+    document.getElementById('done').style.display = '';
+  } catch {
+    err.textContent = 'Network problem. Please try again.';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

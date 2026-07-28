@@ -1,0 +1,14 @@
+{
+  "name": "OneGov AI — Zimbabwe's laws, notices, gazettes and policies",
+  "short_name": "OneGov",
+  "description": "Ask anything about Zimbabwe's Constitution, Acts of Parliament, statutory instruments, general notices, Government Gazettes and national policies. Answers cite the exact sections.",
+  "start_url": "/app.html",
+  "display": "standalone",
+  "background_color": "#f9f9fb",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

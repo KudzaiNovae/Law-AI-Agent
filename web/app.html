@@ -1,0 +1,3085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" id="meta-theme" content="#f9f9fb">
+<title>OneGov | Zimbabwe's Constitution, Acts, statutory instruments and notices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.0/purify.min.js"></script>
+<style>
+  :root {
+    --bg: #f9f9fb;
+    --side-bg: #f4f4f5;
+    --ink: #18181b;
+    --muted: #71717a;
+    --border: #e4e4e7;
+    --user-bubble: #f1f1f4;
+    --hover: #ebebee;
+    --accent: #4f46e5;
+    --accent-2: #8b5cf6;
+    --accent-soft: #eef0fe;
+    --accent-ink: #4338ca;
+    --card: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
+    --code-bg: #f4f4f5;
+    --error-bg: #fdf3f3;
+    --error-border: #e2b4b4;
+    --ring: rgba(99,102,241,.25);
+    --grad: linear-gradient(135deg, #4f46e5, #8b5cf6);
+    --glow: 0 4px 16px rgba(99,102,241,.35);
+  }
+  [data-theme="dark"] {
+    --bg: #131316;
+    --side-bg: #0c0c0e;
+    --ink: #ececee;
+    --muted: #9d9da6;
+    --border: #27272c;
+    --user-bubble: #232329;
+    --hover: #1e1e23;
+    --accent: #818cf8;
+    --accent-2: #a78bfa;
+    --accent-soft: #232345;
+    --accent-ink: #a5b4fc;
+    --card: #1a1a1f;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,.5);
+    --code-bg: #232328;
+    --error-bg: #3a2727;
+    --error-border: #7a4444;
+    --ring: rgba(129,140,248,.3);
+    --grad: linear-gradient(135deg, #6366f1, #a78bfa);
+    --glow: 0 4px 16px rgba(99,102,241,.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  ::selection { background: var(--ring); }
+  html, body { height: 100%; }
+  body, #sidebar { transition: background-color .25s, color .25s,
+                               border-color .25s; }
+  body {
+    font-family: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow: hidden;
+    font-feature-settings: "cv02","cv03","cv11";
+  }
+  /* soft ambient glow behind everything */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(640px 420px at 88% -12%, var(--ring), transparent 70%),
+      radial-gradient(520px 380px at -8% 112%, var(--ring), transparent 70%);
+    opacity: .45;
+  }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  #app { display: flex; height: 100%; height: 100dvh;
+         position: relative; z-index: 1; }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar {
+    width: 268px;
+    flex-shrink: 0;
+    background: var(--side-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: margin-left .22s ease;
+  }
+  #sidebar.hidden { margin-left: -268px; }
+
+  .side-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 16px 12px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: var(--grad);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; letter-spacing: .5px;
+    box-shadow: 0 2px 8px var(--ring);
+  }
+  .brand-name { font-weight: 700; font-size: 15.5px; letter-spacing: -.01em; }
+  .beta-tag { display: inline-block; vertical-align: 2px; margin-left: 4px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 99px; padding: 2px 7px; }
+
+  .new-chat-btn {
+    margin: 4px 14px 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--grad);
+    color: #fff;
+    font-size: 13.5px; font-weight: 600;
+    box-shadow: var(--glow);
+    transition: transform .12s, box-shadow .15s, filter .15s;
+  }
+  .new-chat-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+  .new-chat-btn:active { transform: scale(.98); }
+  .new-chat-btn svg { width: 15px; height: 15px; stroke: #fff; }
+
+  .side-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--muted); padding: 8px 18px 6px; font-weight: 600;
+  }
+  #chat-list { flex: 1; overflow-y: auto; padding: 0 10px 8px; }
+  .chat-item {
+    display: flex; align-items: center;
+    border-radius: 9px;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+  .chat-item:hover { background: var(--hover); }
+  .chat-item.active { background: var(--accent-soft); color: var(--accent-ink);
+                      box-shadow: inset 3px 0 0 var(--accent); }
+  .chat-item .title {
+    flex: 1;
+    padding: 9px 6px 9px 11px;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    cursor: pointer;
+  }
+  .chat-item .del {
+    padding: 6px 9px; color: var(--muted);
+    opacity: 0; font-size: 12px;
+  }
+  .chat-item:hover .del { opacity: 1; }
+  .chat-item .del:hover { color: #d05252; }
+
+  .side-foot {
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 12px;
+  }
+  .theme-btn {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--muted);
+    padding: 7px 9px; border-radius: 9px; width: 100%;
+  }
+  .acct-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    margin-top: 8px; padding: 8px 9px; border-radius: 11px;
+    border: 1px solid var(--border); text-align: left;
+  }
+  .acct-btn:hover { background: var(--hover); }
+  .acct-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+  }
+  .acct-info { display: flex; flex-direction: column; min-width: 0; }
+  .acct-name {
+    font-size: 13px; font-weight: 600; color: var(--fg);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .acct-sub {
+    font-size: 11.5px; color: var(--muted);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .theme-btn:hover { background: var(--hover); }
+  .credit {
+    font-size: 11px; color: var(--muted);
+    padding: 8px 9px 0;
+  }
+  .credit strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Content ---------- */
+  #content { flex: 1; display: flex; flex-direction: column; min-width: 0;
+             position: relative; }
+
+  #topbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    position: relative; z-index: 10;
+  }
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+  }
+  .icon-btn:hover { background: var(--hover); }
+  .icon-btn svg { width: 17px; height: 17px; }
+  #topbar .top-title { font-size: 13.5px; font-weight: 500; color: var(--muted); }
+
+  #main { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+  #thread { max-width: 740px; margin: 0 auto; padding: 8px 22px 28px; }
+
+  /* ---------- Welcome ---------- */
+  .welcome { text-align: center; padding: 9vh 8px 20px;
+             animation: rise .45s ease both; }
+  .welcome .mark {
+    width: 58px; height: 58px; border-radius: 17px; margin: 0 auto 20px;
+    background: var(--grad);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 21px;
+    box-shadow: 0 6px 24px var(--ring);
+    animation: floaty 5s ease-in-out infinite;
+  }
+  @keyframes floaty { 50% { transform: translateY(-5px); } }
+  .welcome h2 {
+    font-size: 32px; font-weight: 800; letter-spacing: -.025em;
+    margin-bottom: 12px;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .welcome p {
+    color: var(--muted); font-size: 14.5px; line-height: 1.6;
+    max-width: 470px; margin: 0 auto 32px;
+  }
+  .cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
+    max-width: 580px; margin: 0 auto; text-align: left;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 14px 15px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--ink);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    transition: border-color .18s, transform .18s, box-shadow .18s;
+    text-align: left;
+    animation: rise .45s ease both;
+  }
+  .cards .card:nth-child(2) { animation-delay: .05s; }
+  .cards .card:nth-child(3) { animation-delay: .1s; }
+  .cards .card:nth-child(4) { animation-delay: .15s; }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card .cat { display: block; font-size: 10.5px; color: var(--accent-ink);
+               font-weight: 700; text-transform: uppercase;
+               letter-spacing: .07em; margin-bottom: 5px; }
+
+  /* ---------- Messages ---------- */
+  .row { padding: 14px 0; animation: rise .3s ease both; }
+  .row.user { display: flex; justify-content: flex-end; }
+  .user-bubble {
+    background: var(--grad);
+    color: #fff;
+    border-radius: 18px 18px 5px 18px;
+    padding: 11px 17px;
+    max-width: 78%;
+    font-size: 14.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    box-shadow: 0 2px 10px var(--ring);
+  }
+  .row.bot { display: flex; gap: 14px; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 10px;
+    background: var(--grad);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0; margin-top: 3px;
+    box-shadow: 0 2px 8px var(--ring);
+  }
+  .bot-body { flex: 1; min-width: 0; }
+
+  .searches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+  .search-tag {
+    font-size: 11.5px; color: var(--accent-ink);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 999px; padding: 3px 11px;
+    font-weight: 500;
+    animation: rise .25s ease both;
+  }
+
+  .md { font-size: 14.5px; line-height: 1.7; overflow-wrap: break-word; }
+  .md p { margin-bottom: 13px; }
+  .md > :last-child { margin-bottom: 0; }
+  .md ul, .md ol { margin: 0 0 13px 22px; }
+  .md li { margin-bottom: 6px; }
+  .md h1, .md h2 { font-size: 16px; font-weight: 700; margin: 20px 0 8px;
+                   letter-spacing: -.01em; }
+  .md h3, .md h4 { font-size: 14.5px; font-weight: 700; margin: 18px 0 7px; }
+  .md > h1:first-child, .md > h2:first-child,
+  .md > h3:first-child { margin-top: 2px; }
+  .md hr { border: none; border-top: 1px solid var(--border);
+           margin: 16px 0; }
+  .md blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 2px 0 2px 13px;
+    color: var(--muted);
+    margin: 10px 0;
+  }
+  .md code {
+    background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; font-size: 13px;
+  }
+  .md pre { background: var(--code-bg); border-radius: 10px;
+            padding: 12px; overflow-x: auto; margin-bottom: 12px; }
+  .md pre code { background: none; padding: 0; }
+  .md table { border-collapse: collapse; margin-bottom: 13px; width: 100%; }
+  .md th, .md td { border: 1px solid var(--border); padding: 7px 11px;
+                   font-size: 13.5px; text-align: left; }
+  .md th { background: var(--code-bg); font-weight: 600; }
+  .md strong { font-weight: 650; }
+  .md a { color: var(--accent-ink); }
+
+  .bot-tools { margin-top: 7px; height: 22px; display: flex; gap: 4px; }
+  .tool-btn {
+    font-size: 12px; color: var(--muted);
+    padding: 3px 9px; border-radius: 7px;
+    opacity: 0; transition: opacity .15s;
+  }
+  .row.bot:hover .tool-btn { opacity: 1; }
+  .tool-btn:hover { background: var(--hover); }
+
+  .src-dl {
+    font-size: 11.5px; font-weight: 600; color: var(--accent-ink);
+    border: none; border-radius: 999px;
+    padding: 3px 11px; margin-left: 10px; vertical-align: middle;
+    cursor: pointer; background: var(--accent-soft);
+    transition: transform .1s, box-shadow .15s;
+  }
+  .src-dl:hover { box-shadow: 0 0 0 3px var(--ring); transform: translateY(-1px); }
+
+  /* Sources section rendered as a card list */
+  .md ul.src-list, .md ol.src-list {
+    list-style: none; margin: 6px 0 13px;
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--card); box-shadow: var(--shadow);
+    padding: 5px; overflow: hidden;
+  }
+  .md .src-list li {
+    margin: 0; padding: 8px 11px; border-radius: 9px;
+    font-size: 13.5px; transition: background .12s;
+  }
+  .md .src-list li:hover { background: var(--hover); }
+  .md .src-list li + li {
+    border-top: 1px solid
+      color-mix(in srgb, var(--border) 55%, transparent);
+  }
+
+  .error .md { background: var(--error-bg); border: 1px solid var(--error-border);
+               border-radius: 12px; padding: 10px 14px; }
+
+  .typing { display: inline-flex; gap: 5px; padding: 8px 0; align-items: center; }
+  .typing .lbl {
+    font-size: 13px; margin-right: 4px; font-weight: 500;
+    background: linear-gradient(90deg, var(--muted) 30%,
+                var(--accent) 50%, var(--muted) 70%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    animation: shimmer 1.6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .typing span.dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); opacity: .3;
+    animation: blink 1.2s infinite;
+  }
+  .typing span.dot:nth-child(3) { animation-delay: .2s; }
+  .typing span.dot:nth-child(4) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% {opacity:.25} 40% {opacity:1} }
+
+  .cursor-blink {
+    display: inline-block; width: 7px; height: 15px;
+    background: var(--accent); vertical-align: text-bottom;
+    animation: blink 1s infinite; border-radius: 2px; margin-left: 2px;
+  }
+
+  /* ---------- Composer ---------- */
+  #composer-area { flex-shrink: 0; padding: 4px 22px 10px; }
+  .composer {
+    max-width: 740px; margin: 0 auto;
+    display: flex; align-items: flex-end; gap: 8px;
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 26px;
+    padding: 10px 10px 10px 19px;
+    box-shadow: var(--shadow-lg);
+    transition: border-color .18s, box-shadow .18s, transform .18s;
+  }
+  .composer:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring), var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .composer textarea {
+    flex: 1; border: none; outline: none; resize: none;
+    font: inherit; font-size: 15px;
+    background: transparent; color: var(--ink);
+    max-height: 160px; line-height: 1.5;
+    padding: 5px 0;
+  }
+  .composer textarea::placeholder { color: var(--muted); }
+  .send-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--glow);
+    transition: opacity .15s, transform .1s, box-shadow .15s;
+  }
+  .send-btn:not(:disabled):hover { transform: translateY(-1px); }
+  .send-btn:disabled { box-shadow: none; }
+  .send-btn:not(:disabled):active { transform: scale(.94); }
+  .send-btn:disabled { opacity: .35; cursor: default; }
+  .send-btn svg { width: 16px; height: 16px; }
+  .send-btn.stop { background: #c14742; }
+
+  .disclaimer {
+    text-align: center; font-size: 11.5px; color: var(--muted);
+    padding: 9px 16px 2px; max-width: 740px; margin: 0 auto;
+  }
+
+  /* Maintenance banner */
+  #maint-banner {
+    display: none; align-items: center; justify-content: center; gap: 10px;
+    background: #b45309; color: #fff; font-size: 13px; font-weight: 500;
+    padding: 8px 14px; text-align: center;
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+  #maint-banner.show { display: flex; }
+  #maint-banner button {
+    background: rgba(255,255,255,.18); color: #fff; border: none;
+    border-radius: 7px; padding: 2px 9px; font-size: 12px; cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Questions-left pill above composer */
+  .qleft {
+    max-width: 740px; margin: 0 auto 6px; text-align: center;
+  }
+  .qleft span {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted);
+    background: var(--hover); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .qleft a { color: var(--accent); cursor: pointer; font-weight: 600;
+             text-decoration: none; }
+
+  /* Source chips under answers */
+  .src-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .src-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--ink);
+    background: var(--hover); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 11px; cursor: pointer;
+    max-width: 100%; transition: border-color .15s, background .15s;
+  }
+  .src-chip:hover { border-color: var(--accent); }
+  .src-chip .t { overflow: hidden; text-overflow: ellipsis;
+                 white-space: nowrap; max-width: 46ch; }
+
+  /* ---------- Mobile ---------- */
+  #overlay { display: none; position: fixed; inset: 0;
+             background: rgba(0,0,0,.45); z-index: 40;
+             backdrop-filter: blur(2px); }
+  @media (max-width: 768px) {
+    #sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 50;
+      width: min(84vw, 320px); height: 100dvh;
+      margin-left: 0;
+      transform: translateX(-105%);
+      transition: transform .25s ease;
+      box-shadow: var(--shadow-lg);
+      padding-top: env(safe-area-inset-top);
+    }
+    #sidebar.open { transform: translateX(0); }
+    #sidebar.hidden { margin-left: 0; }
+    #overlay.show { display: block; }
+
+    #topbar { padding: 10px 12px;
+              padding-top: calc(10px + env(safe-area-inset-top)); }
+    #topbar .top-title { overflow: hidden; white-space: nowrap;
+                         text-overflow: ellipsis; min-width: 0; }
+    #thread { padding: 4px 14px 20px; }
+    .row { padding: 11px 0; }
+    .row.bot { gap: 10px; }
+    .avatar { width: 26px; height: 26px; font-size: 10px; border-radius: 8px; }
+    .user-bubble { max-width: 88%; padding: 10px 14px; }
+    .md, .user-bubble { font-size: 14px; }
+
+    #composer-area { padding: 4px 10px
+                     calc(10px + env(safe-area-inset-bottom)); }
+    .composer { padding: 8px 8px 8px 15px; border-radius: 20px; }
+    .composer textarea { font-size: 16px; } /* stops iOS focus zoom */
+    .disclaimer { font-size: 10.5px; padding-top: 7px; }
+    #jump-btn { bottom: calc(112px + env(safe-area-inset-bottom)); }
+
+    .cards { grid-template-columns: 1fr; gap: 9px; }
+    .welcome { padding-top: 5vh; }
+    .welcome h2 { font-size: 25px; }
+    .welcome p { font-size: 13.5px; margin-bottom: 22px; }
+
+    /* tighter top bar: keep pills on one row */
+    .top-pill { padding: 6px 10px; font-size: 12px; }
+    .top-pill svg { width: 13px; height: 13px; }
+    #topbar { gap: 6px; }
+    .qleft span { font-size: 11.5px; }
+    .src-chip .t { max-width: 30ch; }
+    .followup { max-width: 100%; white-space: normal; text-align: left; }
+  }
+
+  /* Touch devices: controls hidden behind hover must stay visible,
+     and tap targets need room */
+  @media (hover: none) {
+    .tool-btn { opacity: 1; padding: 7px 11px; }
+    .chat-item .del { opacity: .55; padding: 8px; }
+    .send-btn { width: 42px; height: 42px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important; transition: none !important;
+    }
+  }
+
+  /* ---------- Added functionality ---------- */
+  .side-search {
+    margin: 0 14px 8px;
+    padding: 8px 11px;
+    width: calc(100% - 28px);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit; font-size: 13px;
+    outline: none;
+  }
+  .side-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .rename-input {
+    flex: 1; min-width: 0;
+    font: inherit; font-size: 13.5px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 7px;
+    padding: 5px 8px;
+    outline: none;
+  }
+  .followup {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 10px;
+    padding: 8px 13px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: 13px; font-weight: 500;
+    text-align: left;
+    transition: border-color .15s, transform .1s, box-shadow .15s;
+    animation: rise .3s ease both;
+  }
+  .followup:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .followup:active { transform: scale(.98); }
+  #jump-btn {
+    position: absolute;
+    bottom: 118px; left: 50%; transform: translateX(-50%);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 20;
+  }
+  #jump-btn.show { display: flex; }
+  #jump-btn svg { width: 17px; height: 17px; stroke: var(--muted); }
+  .user-bubble { cursor: pointer; }
+  .kbd-hint { font-size: 11px; color: var(--muted); }
+
+  /* ---------- Feedback ---------- */
+  .fb-on { opacity: 1 !important; color: var(--accent-ink);
+           background: var(--accent-soft); }
+
+  /* ---------- Modal (Browse / About) ---------- */
+  .modal-wrap {
+    display: none; position: fixed; inset: 0; z-index: 60;
+    background: rgba(0,0,0,.45); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; padding: 18px;
+  }
+  .modal-wrap.show { display: flex; }
+  .modal {
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    width: min(680px, 100%); max-height: min(78vh, 640px);
+    display: flex; flex-direction: column;
+    padding: 20px 22px; animation: rise .25s ease both;
+  }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 12px;
+              display: flex; align-items: center; }
+  .modal h3 .x { margin-left: auto; font-size: 15px; color: var(--muted);
+                 padding: 4px 9px; border-radius: 8px; }
+  .modal h3 .x:hover { background: var(--hover); }
+  .modal .about-body { overflow-y: auto; font-size: 14px; line-height: 1.7;
+                       color: var(--ink); }
+  .modal .about-body p { margin-bottom: 11px; }
+  .modal.wide { width: min(1000px, 100%); height: 92vh; max-height: 92vh; }
+
+  /* ---------- Auth ---------- */
+  .auth-body { display: flex; flex-direction: column; gap: 10px; }
+  .auth-notice { background: var(--accent-soft); color: var(--accent-ink);
+    border-radius: 10px; padding: 10px 14px; font-size: 13.5px; }
+  .auth-tabs { display: flex; gap: 6px; margin-bottom: 4px; }
+  .auth-tab { flex: 1; padding: 8px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--border); background: none; color: var(--muted);
+    font-weight: 600; font-size: 13.5px; }
+  .auth-tab.on { background: var(--accent-soft); color: var(--accent-ink);
+    border-color: transparent; }
+  .auth-body input { padding: 11px 13px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--ink); font-size: 14px; }
+  .auth-submit { padding: 11px; border-radius: 10px; border: 0; color: #fff;
+    background: linear-gradient(135deg,#4f46e5,#8b5cf6);
+    font-weight: 700; cursor: pointer; font-size: 14px; }
+  .auth-err { color: #dc2626; font-size: 13px; min-height: 16px; }
+  .auth-alt { font-size: 12.5px; color: var(--muted); }
+  .auth-alt a { color: inherit; }
+  .modal.slim { width: min(400px, 100%); }
+  .auth-hero { text-align: center; padding: 0 0 4px; }
+  .auth-hero .mark { width: 44px; height: 44px; border-radius: 13px;
+    margin: 0 auto 10px; display: flex; align-items: center;
+    justify-content: center; font-weight: 800; font-size: 14px;
+    color: #fff; background: linear-gradient(135deg,#4f46e5,#8b5cf6); }
+  .auth-hero h4 { font-size: 17px; font-weight: 800; }
+  .auth-hero p { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .auth-tabs { background: var(--hover); border-radius: 11px; padding: 3px; }
+  .auth-tab { border: 0; border-radius: 9px; }
+  .auth-tab.on { background: var(--card); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .auth-field { display: flex; flex-direction: column; gap: 4px; }
+  .auth-field label { font-size: 12px; font-weight: 600;
+    color: var(--muted); }
+  .auth-body input:focus { outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring); }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { width: 100%; padding-right: 56px; }
+  .pw-eye { position: absolute; right: 5px; top: 50%;
+    transform: translateY(-50%); border: 0; background: none;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--muted); padding: 6px 9px; border-radius: 8px; }
+  .pw-eye:hover { background: var(--hover); color: var(--ink); }
+  .auth-submit:hover { filter: brightness(1.07); }
+  .auth-submit[disabled] { opacity: .65; cursor: default; }
+  .auth-switch { text-align: center; font-size: 13px;
+    color: var(--muted); }
+  .auth-switch a { color: var(--accent-ink); font-weight: 600; }
+
+  /* ---------- Payment / plans ---------- */
+  .plans { display: flex; gap: 10px; align-items: stretch; }
+  @media (max-width: 480px) { .plans { flex-direction: column; } }
+  .plan-card { flex: 1; display: flex; flex-direction: column; gap: 7px;
+    border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+    background: var(--card); position: relative; }
+  .plan-card.hot { border-color: var(--accent);
+    box-shadow: 0 2px 12px var(--ring); }
+  .plan-badge { position: absolute; top: -9px; right: 12px;
+    background: var(--grad); color: #fff; font-size: 10.5px;
+    font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 99px; }
+  .plan-name { font-weight: 700; font-size: 14.5px; }
+  .plan-price { font-size: 25px; font-weight: 800; line-height: 1; }
+  .plan-price .per { font-size: 12px; font-weight: 500;
+    color: var(--muted); margin-left: 3px; }
+  .plan-feats { list-style: none; font-size: 12.8px; line-height: 1.55;
+    color: var(--muted); flex: 1; }
+  .plan-feats li { padding-left: 17px; position: relative;
+    margin-bottom: 3px; }
+  .plan-feats li::before { content: '\2713'; position: absolute; left: 0;
+    color: var(--accent); font-weight: 700; }
+  .plan-btn { margin-top: 4px; }
+  .plan-btn[disabled] { opacity: .55; cursor: default; }
+  .plan-cur { text-align: center; font-size: 12.5px; font-weight: 700;
+    color: var(--accent-ink); background: var(--accent-soft);
+    border-radius: 10px; padding: 9px; }
+  .pay-methods { display: flex; gap: 6px; flex-wrap: wrap;
+    justify-content: center; }
+  .pay-methods span { font-size: 11px; font-weight: 600;
+    color: var(--muted); border: 1px solid var(--border);
+    border-radius: 99px; padding: 3px 10px; }
+  .pay-spin { display: inline-block; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+    border-radius: 50%; vertical-align: -2px; margin-right: 7px;
+    animation: payspin .7s linear infinite; }
+  .pay-spin.dark { border-color: var(--border);
+    border-top-color: var(--accent); }
+  @keyframes payspin { to { transform: rotate(360deg); } }
+  .pay-wait { text-align: center; padding: 10px 0 4px; font-size: 14px; }
+  .pay-wait .pay-spin { width: 22px; height: 22px; margin: 0 auto 12px;
+    display: block; }
+  .doc-frame { flex: 1; width: 100%; border: 0; border-radius: 10px;
+               background: #fff; }
+  .b-filters { display: flex; gap: 8px; flex-wrap: wrap;
+               position: sticky; top: 0; z-index: 3;
+               background: var(--bg); padding: 2px 0 10px;
+               margin-bottom: 4px;
+               border-bottom: 1px solid var(--border); }
+  .b-count { font-size: 11.5px; color: var(--muted); width: 100%;
+             padding-top: 2px; }
+  .b-filters select, .b-filters input {
+    font: inherit; font-size: 13px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 9px; padding: 7px 10px; outline: none;
+  }
+  .b-filters input { flex: 1; min-width: 140px; }
+  .b-filters select:focus, .b-filters input:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .b-list { overflow-y: auto; flex: 1; }
+  .b-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; border-radius: 10px; font-size: 13.5px;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--border) 55%, transparent);
+  }
+  .b-item:last-child { border-bottom: none; }
+  .b-item:hover { background: var(--hover); }
+  @media (hover: hover) {
+    .b-item .act-btn { opacity: 0; transition: opacity .12s; }
+    .b-item:hover .act-btn, .b-item .act-btn:focus-visible { opacity: 1; }
+  }
+  .b-item .t, .b-item .b-title {
+    flex: 1; min-width: 0; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  .b-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 6px; padding: 2px 7px;
+    flex-shrink: 0; min-width: 34px; text-align: center;
+  }
+  .b-badge.act { color: #047857; background: rgba(16,185,129,.14); }
+  .b-badge.gn { color: #b45309; background: rgba(245,158,11,.15); }
+  .b-badge.gazette { color: #be185d; background: rgba(236,72,153,.13); }
+  .b-badge.policy { color: #0e7490; background: rgba(6,182,212,.13); }
+  .b-badge.constitution { color: #fff; background: var(--grad); }
+  [data-theme="dark"] .b-badge.act { color: #34d399; }
+  [data-theme="dark"] .b-badge.gn { color: #fbbf24; }
+  [data-theme="dark"] .b-badge.gazette { color: #f472b6; }
+  [data-theme="dark"] .b-badge.policy { color: #22d3ee; }
+  .b-badge.report { color: #6d28d9; background: rgba(139,92,246,.13); }
+  [data-theme="dark"] .b-badge.report { color: #a78bfa; }
+  .b-item .act-btn {
+    font-size: 12px; color: var(--accent);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 3px 9px; flex-shrink: 0;
+  }
+  .b-item .act-btn:hover { background: var(--hover); }
+
+  /* Consolidation-vintage chip: warns that the text is frozen at a date */
+  .vintage {
+    font-size: 10.5px; font-weight: 600; white-space: nowrap;
+    color: #b45309; background: rgba(245,158,11,.13);
+    border-radius: 6px; padding: 2px 7px; flex-shrink: 0; cursor: help;
+  }
+  .vintage.fresh { color: #047857; background: rgba(16,185,129,.12); }
+  [data-theme="dark"] .vintage { color: #fbbf24; }
+  [data-theme="dark"] .vintage.fresh { color: #34d399; }
+  .md .vintage { margin-left: 8px; vertical-align: middle; }
+
+  /* ---------- Language ---------- */
+  .lang-sel {
+    width: 100%; margin-top: 6px;
+    font: inherit; font-size: 13px; color: var(--muted);
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 9px; padding: 6px 8px; outline: none; cursor: pointer;
+  }
+
+  /* ---------- Offline banner ---------- */
+  /* ---------- Workspace panel ---------- */
+  #workpane {
+    position: relative; flex-shrink: 0; width: 0; min-width: 0;
+    background: var(--bg); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+    transition: width .22s ease;
+  }
+  #workpane.open { width: min(46vw, 620px); }
+  .wp-head { display: flex; align-items: center; gap: 8px;
+             padding: 9px 12px; border-bottom: 1px solid var(--border);
+             flex-shrink: 0; min-width: 340px; background: var(--side-bg); }
+  .wp-tabs { display: flex; gap: 2px; background: var(--hover);
+             border-radius: 10px; padding: 3px; flex-shrink: 0; }
+  .wp-tab { font-size: 12.5px; font-weight: 600; color: var(--muted);
+            padding: 5px 12px; border-radius: 8px; white-space: nowrap;
+            transition: color .15s, background .15s; }
+  .wp-tab.on { background: var(--card); color: var(--ink);
+               box-shadow: var(--shadow); }
+  .wp-title { font-size: 12px; color: var(--muted); flex: 1;
+              overflow: hidden; white-space: nowrap;
+              text-overflow: ellipsis; text-align: right; }
+  .wp-body { flex: 1; min-height: 0; position: relative; min-width: 340px; }
+  .wp-view { position: absolute; inset: 0; display: none;
+             flex-direction: column; }
+  .wp-view.on { display: flex; }
+  #wp-browse { padding: 13px 15px; overflow-y: auto; }
+  #wp-frame { flex: 1; width: 100%; border: 0; background: #fff;
+              display: none; }
+  .wp-doctools { display: flex; align-items: center; gap: 4px;
+                 padding: 7px 12px; border-bottom: 1px solid var(--border);
+                 font-size: 12px; color: var(--muted); flex-shrink: 0;
+                 background: var(--side-bg); }
+  .wp-zoomgrp { display: flex; align-items: center; gap: 1px;
+                background: var(--hover); border-radius: 9px; padding: 2px; }
+  .wp-doctools .zbtn { width: 24px; height: 24px; border-radius: 7px;
+                       font-size: 15px; color: var(--ink);
+                       display: flex; align-items: center;
+                       justify-content: center; }
+  .wp-doctools .zbtn:hover { background: var(--card);
+                             box-shadow: var(--shadow); }
+  .wp-doctools .zval { min-width: 42px; text-align: center;
+                       font-weight: 600; font-size: 11.5px; }
+  .wp-doctools .pages { margin-left: 6px; white-space: nowrap;
+                        font-variant-numeric: tabular-nums; }
+  .wp-find { flex: 1; min-width: 60px; margin-left: 8px; font: inherit;
+             font-size: 12px; color: var(--ink); background: var(--card);
+             border: 1px solid var(--border); border-radius: 8px;
+             padding: 5px 10px; outline: none; }
+  .wp-find:focus { border-color: var(--accent); }
+  .pdf-page.hit { outline: 3px solid var(--accent); }
+  #wp-doc-view { flex: 1; overflow: auto; background: var(--side-bg);
+                 padding: 14px 10px; }
+  .pdf-page { margin: 0 auto 14px; width: fit-content; background: #fff;
+              border-radius: 6px; overflow: hidden;
+              box-shadow: var(--shadow-lg); }
+  .pdf-page canvas { display: block; }
+  .pdf-msg { color: var(--muted); font-size: 13px; text-align: center;
+             padding: 30px 16px; }
+  .wp-askbar { display: flex; gap: 8px; padding: 10px 12px;
+               border-top: 1px solid var(--border); flex-shrink: 0;
+               background: var(--bg); }
+  .wp-askbar input { flex: 1; font: inherit; font-size: 13px;
+                     color: var(--ink); background: var(--card);
+                     border: 1px solid var(--border); border-radius: 10px;
+                     padding: 8px 12px; outline: none; }
+  .wp-askbar input:focus { border-color: var(--accent);
+                           box-shadow: 0 0 0 3px var(--ring); }
+  .wp-askbar button { font-size: 13px; font-weight: 600; color: #fff;
+                      background: var(--grad); border-radius: 10px;
+                      padding: 8px 15px; }
+  .wp-resize { position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+               cursor: col-resize; z-index: 5; }
+  .wp-resize:hover { background: var(--ring); }
+  .top-pill { display: flex; align-items: center; gap: 6px;
+              font-size: 12.5px; font-weight: 600; color: var(--accent-ink);
+              background: var(--accent-soft); border-radius: 999px;
+              padding: 6px 13px; transition: transform .1s; }
+  .top-pill:hover { transform: translateY(-1px); }
+  .top-pill svg { width: 14px; height: 14px; }
+  @media (max-width: 900px) {
+    #workpane.open { position: fixed; top: 0; right: 0; bottom: 0;
+                     width: 100% !important; z-index: 55;
+                     box-shadow: var(--shadow-lg); }
+    .wp-head, .wp-body { min-width: 0; }
+  }
+
+  #net-banner {
+    display: none; position: fixed; top: 10px; left: 50%;
+    transform: translateX(-50%); z-index: 80;
+    background: #b45309; color: #fff;
+    font-size: 13px; font-weight: 500;
+    padding: 8px 16px; border-radius: 999px;
+    box-shadow: var(--shadow-lg);
+  }
+  #net-banner.show { display: block; }
+
+  /* Toasts (non-blocking notices, replaces alert()) */
+  .toast-wrap { position: fixed; bottom: 26px; left: 50%;
+    transform: translateX(-50%); z-index: 400; display: flex;
+    flex-direction: column; gap: 8px; align-items: center;
+    pointer-events: none; }
+  .toast { background: rgba(24, 24, 27, .94); color: #fff;
+    padding: 9px 16px; border-radius: 10px; font-size: 13.5px;
+    box-shadow: var(--shadow-lg); opacity: 0; max-width: 86vw;
+    transition: opacity .25s ease; }
+  .toast.on { opacity: 1; }
+
+  /* Collapsible long answers */
+  .md.clamp { max-height: 520px; overflow: hidden; position: relative; }
+  .md.clamp::after { content: ""; position: absolute; left: 0; right: 0;
+    bottom: 0; height: 80px;
+    background: linear-gradient(rgba(0,0,0,0), var(--bg)); }
+  .show-more { display: block; margin: 6px 0 2px; border: 1px solid
+    var(--border); background: var(--card); color: var(--accent-ink);
+    border-radius: 8px; padding: 5px 14px; font-size: 12.5px;
+    cursor: pointer; }
+  .show-more:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <aside id="sidebar">
+    <a class="side-head" href="/" title="Back to home"
+       style="text-decoration:none;color:inherit">
+      <div class="brand-mark">ZW</div>
+      <div class="brand-name">OneGov <span class="beta-tag">Beta</span></div>
+    </a>
+    <button class="new-chat-btn" onclick="newChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      New chat
+    </button>
+    <div class="side-label">Chats</div>
+    <input class="side-search" id="chat-search" placeholder="Search chats…"
+           oninput="renderChatList()">
+    <nav id="chat-list"></nav>
+    <div class="side-foot">
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">
+        <span id="theme-icon">&#9789;</span><span id="theme-text">Dark mode</span>
+      </button>
+      <button class="theme-btn" onclick="openAbout()">
+        <span>&#9432;</span><span>About OneGov</span>
+      </button>
+      <button class="theme-btn" onclick="openUpgrade()" id="side-upgrade">
+        <span>&#9733;</span><span>Plans &amp; upgrade</span>
+      </button>
+      <a class="theme-btn" href="/docs.html" target="_blank"
+         style="text-decoration:none">
+        <span>&#128279;</span><span>Developer API</span>
+      </a>
+      <button class="theme-btn" id="install-btn" style="display:none"
+              onclick="installApp()">
+        <span>&#11015;</span><span>Install app</span>
+      </button>
+      <select id="lang-sel" class="lang-sel" onchange="setLang(this.value)"
+              title="Answer language">
+        <option value="en">English</option>
+        <option value="sn">chiShona</option>
+        <option value="nd">isiNdebele</option>
+      </select>
+      <button class="acct-btn" id="auth-btn" onclick="authClick()">
+        <span class="acct-avatar" id="acct-avatar">&#128100;</span>
+        <span class="acct-info">
+          <span class="acct-name" id="acct-name">Sign in</span>
+          <span class="acct-sub" id="acct-sub">or create a free account</span>
+        </span>
+      </button>
+      <div class="credit">&copy; OneGov AI</div>
+    </div>
+  </aside>
+  <div id="overlay" onclick="closeSidebar()"></div>
+
+  <div id="content">
+    <div id="maint-banner">
+      <span>&#128295; Scheduled maintenance today, 24 July. You may
+        experience some slowdowns. Thanks for your patience.</span>
+      <button onclick="dismissMaint()">Dismiss</button>
+    </div>
+    <div id="topbar">
+      <button class="icon-btn" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <span class="top-title">Constitution &middot; Acts &middot; SIs
+        &middot; Notices &middot; Gazettes &middot; Policies</span>
+      <span style="flex:1"></span>
+      <button class="top-pill" onclick="openBrowse()" title="Browse legislation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/></svg>
+        Browse documents
+      </button>
+      <button class="icon-btn" id="export-btn" onclick="exportChat()"
+              title="Download chat as Markdown" aria-label="Download chat" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>
+      </button>
+    </div>
+
+    <main id="main"><div id="thread"></div></main>
+    <button id="jump-btn" onclick="scrollDown()" title="Jump to latest" aria-label="Jump to latest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </button>
+
+    <div id="composer-area">
+      <div class="qleft" id="qleft" style="display:none"></div>
+      <div class="composer">
+        <textarea id="input" rows="1"
+          placeholder="Ask about an Act, statutory instrument, notice, or the Constitution…"
+          onkeydown="onKey(event)" oninput="autosize(this)"></textarea>
+        <button class="send-btn" id="send" onclick="sendOrStop()" title="Send" aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="disclaimer">
+        OneGov shares Zimbabwe's officially gazetted laws as general
+        information, not legal advice. Records are updated regularly
+        and the official government sites remain the authoritative source.
+        &nbsp;&middot;&nbsp;
+        <a href="/privacy.html" target="_blank"
+           style="color:inherit">Privacy</a>
+        &nbsp;&middot;&nbsp;
+        <a href="/terms.html" target="_blank"
+           style="color:inherit">Terms</a>
+        &nbsp;&middot;&nbsp;
+        <a href="/docs.html" target="_blank"
+           style="color:inherit">API</a>
+        &nbsp;&middot;&nbsp; &copy; OneGov AI
+      </div>
+    </div>
+  </div>
+
+  <aside id="workpane">
+    <div class="wp-resize" id="wp-resize"></div>
+    <div class="wp-head">
+      <div class="wp-tabs">
+        <button class="wp-tab on" id="wp-tab-browse" onclick="wpShow('browse')">
+          Browse</button>
+        <button class="wp-tab" id="wp-tab-doc" onclick="wpShow('doc')"
+                style="display:none">Document</button>
+      </div>
+      <span class="wp-title" id="wp-doc-title"></span>
+      <button class="icon-btn" onclick="closeWorkpane()" title="Close panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="wp-body">
+      <div class="wp-view on" id="wp-browse"></div>
+      <div class="wp-view" id="wp-doc">
+        <div class="wp-doctools">
+          <div class="wp-zoomgrp">
+            <button class="zbtn" onclick="wpZoom(-0.15)" title="Zoom out">&minus;</button>
+            <span class="zval" id="wp-zoom">100%</span>
+            <button class="zbtn" onclick="wpZoom(0.15)" title="Zoom in">+</button>
+          </div>
+          <input id="wp-find" class="wp-find"
+                 placeholder="Find in document&hellip; (e.g. section 4)"
+                 onkeydown="if (event.key === 'Enter') wpFind()">
+          <span class="pages" id="wp-pages"></span>
+        </div>
+        <div id="wp-doc-view" oncontextmenu="return false"></div>
+        <iframe id="wp-frame" title="Document viewer"
+                sandbox="allow-same-origin"></iframe>
+        <div class="wp-askbar">
+          <input id="wp-ask-input" placeholder="Ask about this document&hellip;"
+                 onkeydown="if (event.key === 'Enter') wpAskDoc()">
+          <button onclick="wpAskDoc()">Ask</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div id="net-banner">You are offline. Messages will fail until you reconnect.</div>
+<div id="modal-wrap" class="modal-wrap"
+     onclick="if (event.target === this) closeModal()">
+  <div class="modal" id="modal-box" role="dialog" aria-modal="true"
+       tabindex="-1"></div>
+
+</div>
+
+<script>
+/* ---------------- State ---------------- */
+const LS_CHATS = 'zimlaw_chats_v1';
+const LS_THEME = 'zimlaw_theme';
+let chats = load(LS_CHATS, []);      // [{id, title, session_id, messages:[...]}]
+let current = null;                  // current chat object
+let busy = false;
+
+const thread = document.getElementById('thread');
+const main = document.getElementById('main');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+const chatList = document.getElementById('chat-list');
+const sidebar = document.getElementById('sidebar');
+
+function load(k, fb) {
+  try { return JSON.parse(localStorage.getItem(k)) ?? fb; } catch { return fb; }
+}
+function save() { localStorage.setItem(LS_CHATS, JSON.stringify(chats.slice(0, 50))); }
+
+/* ---------------- Theme ---------------- */
+function applyTheme(t, persist) {
+  document.documentElement.dataset.theme = t;
+  document.getElementById('theme-text').textContent =
+    t === 'dark' ? 'Light mode' : 'Dark mode';
+  document.getElementById('theme-icon').innerHTML =
+    t === 'dark' ? '&#9788;' : '&#9789;';
+  document.getElementById('meta-theme').content =
+    t === 'dark' ? '#131316' : '#f9f9fb';
+  if (persist) localStorage.setItem(LS_THEME, t);
+}
+function toggleTheme() {
+  applyTheme(document.documentElement.dataset.theme === 'dark'
+    ? 'light' : 'dark', true);
+}
+const sysDark = matchMedia('(prefers-color-scheme: dark)');
+applyTheme(localStorage.getItem(LS_THEME) ||
+  (sysDark.matches ? 'dark' : 'light'));
+sysDark.addEventListener('change', e => {
+  if (!localStorage.getItem(LS_THEME))
+    applyTheme(e.matches ? 'dark' : 'light');
+});
+
+/* ---------------- Sidebar ---------------- */
+function toggleSidebar() {
+  if (matchMedia('(max-width: 768px)').matches) {
+    sidebar.classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show',
+      sidebar.classList.contains('open'));
+  } else {
+    sidebar.classList.toggle('hidden');
+  }
+}
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function renderChatList() {
+  const q = (document.getElementById('chat-search').value || '').toLowerCase();
+  chatList.innerHTML = '';
+  for (const c of chats) {
+    if (q && !(c.title || '').toLowerCase().includes(q) &&
+        !c.messages.some(m => m.text.toLowerCase().includes(q))) continue;
+    const item = document.createElement('div');
+    item.className = 'chat-item' + (current && c.id === current.id ? ' active' : '');
+    const t = document.createElement('div');
+    t.className = 'title';
+    t.textContent = c.title || 'New chat';
+    t.title = 'Double-click to rename';
+    t.onclick = () => { openChat(c.id); closeSidebar(); };
+    t.ondblclick = (e) => { e.stopPropagation(); renameChat(c, item, t); };
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.innerHTML = '&#10005;';
+    del.title = 'Delete chat';
+    del.onclick = (e) => { e.stopPropagation(); deleteChat(c.id); };
+    item.append(t, del);
+    chatList.appendChild(item);
+  }
+}
+
+function renameChat(c, item, titleEl) {
+  const inp = document.createElement('input');
+  inp.className = 'rename-input';
+  inp.value = c.title || '';
+  item.replaceChild(inp, titleEl);
+  inp.focus(); inp.select();
+  const commit = () => {
+    c.title = inp.value.trim() || c.title || 'New chat';
+    save(); renderChatList();
+  };
+  inp.onblur = commit;
+  inp.onkeydown = (e) => {
+    if (e.key === 'Enter') inp.blur();
+    if (e.key === 'Escape') { inp.onblur = null; renderChatList(); }
+  };
+}
+
+/* ---------------- Chats ---------------- */
+function newChat() {
+  current = null;
+  renderThread();
+  renderChatList();
+  closeSidebar();
+  input.focus();
+}
+function openChat(id) {
+  current = chats.find(c => c.id === id) || null;
+  renderThread();
+  renderChatList();
+  input.focus();
+}
+function deleteChat(id) {
+  chats = chats.filter(c => c.id !== id);
+  if (current && current.id === id) current = null;
+  save(); renderChatList(); renderThread();
+}
+function ensureChat(firstMsg) {
+  if (current) return current;
+  current = { id: Date.now().toString(36), title: firstMsg.slice(0, 44),
+              session_id: null, messages: [] };
+  chats.unshift(current);
+  save(); renderChatList();
+  return current;
+}
+
+/* ---------------- Rendering ---------------- */
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function md(text) { return DOMPurify.sanitize(marked.parse(text)); }
+
+/* "(consolidated as at YYYY-MM-DD)" in a title -> vintage info */
+const VINTAGE_RE = /\s*\(consolidated as at (\d{4}-\d{2}-\d{2})\)\s*/i;
+function vintageOf(title) {
+  const m = VINTAGE_RE.exec(title || '');
+  if (!m) return null;
+  const date = m[1];
+  const years = (Date.now() - new Date(date).getTime()) / 31557600000;
+  return { date, old: years > 1.5,
+           clean: title.replace(VINTAGE_RE, ' ').replace(/\s+/g, ' ').trim() };
+}
+function vintageChip(v) {
+  return `<span class="vintage${v.old ? '' : ' fresh'}" title="Consolidated text as at ${v.date}.${
+    v.old ? ' Later amendments may not be reflected, so ask OneGov about amendments after this date to be sure.' : ''
+  }">as at ${v.date}</span>`;
+}
+
+function welcomeHTML() {
+  const pool = [
+    ['Latest', 'What are the most recent statutory instruments?'],
+    ['New Acts', 'Which Acts of Parliament were passed this year?'],
+    ['Recent notices', 'What are the latest general notices?'],
+    ['Constitution', 'What does the Constitution say about freedom of expression?'],
+    ['Rights', 'What are my rights when arrested by the police?'],
+    ['Labour', 'What does the Labour Act say about termination of employment?'],
+    ['Business', 'How do I register a private company in Zimbabwe?'],
+    ['Tax', 'What are the current income tax bands?'],
+    ['Land', 'What does the law say about agricultural land ownership?'],
+    ['Marriage', 'What are the requirements for a civil marriage?'],
+    ['Elections', 'How does the Electoral Act regulate voter registration?'],
+    ['Currency', 'Which statutory instruments regulate the use of foreign currency?'],
+  ];
+  const cards = pool.sort(() => Math.random() - 0.5).slice(0, 4);
+  return `<div class="welcome">
+    <div class="mark">ZW</div>
+    <h2>${t('welcome')}</h2>
+    <p>OneGov answers questions about the Constitution, Acts of
+       Parliament, statutory instruments, general notices, Government
+       Gazettes and national policies. Every answer comes straight from
+       the gazetted texts, with section references, and you can open
+       the original PDF right beside the answer to verify it.</p>
+    <div class="cards">` +
+    cards.map(([cat, q]) =>
+      `<button class="card" onclick="ask(${JSON.stringify(q).replace(/"/g,'&quot;')})">
+         <span class="cat">${cat}</span>${q}</button>`).join('') +
+    `</div>
+    <button class="followup" style="margin-top:22px" onclick="openBrowse()">
+      &#128218; Browse the full catalogue: Acts, SIs, notices and gazettes</button>
+    ${corpusMeta ? `<p style="font-size:12px;color:var(--muted);margin-top:18px">
+      ${corpusMeta.instruments} instruments in the corpus \u00b7 last updated
+      ${corpusMeta.updated}</p>` : ''}
+    </div>`;
+}
+
+function followupOf(text) {
+  const qs = text.split('\n')
+    .map(l => l.replace(/^[-*>\s#]+/, '').replace(/\*\*/g, '').trim())
+    .filter(l => l.endsWith('?') && l.length > 12 && l.length < 140);
+  return qs.length ? qs[qs.length - 1] : null;
+}
+
+function msgHTML(m, isLast, idx) {
+  if (m.role === 'user')
+    return `<div class="row user"><div class="user-bubble"
+      title="Click to edit and resend"
+      onclick="editMsg(this)">${esc(m.text)}</div></div>`;
+  const tags = (m.searches && m.searches.length)
+    ? `<div class="searches">` + m.searches.map(q =>
+        `<span class="search-tag">&#128269; ${esc(q)}</span>`).join('') + `</div>`
+    : '';
+  const fu = isLast && !m.error ? followupOf(m.text) : null;
+  const fuBtn = fu
+    ? `<div><button class="followup"
+         onclick="ask(${JSON.stringify(fu).replace(/"/g, '&quot;')})">
+         &#128172; ${esc(fu)}</button></div>`
+    : '';
+  const tools = m.error
+    ? `<button class="tool-btn" onclick="regenerate()">Retry</button>`
+    : `<button class="tool-btn" onclick="copyMsg(this)">Copy</button>
+       <button class="tool-btn" onclick="regenerate()">Regenerate</button>
+       <button class="tool-btn" onclick="copyCite(this)">Cite</button>
+       <button class="tool-btn" onclick="shareMsg(${idx}, this)">Share</button>
+       <button class="tool-btn" title="Share on WhatsApp"
+         onclick="waShare(${idx})">WhatsApp</button>
+       ${m.aid ? `<button class="tool-btn" title="Download as PDF (Plus &amp; Pro)"
+         onclick="exportMsg('${m.aid}', 'pdf', this)">PDF</button>
+       <button class="tool-btn" title="Download as Word (Plus &amp; Pro)"
+         onclick="exportMsg('${m.aid}', 'docx', this)">Word</button>` : ''}
+       <button class="tool-btn fb${m.fb === 'up' ? ' fb-on' : ''}"
+         title="Good answer" onclick="sendFeedback(${idx}, 'up', this)">&#128077;</button>
+       <button class="tool-btn fb${m.fb === 'down' ? ' fb-on' : ''}"
+         title="Poor answer" onclick="sendFeedback(${idx}, 'down', this)">&#128078;</button>`;
+  const srcs = (!m.error && m.sources && m.sources.length)
+    ? `<div class="src-chips">` + m.sources.slice(0, 6).map(s =>
+        `<button class="src-chip" data-title="${esc(s.instrument)}"
+           onclick="openSrcChip(this)" title="Open the gazetted text">
+           &#128196; <span class="t">${esc(s.instrument)}</span></button>`
+      ).join('') + `</div>`
+    : '';
+  return `<div class="row bot${m.error ? ' error' : ''}">
+    <div class="avatar">ZW</div>
+    <div class="bot-body">${tags}<div class="md">${md(m.text)}</div>${srcs}${fuBtn}
+      <div class="bot-tools">${tools}</div>
+    </div></div>`;
+}
+
+function editMsg(el) {
+  if (busy) return;
+  input.value = el.innerText;
+  autosize(input);
+  input.focus();
+}
+
+function renderThread() {
+  const exp = document.getElementById('export-btn');
+  if (!current || !current.messages.length) {
+    thread.innerHTML = welcomeHTML();
+    exp.style.display = 'none';
+    return;
+  }
+  exp.style.display = '';
+  const n = current.messages.length;
+  thread.innerHTML = current.messages
+    .map((m, i) => msgHTML(m, i === n - 1, i)).join('');
+  thread.querySelectorAll('.md').forEach(decorateSources);
+  clampLongAnswers();
+  scrollDown(true);
+}
+
+/* Collapse very long answers (except the latest) behind "Show more". */
+function clampLongAnswers() {
+  const rows = [...thread.querySelectorAll('.row.bot')];
+  rows.slice(0, -1).forEach(row => {
+    const el = row.querySelector('.md');
+    if (!el || el.classList.contains('clamp') ||
+        el.dataset.unclamped || el.scrollHeight <= 680) return;
+    el.classList.add('clamp');
+    const b = document.createElement('button');
+    b.className = 'show-more';
+    b.textContent = 'Show more';
+    b.onclick = () => {
+      el.classList.remove('clamp');
+      el.dataset.unclamped = '1';
+      b.remove();
+    };
+    el.after(b);
+  });
+}
+
+/* Add a View button next to each cited instrument: under a **Sources**
+   heading, and on any list item that is itself an instrument title
+   (catalogue-style answers list instruments without a Sources section). */
+const INSTR_TITLE_RE = new RegExp(
+  '^(statutory\\s+instrument|general\\s+notice|s\\.?i\\.?|g\\.?n\\.?|act)\\s+' +
+  '\\d{1,4}[a-z]?\\s+of\\s+(19|20)\\d{2}\\b|' +
+  '^government\\s+gazette\\b|^constitution\\s+of\\s+zimbabwe\\b|' +
+  '\\[chapter\\s+\\d+:\\d+\\]', 'i');
+function decorateSources(mdEl) {
+  const items = [];
+  const head = [...mdEl.querySelectorAll('strong')]
+    .find(s => /^sources:?$/i.test(s.textContent.trim()));
+  const start = head && head.closest('p, h1, h2, h3, h4, div');
+  if (start) {
+    for (let sib = start.nextElementSibling; sib; sib = sib.nextElementSibling) {
+      if (sib.matches('ul, ol')) {
+        sib.classList.add('src-list');
+        items.push(...sib.querySelectorAll('li'));
+      }
+      else if (sib.matches('p')) items.push(sib);
+      else break;
+    }
+  }
+  for (const li of mdEl.querySelectorAll('li')) {
+    if (!items.includes(li) &&
+        INSTR_TITLE_RE.test(li.innerText.trim())) items.push(li);
+  }
+  for (const el of items) {
+    const t = el.innerText.trim();
+    if (!t || t.endsWith('?') || /legal instruments information/i.test(t) ||
+        el.querySelector('.src-dl')) continue;
+    const btn = document.createElement('button');
+    btn.className = 'src-dl';
+    btn.textContent = 'View';
+    btn.dataset.title = t.replace(/^[-*\u2022]\s*/, '').slice(0, 200);
+    btn.onclick = () => downloadSource(btn);
+    el.appendChild(btn);
+    const v = vintageOf(t);
+    if (v && !el.querySelector('.vintage'))
+      el.insertAdjacentHTML('beforeend', ' ' + vintageChip(v));
+  }
+}
+
+async function openSrcChip(btn) {
+  const t = btn.querySelector('.t');
+  const old = t.textContent;
+  t.textContent = 'Opening\u2026';
+  try {
+    const r = await fetch('/api/source?title=' +
+                          encodeURIComponent(btn.dataset.title));
+    if (!r.ok) throw new Error();
+    const j = await r.json();
+    await viewDoc(j.url, j.title);
+  } catch {
+    t.textContent = 'Not available';
+    setTimeout(() => { t.textContent = old; }, 2000);
+    return;
+  }
+  t.textContent = old;
+}
+
+async function downloadSource(btn) {
+  const old = btn.textContent;
+  btn.textContent = 'Fetching\u2026';
+  try {
+    const r = await fetch('/api/source?title=' +
+                          encodeURIComponent(btn.dataset.title));
+    if (!r.ok) throw new Error();
+    const j = await r.json();
+    await viewDoc(j.url, j.title);  // preview in-app, no download
+    // Jump straight to the cited section inside the PDF
+    const sec = /section\s+(\d+[A-Z]*)/i.exec(btn.dataset.title);
+    if (sec && wpPdf) {
+      document.getElementById('wp-find').value = 'section ' + sec[1];
+      wpFind();
+    }
+    btn.textContent = old;
+  } catch {
+    btn.textContent = 'Not available';
+    setTimeout(() => { btn.textContent = old; }, 2000);
+  }
+}
+
+function exportChat() {
+  if (!current || !current.messages.length) return;
+  const lines = current.messages.map(m =>
+    (m.role === 'user' ? '## You\n\n' : '## OneGov\n\n') + m.text);
+  const mdText = `# ${current.title || 'OneGov chat'}\n\n` +
+    lines.join('\n\n---\n\n') + '\n';
+  const blob = new Blob([mdText], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (current.title || 'onegov-chat')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 50) + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function scrollDown(instant) {
+  main.scrollTo({ top: main.scrollHeight, behavior: instant ? 'auto' : 'smooth' });
+}
+
+function copyMsg(btn) {
+  const text = btn.closest('.bot-body').querySelector('.md').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+/* ---------------- Composer ---------------- */
+function autosize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); }
+}
+
+/* ---------------- Ask (streaming) ---------------- */
+const SEND_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+const STOP_ICON = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>`;
+let aborter = null;
+
+function setBusy(b) {
+  busy = b;
+  sendBtn.innerHTML = b ? STOP_ICON : SEND_ICON;
+  sendBtn.classList.toggle('stop', b);
+  sendBtn.title = b ? 'Stop' : 'Send';
+}
+function sendOrStop() {
+  if (busy) { if (aborter) aborter.abort(); return; }
+  ask();
+}
+
+function nearBottom() {
+  return main.scrollHeight - main.scrollTop - main.clientHeight < 140;
+}
+function scrollIfNear() { if (nearBottom()) scrollDown(true); }
+
+function typingRow() {
+  const el = document.createElement('div');
+  el.className = 'row bot';
+  el.innerHTML = `<div class="avatar">ZW</div><div class="bot-body">
+    <div class="searches live-tags"></div>
+    <div class="typing"><span class="lbl">Thinking</span>
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  thread.appendChild(el);
+  return el;
+}
+function addLiveTag(row, query) {
+  const tags = row.querySelector('.live-tags');
+  const t = document.createElement('span');
+  t.className = 'search-tag';
+  t.innerHTML = '&#128269; ' + esc(query);
+  tags.appendChild(t);
+  row.querySelector('.lbl').textContent = 'Reading legislation';
+  scrollIfNear();
+}
+
+function typewriter(text, searches) {
+  const tags = (searches && searches.length)
+    ? `<div class="searches">` + searches.map(q =>
+        `<span class="search-tag">&#128269; ${esc(q)}</span>`).join('') + `</div>`
+    : '';
+  const row = document.createElement('div');
+  row.className = 'row bot';
+  row.innerHTML = `<div class="avatar">ZW</div>
+    <div class="bot-body">${tags}<div class="md"></div></div>`;
+  thread.appendChild(row);
+  const mdEl = row.querySelector('.md');
+  const step = Math.max(6, Math.ceil(text.length / 150));
+  let i = 0;
+  return new Promise(resolve => {
+    const timer = setInterval(() => {
+      i += step;
+      mdEl.innerHTML = md(text.slice(0, i)) +
+        (i < text.length ? '<span class="cursor-blink"></span>' : '');
+      scrollIfNear();
+      if (i >= text.length) { clearInterval(timer); resolve(); }
+    }, 14);
+  });
+}
+
+async function readStream(resp, onEvent) {
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const line = buf.slice(0, i).trim();
+      buf = buf.slice(i + 2);
+      if (line.startsWith('data:')) onEvent(JSON.parse(line.slice(5)));
+    }
+  }
+}
+
+async function ask(text, isRegen) {
+  if (busy) return;
+  const msg = (text || input.value).trim();
+  if (!msg) return;
+
+  const chat = ensureChat(msg);
+  input.value = ''; autosize(input);
+  if (!isRegen) chat.messages.push({ role: 'user', text: msg });
+  save(); renderThread();
+
+  setBusy(true);
+  aborter = new AbortController();
+  const typing = typingRow();
+  scrollDown();
+
+  let finalMsg = null;
+  let liveText = '', liveMd = null;
+  try {
+    const resp = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, session_id: chat.session_id,
+                             lang: localStorage.getItem('onegov_lang') || 'en' }),
+      signal: aborter.signal,
+    });
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      const d = data.detail;
+      if (resp.status === 401 && d && d.code === 'needs_auth') {
+        typing.remove();
+        openAuth('signup', d.message);
+        return;
+      }
+      if (resp.status === 402 && d && d.code === 'needs_upgrade') {
+        typing.remove();
+        openUpgrade(d.message);
+        return;
+      }
+      throw new Error((typeof d === 'string' ? d : (d && d.message))
+                      || resp.statusText);
+    }
+    await readStream(resp, ev => {
+      if (ev.type === 'search') {
+        addLiveTag(typing, ev.query);
+        // model went back to searching; drop any interim prose
+        if (liveMd) { liveMd.remove(); liveMd = null; liveText = ''; }
+        typing.querySelector('.typing').style.display = '';
+      } else if (ev.type === 'delta') {
+        if (!liveMd) {
+          typing.querySelector('.typing').style.display = 'none';
+          liveMd = document.createElement('div');
+          liveMd.className = 'md';
+          typing.querySelector('.bot-body').appendChild(liveMd);
+        }
+        liveText += ev.text;
+        liveMd.innerHTML = md(liveText) + '<span class="cursor-blink"></span>';
+        scrollIfNear();
+      } else if (ev.type === 'done') {
+        chat.session_id = ev.session_id;
+        finalMsg = { role: 'bot', text: ev.answer,
+                     searches: ev.searches || [],
+                     sources: ev.sources || [],
+                     aid: ev.answer_id || null };
+      } else if (ev.type === 'error') throw new Error(ev.error);
+    });
+    if (!finalMsg) throw new Error('Connection closed early');
+    typing.remove();
+    chat.messages.push(finalMsg);
+    save();
+    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches);
+  } catch (err) {
+    typing.remove();
+    if (err.name !== 'AbortError') {
+      chat.messages.push({ role: 'bot', error: true,
+        text: 'Sorry, something went wrong: ' +
+              String(err.message || err) + '. Please try again.' });
+      save();
+    }
+  } finally {
+    aborter = null;
+    setBusy(false);
+    renderThread();
+    input.focus();
+    if (!authState.email || authState.plan === 'free')
+      refreshAuth();                       // update questions-left counter
+  }
+}
+
+function regenerate() {
+  if (busy || !current) return;
+  const msgs = current.messages;
+  const lastUser = [...msgs].reverse().find(m => m.role === 'user');
+  if (!lastUser) return;
+  if (msgs.length && msgs[msgs.length - 1].role === 'bot') msgs.pop();
+  save();
+  ask(lastUser.text, true);
+}
+
+/* ---------------- Jump to bottom ---------------- */
+const jumpBtn = document.getElementById('jump-btn');
+main.addEventListener('scroll', () => {
+  jumpBtn.classList.toggle('show',
+    !nearBottom() && main.scrollHeight > main.clientHeight + 200);
+});
+
+/* ---------------- Shortcuts ---------------- */
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' &&
+      workpane.classList.contains('open') &&
+      document.getElementById('wp-doc').classList.contains('on') && wpPdf) {
+    e.preventDefault(); document.getElementById('wp-find').focus();
+  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault(); newChat();
+  } else if (e.key === 'Escape' && busy && aborter) {
+    aborter.abort();
+  } else if (e.key === 'Escape' && modalWrap.classList.contains('show')) {
+    closeModal();
+  } else if (e.key === 'Escape' && workpane.classList.contains('open')) {
+    closeWorkpane();
+  } else if (e.key === '/' && document.activeElement !== input &&
+             document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault(); input.focus();
+  }
+});
+
+/* Open links from answers in a new tab */
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A') {
+    node.setAttribute('target', '_blank');
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+});
+
+/* ---------------- Feedback / Cite / Share ---------------- */
+function sendFeedback(idx, v, btn) {
+  const m = current && current.messages[idx];
+  if (!m || m.fb === v) return;
+  m.fb = v; save();
+  let q = '';
+  for (let i = idx - 1; i >= 0; i--)
+    if (current.messages[i].role === 'user') { q = current.messages[i].text; break; }
+  fetch('/api/feedback', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: current.session_id,
+                           question: q, verdict: v }),
+  }).catch(() => {});
+  renderThread();
+}
+
+function copyCite(btn) {
+  const text = btn.closest('.bot-body').querySelector('.md').innerText;
+  const cite = text + '\n\nSource: OneGov AI, ' + location.origin;
+  navigator.clipboard.writeText(cite).then(() => {
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = 'Cite', 1500);
+  });
+}
+
+function waShare(idx) {
+  const m = current && current.messages[idx];
+  if (!m) return;
+  let q = '';
+  for (let i = idx - 1; i >= 0; i--)
+    if (current.messages[i].role === 'user') { q = current.messages[i].text; break; }
+  const url = m.aid ? location.origin + '/s/' + m.aid : location.origin;
+  const text = 'Q: ' + q + '\n\nAnswered by OneGov AI, Zimbabwe\u2019s ' +
+               'laws, with exact section references:\n' + url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text),
+              '_blank', 'noopener');
+}
+
+function shareMsg(idx, btn) {
+  const m = current && current.messages[idx];
+  if (!m) return;
+  let q = '';
+  for (let i = idx - 1; i >= 0; i--)
+    if (current.messages[i].role === 'user') { q = current.messages[i].text; break; }
+  // Prefer a permanent link to this exact answer
+  const url = m.aid ? location.origin + '/s/' + m.aid : location.origin;
+  const text = 'Q: ' + q + '\n\nAnswered by OneGov AI with exact section ' +
+               'references:\n' + url;
+  if (navigator.share) {
+    navigator.share({ title: 'OneGov AI', text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Link copied';
+      setTimeout(() => btn.textContent = 'Share', 1500);
+    });
+  }
+}
+
+async function exportMsg(aid, fmt, btn) {
+  const oldLabel = btn ? btn.textContent : '';
+  const flash = (msg) => {
+    if (!btn) return;
+    btn.textContent = msg;
+    setTimeout(() => { btn.textContent = oldLabel; }, 2000);
+  };
+  if (btn) btn.textContent = '\u2026';
+  try {
+    const r = await fetch(`/api/export/${aid}?fmt=${fmt}`);
+    if (r.status === 402 || r.status === 401) {
+      if (btn) btn.textContent = oldLabel;
+      const d = (await r.json().catch(() => ({}))).detail;
+      openUpgrade((d && d.message) ||
+        'Exporting answers as PDF or Word is part of the paid plans.');
+      return;
+    }
+    if (!r.ok) { flash('Failed'); return; }
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `onegov-answer-${aid}.${fmt}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    flash('Saved \u2713');
+    if (authState.plan === 'plus') refreshAuth();  // exports_left
+  } catch { flash('Failed'); }
+}
+
+/* ---------------- Workspace panel (Browse + Document viewer) ------- */
+const modalWrap = document.getElementById('modal-wrap');
+const modalBox = document.getElementById('modal-box');
+
+/* ---------------- Toasts ---------------- */
+const toastWrap = document.createElement('div');
+toastWrap.className = 'toast-wrap';
+document.body.appendChild(toastWrap);
+function toast(msg, ms) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  toastWrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('on'));
+  setTimeout(() => {
+    t.classList.remove('on');
+    setTimeout(() => t.remove(), 300);
+  }, ms || 2600);
+}
+
+/* ---------------- Modal accessibility ---------------- */
+/* Focus the first control when a modal opens, restore focus when it
+   closes, and keep Tab cycling inside the open modal. */
+let modalWasOpen = false;
+let modalLastFocus = null;
+new MutationObserver(() => {
+  const open = modalWrap.classList.contains('show');
+  if (open === modalWasOpen) return;
+  modalWasOpen = open;
+  if (open) {
+    modalLastFocus = document.activeElement;
+    const f = modalBox.querySelector(
+      'input:not([type=hidden]), select, textarea, button:not(.x), a[href]');
+    (f || modalBox).focus();
+  } else if (modalLastFocus && modalLastFocus.focus) {
+    modalLastFocus.focus();
+    modalLastFocus = null;
+  }
+}).observe(modalWrap, { attributes: true, attributeFilter: ['class'] });
+modalWrap.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const els = [...modalBox.querySelectorAll(
+    'button, input:not([type=hidden]), select, textarea, a[href]')]
+    .filter(el => !el.disabled && el.offsetParent);
+  if (!els.length) return;
+  const first = els[0];
+  const last = els[els.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    last.focus(); e.preventDefault();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    first.focus(); e.preventDefault();
+  }
+});
+const workpane = document.getElementById('workpane');
+const wpBrowse = document.getElementById('wp-browse');
+let catalogCache = null;
+let wpDocUrl = null;
+
+function closeModal() {
+  modalWrap.classList.remove('show');
+  modalBox.classList.remove('wide');
+  modalBox.classList.remove('slim');
+}
+
+function wpShow(tab) {
+  wpBrowse.classList.toggle('on', tab === 'browse');
+  document.getElementById('wp-doc').classList.toggle('on', tab === 'doc');
+  document.getElementById('wp-tab-browse').classList
+    .toggle('on', tab === 'browse');
+  document.getElementById('wp-tab-doc').classList.toggle('on', tab === 'doc');
+  document.getElementById('wp-doc-title').style.display =
+    tab === 'doc' ? '' : 'none';
+}
+function closeWorkpane() {
+  workpane.classList.remove('open');
+  workpane.style.width = '';
+}
+function openWorkpane() {
+  workpane.classList.add('open');
+  const w = +localStorage.getItem('onegov_wp_w');
+  if (w && window.innerWidth >= 900)
+    workpane.style.width =
+      Math.min(Math.max(340, w), window.innerWidth - 420) + 'px';
+}
+
+/* ---------- View-only PDF rendering (no print/download UI) ---------- */
+let pdfjsReady = null, wpPdf = null, wpBase = 1, wpScale = 1;
+let wpDocTitle = '', wpObserver = null;
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+
+function loadPdfJs() {
+  if (!pdfjsReady)
+    pdfjsReady = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = PDFJS + 'pdf.min.js';
+      s.onload = () => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js';
+        res(pdfjsLib);
+      };
+      s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  return pdfjsReady;
+}
+
+/* Documents open side by side with the chat, view-only */
+async function viewDoc(url, title) {
+  openWorkpane();
+  wpDocUrl = url;
+  wpDocTitle = title || 'Document';
+  document.getElementById('wp-tab-doc').style.display = '';
+  document.getElementById('wp-doc-title').textContent = wpDocTitle;
+  wpShow('doc');
+  const view = document.getElementById('wp-doc-view');
+  const frame = document.getElementById('wp-frame');
+  const isPdf = /\.pdf($|\?)/i.test(url);
+  frame.style.display = isPdf ? 'none' : '';
+  view.style.display = isPdf ? '' : 'none';
+  document.querySelector('.wp-doctools').style.display = isPdf ? '' : 'none';
+  if (!isPdf) {                       // HTML sources: sandboxed frame
+    wpPdf = null;                     // don't find() in a stale PDF
+    if (frame.getAttribute('src') !== url) frame.src = url;
+    return;
+  }
+  view.innerHTML = '<div class="pdf-msg">Loading document\u2026</div>';
+  try {
+    const lib = await loadPdfJs();
+    wpPdf = await lib.getDocument(url).promise;
+    wpScale = 1;
+    wpText = []; wpFindQ = ''; wpFindPage = 0;
+    document.getElementById('wp-find').value = '';
+    await buildPdfPages();
+  } catch {
+    view.innerHTML = '<div class="pdf-msg">Could not load this ' +
+                     'document. Please try again.</div>';
+  }
+}
+
+async function buildPdfPages() {
+  const view = document.getElementById('wp-doc-view');
+  if (wpObserver) wpObserver.disconnect();
+  view.innerHTML = '';
+  const first = await wpPdf.getPage(1);
+  wpBase = Math.max(0.3,
+    (view.clientWidth - 24) / first.getViewport({ scale: 1 }).width);
+  document.getElementById('wp-zoom').textContent =
+    Math.round(wpScale * 100) + '%';
+  document.getElementById('wp-pages').textContent =
+    wpPdf.numPages + (wpPdf.numPages === 1 ? ' page' : ' pages');
+  const estH = first.getViewport({ scale: wpBase * wpScale }).height;
+  wpObserver = new IntersectionObserver(entries => {
+    for (const en of entries)
+      if (en.isIntersecting) {
+        wpObserver.unobserve(en.target);
+        renderPdfPage(en.target);
+      }
+  }, { root: view, rootMargin: '700px' });
+  for (let i = 1; i <= wpPdf.numPages; i++) {
+    const holder = document.createElement('div');
+    holder.className = 'pdf-page';
+    holder.dataset.page = i;
+    holder.style.minHeight = estH + 'px';
+    holder.style.minWidth = (view.clientWidth - 24) * wpScale + 'px';
+    view.appendChild(holder);
+    wpObserver.observe(holder);
+  }
+}
+
+async function renderPdfPage(holder) {
+  try {
+    const page = await wpPdf.getPage(+holder.dataset.page);
+    const vp = page.getViewport({ scale: wpBase * wpScale });
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(vp.width * dpr);
+    canvas.height = Math.floor(vp.height * dpr);
+    canvas.style.width = Math.floor(vp.width) + 'px';
+    await page.render({ canvasContext: canvas.getContext('2d'),
+                        viewport: vp,
+                        transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null
+                      }).promise;
+    holder.style.minHeight = '';
+    holder.style.minWidth = '';
+    holder.replaceChildren(canvas);
+  } catch { /* page render can fail on scroll-away; ignore */ }
+}
+
+function wpZoom(delta) {
+  if (!wpPdf) return;
+  wpScale = Math.min(2.6, Math.max(0.5, wpScale + delta));
+  buildPdfPages();
+}
+
+/* Find in document: jumps to the page containing the text.
+   Press Enter again to jump to the next matching page. */
+let wpText = [], wpFindQ = '', wpFindPage = 0;
+
+async function wpPageText(p) {
+  if (wpText[p] === undefined) {
+    const tc = await (await wpPdf.getPage(p)).getTextContent();
+    wpText[p] = tc.items.map(i => i.str).join(' ').toLowerCase()
+                  .replace(/\s+/g, ' ');
+  }
+  return wpText[p];
+}
+
+async function wpFind() {
+  const el = document.getElementById('wp-find');
+  const q = el.value.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!q || !wpPdf) return;
+  if (q !== wpFindQ) { wpFindQ = q; wpFindPage = 0; }
+  el.disabled = true;
+  const start = wpFindPage + 1;
+  for (let i = 0; i < wpPdf.numPages; i++) {
+    const p = ((start - 1 + i) % wpPdf.numPages) + 1;
+    if ((await wpPageText(p)).includes(q)) {
+      wpFindPage = p;
+      const holder = document.querySelector(
+        `#wp-doc-view .pdf-page[data-page="${p}"]`);
+      if (holder) {
+        holder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        holder.classList.add('hit');
+        setTimeout(() => holder.classList.remove('hit'), 1800);
+      }
+      document.getElementById('wp-pages').textContent =
+        'page ' + p + ' of ' + wpPdf.numPages;
+      el.disabled = false; el.focus();
+      return;
+    }
+  }
+  el.disabled = false;
+  document.getElementById('wp-pages').textContent = 'no match';
+  setTimeout(() => {
+    document.getElementById('wp-pages').textContent =
+      wpPdf.numPages + ' pages';
+  }, 1800);
+}
+
+/* Live "page N of M" indicator while scrolling the document */
+const wpView = document.getElementById('wp-doc-view');
+let wpScrollT = null;
+wpView.addEventListener('scroll', () => {
+  if (!wpPdf || wpScrollT) return;
+  wpScrollT = setTimeout(() => {
+    wpScrollT = null;
+    const probe = wpView.scrollTop + wpView.clientHeight / 3;
+    let cur = 1;
+    for (const p of wpView.querySelectorAll('.pdf-page')) {
+      if (p.offsetTop - wpView.offsetTop > probe) break;
+      cur = +p.dataset.page;
+    }
+    document.getElementById('wp-pages').textContent =
+      'page ' + cur + ' of ' + wpPdf.numPages;
+  }, 120);
+});
+
+/* Ask about the open document without leaving it */
+function wpAskDoc() {
+  const el = document.getElementById('wp-ask-input');
+  const q = el.value.trim();
+  if (!q || busy) return;
+  el.value = '';
+  if (window.innerWidth < 900) closeWorkpane();
+  ask('Regarding "' + wpDocTitle + '": ' + q);
+}
+
+async function openBrowse() {
+  openWorkpane();
+  wpShow('browse');
+  if (!catalogCache) {
+    wpBrowse.innerHTML =
+      '<p style="color:var(--muted)">Loading catalogue\u2026</p>';
+    try {
+      const r = await fetch('/api/catalog');
+      catalogCache = await r.json();
+    } catch { catalogCache = []; }
+  }
+  renderBrowse();
+}
+
+function wpAsk(q) {
+  if (window.innerWidth < 900) closeWorkpane();
+  ask(q);
+}
+
+let browseShowAll = false;
+const BROWSE_LIMIT = 250;
+const TYPE_LABELS = { act: 'Acts', si: 'Statutory Instruments',
+  gn: 'General Notices', gazette: 'Gazettes', constitution: 'Constitution',
+  report: 'Reports', policy: 'Policies' };
+
+/* Filter bar is rendered once; only the list re-renders on input,
+   so the search box keeps focus while typing. */
+function renderBrowse() {
+  const types = [...new Set(catalogCache.map(i => i.doc_type))].sort();
+  const years = [...new Set(catalogCache.map(i => i.year).filter(Boolean))]
+    .sort((a, b) => b - a);
+  wpBrowse.innerHTML = `<div class="b-filters">
+      <select id="b-type" onchange="applyBrowse()">
+        <option value="">All types</option>` +
+      types.map(t => `<option value="${esc(t)}">${
+        esc(TYPE_LABELS[t] || t)}</option>`).join('') + `</select>
+      <select id="b-year" onchange="applyBrowse()">
+        <option value="">All years</option>` +
+      years.map(y => `<option>${y}</option>`).join('') + `</select>
+      <select id="b-sort" onchange="applyBrowse()">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="az">A &ndash; Z</option>
+      </select>
+      <input id="b-q" placeholder="Search titles\u2026" oninput="applyBrowse()">
+      <span class="b-count" id="b-count"></span>
+    </div>
+    <div class="b-list" id="b-list"></div>`;
+  renderBrowseList();
+}
+
+function renderBrowseList() {
+  const type = document.getElementById('b-type').value;
+  const year = document.getElementById('b-year').value;
+  const sort = document.getElementById('b-sort').value;
+  const q = document.getElementById('b-q').value.trim().toLowerCase();
+  const matches = catalogCache.filter(i =>
+    (!type || i.doc_type === type) &&
+    (!year || String(i.year) === String(year)) &&
+    (!q || i.title.toLowerCase().includes(q)));
+  matches.sort(sort === 'az'
+    ? (a, b) => a.title.localeCompare(b.title)
+    : sort === 'oldest'
+      ? (a, b) => (a.year || 0) - (b.year || 0) || a.title.localeCompare(b.title)
+      : (a, b) => (b.year || 0) - (a.year || 0) || a.title.localeCompare(b.title));
+  const items = browseShowAll ? matches : matches.slice(0, BROWSE_LIMIT);
+  document.getElementById('b-count').innerHTML = `${matches.length}
+    instrument${matches.length === 1 ? '' : 's'}${type || year || q
+      ? ' matching' : ''}${items.length < matches.length
+      ? ` \u00b7 showing first ${items.length}` : ''}${
+    type && year && !q && matches.length
+      ? ` \u00b7 <a href="#" onclick="bulkZip('${esc(type)}', '${esc(year)}');
+           return false" title="Download all as one ZIP (Pro)">Download
+           all (ZIP)</a>` : ''}`;
+  document.getElementById('b-list').innerHTML =
+    (items.length ? items.map(i => {
+      const v = vintageOf(i.title);
+      const shown = v ? v.clean : i.title;
+      const ask_ = JSON.stringify('Summarise ' + i.title).replace(/"/g, '&quot;');
+      return `<div class="b-item">
+        <span class="b-badge ${esc(i.doc_type)}">${esc(i.doc_type)}${
+          i.year ? ' \u00b7 ' + i.year : ''}</span>
+        <span class="b-title" title="${esc(i.title)}">${esc(shown)}</span>
+        ${v ? vintageChip(v) : ''}
+        ${i.file ? `<button class="act-btn"
+          onclick="viewDoc('/api/download/${encodeURIComponent(i.file)}',
+                           ${JSON.stringify(i.title).replace(/"/g, '&quot;')})">View</button>` : ''}
+        <button class="act-btn" onclick="wpAsk(${ask_})">Ask</button>
+      </div>`;
+    }).join('') : '<p style="color:var(--muted)">No matches.</p>') +
+    (items.length < matches.length
+      ? `<button class="followup" style="margin:12px auto;display:flex"
+           onclick="showAllBrowse()">Show all ${matches.length}</button>` : '');
+}
+function applyBrowse() { browseShowAll = false; renderBrowseList(); }
+function showAllBrowse() { browseShowAll = true; renderBrowseList(); }
+
+async function bulkZip(type, year) {
+  try {
+    const r = await fetch(`/api/bulk/${encodeURIComponent(type)}/${
+      encodeURIComponent(year)}`);
+    if (r.status === 401) { openAuth('signup'); return; }
+    if (r.status === 402) {
+      openUpgrade('One-click bulk ZIP archives are a Pro convenience. '
+        + 'Every document is still free to read and download '
+        + 'individually from the Browse panel.');
+      return;
+    }
+    if (!r.ok) {
+      const d = (await r.json().catch(() => ({}))).detail;
+      toast((typeof d === 'string' ? d : (d && d.message))
+        || 'Download failed.');
+      return;
+    }
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `onegov-${type}-${year}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch { toast('Download failed.'); }
+}
+
+function openAbout() {
+  modalWrap.classList.add('show');
+  modalBox.innerHTML = `<h3>About OneGov AI
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="about-body">
+      <p><strong>OneGov AI is currently in beta.</strong> It works, but
+      you may still meet rough edges; answers, coverage and features
+      are being improved continuously. Thank you for your patience and
+      feedback while we polish it.</p>
+      <p><strong>OneGov AI</strong> answers questions about Zimbabwean law
+      using the actual gazetted texts (the Constitution, Acts of
+      Parliament, statutory instruments and general notices) and cites
+      the exact sections it relies on.</p>
+      <p><strong>Is OneGov legal?</strong> Yes. OneGov is an independent
+      public-information service. Zimbabwe's gazetted laws are public
+      documents, and OneGov simply makes them easier to search and
+      understand. Answers are general information, not legal advice;
+      for advice on your specific situation, consult a registered legal
+      practitioner.</p>
+      <p>Our records are updated regularly. If you cannot find something,
+      it may not be in our collection yet; the official government
+      sites remain the authoritative source.</p>
+      <p>You can browse, read and download the source documents free of
+      charge from the <em>Browse</em> panel; the official texts are
+      public documents and are never behind a paywall. Answers are
+      available in English, Shona and Ndebele.</p>
+      ${corpusMeta ? `<p>The corpus currently holds
+      ${corpusMeta.instruments} instruments and was last updated on
+      ${corpusMeta.updated}.</p>` : ''}
+      <p style="color:var(--muted)">You can try a few questions without an
+      account; a free account gives 5 questions a day.
+      <strong>Plus</strong> ($5 / 30 days) removes the limit and the ads
+      and adds monthly PDF &amp; Word exports and amendment watches;
+      <strong>Pro</strong> ($15 / 30 days) makes exports unlimited and
+      adds priority answers with deeper research and API access. See
+      <a href="#" onclick="openUpgrade();return false">plans</a> and the
+      <a href="/docs.html" target="_blank">developer docs</a>.
+      Questions may be reviewed to improve answers. Read the
+      <a href="/privacy.html" target="_blank">privacy policy</a> and
+      <a href="/terms.html" target="_blank">terms</a>.</p>
+    </div>`;
+}
+
+/* ---------------- Accounts ---------------- */
+let authState = { email: null, free_left: null };
+const authBtn = document.getElementById('auth-btn');
+
+async function refreshAuth() {
+  try {
+    const r = await fetch('/api/auth/me');
+    if (r.ok) authState = await r.json();
+  } catch { /* offline: keep last state */ }
+  updateAuthBtn();
+  loadAdsIfFree();
+  checkWatchAlerts();
+}
+
+/* Pro: badge on the account button when watched instruments have new
+   gazetted matches */
+let watchNewCount = 0;
+async function checkWatchAlerts() {
+  if (authState.plan !== 'plus' && authState.plan !== 'pro') {
+    watchNewCount = 0; return;
+  }
+  try {
+    const r = await fetch('/api/watches');
+    if (!r.ok) return;
+    const ws = await r.json();
+    watchNewCount = ws.reduce((n, w) => n + (w.new || 0), 0);
+    updateAuthBtn();
+  } catch { /* ignore */ }
+}
+
+/* ---------------- Ads (free tier only; paid plans are ad-free) ----- */
+const ADSENSE_CLIENT = 'ca-pub-9733358050532587';
+let adsLoaded = false;
+function loadAdsIfFree() {
+  if (adsLoaded || !ADSENSE_CLIENT) return;
+  if (authState.email && authState.plan !== 'free') return;
+  adsLoaded = true;
+  const s = document.createElement('script');
+  s.src = 'https://pagead2.googlesyndication.com/pagead/js/'
+        + 'adsbygoogle.js?client=' + ADSENSE_CLIENT;
+  s.async = true;
+  s.crossOrigin = 'anonymous';
+  document.head.appendChild(s);
+}
+
+function updateAuthBtn() {
+  if (!authBtn) return;
+  const av = document.getElementById('acct-avatar');
+  const nm = document.getElementById('acct-name');
+  const sub = document.getElementById('acct-sub');
+  if (authState.email) {
+    const name = authState.email.split('@')[0];
+    av.textContent = name[0] || '?';
+    nm.textContent = name;
+    let s;
+    if (authState.plan === 'pro') s = 'Pro plan';
+    else if (authState.plan === 'plus') s = 'Plus plan';
+    else s = `Free \u00b7 ${authState.daily_left ?? '?'} left today`;
+    if (authState.plan !== 'free' && authState.days_left != null
+        && authState.days_left <= 3) {
+      s += ` \u00b7 ends in ${authState.days_left}d`;
+    }
+    if (watchNewCount > 0) {
+      s += ` \u00b7 \u{1F514} ${watchNewCount}`;
+      authBtn.title = `${authState.email}: ${watchNewCount} new `
+        + 'gazetted match(es) on your watched instruments';
+    } else authBtn.title = authState.email;
+    sub.textContent = s;
+  } else {
+    av.textContent = '\u{1F464}';
+    nm.textContent = 'Sign in';
+    sub.textContent = authState.free_left != null
+      ? `${authState.free_left} free question${
+          authState.free_left === 1 ? '' : 's'} left`
+      : 'or create a free account';
+    authBtn.title = 'Sign in or create a free account';
+  }
+  updateQleft();
+}
+
+/* Pill above the composer: remaining free questions today */
+function updateQleft() {
+  const el = document.getElementById('qleft');
+  if (!el) return;
+  let html = '';
+  if (authState.email && authState.plan === 'free'
+      && authState.daily_left != null) {
+    html = `<span>${authState.daily_left} question${
+      authState.daily_left === 1 ? '' : 's'} left today \u00b7
+      <a onclick="openUpgrade()">Upgrade</a></span>`;
+  } else if (!authState.email && authState.free_left != null) {
+    html = `<span>${authState.free_left} free question${
+      authState.free_left === 1 ? '' : 's'} left \u00b7
+      <a onclick="openAuth('signup')">Sign up free</a></span>`;
+  } else if (authState.plan === 'pro') {
+    html = `<span title="Pro: answers get more research rounds and
+      wider retrieval, plus automatic retry when providers are busy">
+      \u26A1 Pro \u00b7 deep research on</span>`;
+  }
+  el.innerHTML = html;
+  el.style.display = html ? '' : 'none';
+}
+
+function _planBtn(plan, label) {
+  if (!authState.email) {
+    return `<button class="auth-submit plan-btn" onclick="openAuth('signup',
+      'Create a free account first, then upgrade.')">${label}</button>`;
+  }
+  const cur = authState.plan;
+  if (cur === plan) {
+    return `<div class="plan-cur">Your current plan</div>
+      <button class="auth-submit plan-btn" id="pay-${plan}"
+        onclick="startCheckout('${plan}')">Renew \u00b7 +30 days</button>`;
+  }
+  return `<button class="auth-submit plan-btn" id="pay-${plan}"
+    onclick="startCheckout('${plan}')">${label}</button>`;
+}
+
+function openUpgrade(msg) {
+  modalWrap.classList.add('show');
+  modalBox.classList.remove('slim');
+  modalBox.innerHTML = `<h3>Upgrade OneGov
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      ${msg ? `<div class="auth-notice">${msg}</div>` : ''}
+      <div class="plans">
+        <div class="plan-card">
+          <div class="plan-name">Plus</div>
+          <div class="plan-price">$5<span class="per">/ 30 days</span></div>
+          <ul class="plan-feats">
+            <li>Unlimited questions</li>
+            <li>Full answer history \u00b7 no ads</li>
+            <li>10 PDF / Word exports a month</li>
+            <li>Watch 3 instruments (in-app alerts)</li>
+          </ul>
+          ${_planBtn('plus', 'Get Plus')}
+        </div>
+        <div class="plan-card hot">
+          <div class="plan-badge">Best value</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$15<span class="per">/ 30 days</span></div>
+          <ul class="plan-feats">
+            <li>Everything in Plus</li>
+            <li>Unlimited exports \u00b7 20 watches</li>
+            <li>Priority answers + deeper research</li>
+            <li>One-click ZIP archives by year</li>
+            <li>API access \u00b7 1,000 calls/mo</li>
+          </ul>
+          ${_planBtn('pro', 'Get Pro')}
+        </div>
+      </div>
+      <div class="auth-err" id="pay-err"></div>
+      <div class="pay-methods"><span>EcoCash</span><span>OneMoney</span>
+        <span>Visa</span><span>Mastercard</span></div>
+      <div class="auth-alt" style="text-align:center">One-off payment,
+      processed securely by Paynow, with no auto-renewal. You are paying
+      for the AI assistant only; every official document stays free for
+      everyone to browse, read and download. Payments go toward the
+      hosting and running costs that keep OneGov AI online.
+      Free plan: 5 questions a day, resets at midnight.</div>
+    </div>`;
+}
+
+async function startCheckout(plan) {
+  const err = document.getElementById('pay-err');
+  const btn = document.getElementById(`pay-${plan}`);
+  const oldLabel = btn ? btn.innerHTML : '';
+  document.querySelectorAll('.plan-btn')
+    .forEach(b => { b.disabled = true; });
+  if (btn) btn.innerHTML = '<span class="pay-spin"></span>Contacting Paynow\u2026';
+  if (err) err.textContent = '';
+  try {
+    const r = await fetch('/api/pay/checkout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }) });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.url) {
+      if (btn) btn.innerHTML = '<span class="pay-spin"></span>Redirecting\u2026';
+      location.href = data.url; return;
+    }
+    const d = data.detail;
+    err.innerHTML = ((typeof d === 'string' ? d : (d && d.message))
+      || 'Could not start the payment.')
+      + ' <a href="mailto:kudziezhuwaki@gmail.com?subject=OneGov%20AI%20upgrade">Contact us</a>.';
+  } catch {
+    err.textContent = 'Network problem. Please try again.';
+  }
+  if (btn) btn.innerHTML = oldLabel;
+  document.querySelectorAll('.plan-btn')
+    .forEach(b => { b.disabled = false; });
+}
+
+/* Deep link from the landing page pricing section */
+if (new URLSearchParams(location.search).get('upgrade')) {
+  history.replaceState(null, '', location.pathname);
+  setTimeout(() => openUpgrade(), 300);
+}
+
+/* Deep link from the landing page: /app.html?auth=signup|login */
+{
+  const authParam = new URLSearchParams(location.search).get('auth');
+  if (authParam === 'signup' || authParam === 'login') {
+    history.replaceState(null, '', location.pathname);
+    setTimeout(() => { if (!authState.email) openAuth(authParam); }, 400);
+  }
+}
+
+/* After returning from Paynow (?paid=pending) poll until activation */
+if (new URLSearchParams(location.search).get('paid')) {
+  history.replaceState(null, '', location.pathname);
+  modalWrap.classList.add('show');
+  modalBox.innerHTML = `<h3>Payment
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body"><div class="pay-wait" id="pay-wait">
+      <span class="pay-spin dark"></span>
+      Confirming your payment with Paynow\u2026<br>
+      <span style="font-size:12.5px;color:var(--muted)">This usually
+      takes a few seconds.</span></div></div>`;
+  let tries = 0;
+  const poll = async () => {
+    // Ask the server to poll Paynow directly (works even when the
+    // Paynow webhook has not reached us), then refresh session state.
+    try {
+      const r = await fetch('/api/pay/check', { method: 'POST' });
+      const d = await r.json().catch(() => ({}));
+      if (d && d.activated) { await refreshAuth(); openAccount(); return; }
+      if (d && d.failed) {
+        const w = document.getElementById('pay-wait');
+        if (w) w.innerHTML = `<strong>Payment not completed.</strong><br>
+          Paynow reported the payment as cancelled or failed, so your
+          plan was not activated. You can
+          <a href="#" onclick="openUpgrade(); return false;">try again</a>
+          or <a href="mailto:kudziezhuwaki@gmail.com?subject=OneGov%20AI%20payment">contact us</a>.`;
+        return;
+      }
+    } catch {}
+    await refreshAuth();
+    if (authState.plan && authState.plan !== 'free') {
+      openAccount(); return;
+    }
+    if (++tries < 10) { setTimeout(poll, 3000); return; }
+    const w = document.getElementById('pay-wait');
+    if (w) w.innerHTML = `Payment not confirmed yet. If you completed it,
+      your plan will activate within a few minutes; check back in
+      your account. Otherwise
+      <a href="mailto:kudziezhuwaki@gmail.com?subject=OneGov%20AI%20payment">contact us</a>.`;
+  };
+  poll();
+}
+
+function authClick() { authState.email ? openAccount() : openAuth('login'); }
+
+function openAuth(mode, notice) {
+  const keepEmail = document.getElementById('auth-email')
+    ? document.getElementById('auth-email').value : '';
+  const signup = mode === 'signup';
+  modalWrap.classList.add('show');
+  modalBox.classList.add('slim');
+  modalBox.innerHTML = `<h3 style="margin-bottom:2px">
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <div class="auth-hero">
+        <div class="mark">ZW</div>
+        <h4>${signup ? 'Create your free account' : 'Welcome back'}</h4>
+        <p>${signup
+          ? '5 free questions a day \u00b7 chat history \u00b7 3 languages'
+          : 'Sign in to pick up where you left off.'}</p>
+      </div>
+      ${notice ? `<div class="auth-notice">${notice}</div>` : ''}
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab ${!signup ? 'on' : ''}" role="tab"
+                aria-selected="${!signup}"
+                onclick="openAuth('login')">Log in</button>
+        <button class="auth-tab ${signup ? 'on' : ''}" role="tab"
+                aria-selected="${signup}"
+                onclick="openAuth('signup')">Sign up</button>
+      </div>
+      <div class="auth-field">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" placeholder="you@example.com"
+               autocomplete="email" autocapitalize="none"
+               spellcheck="false"
+               onkeydown="if (event.key === 'Enter')
+                 document.getElementById('auth-pw').focus()">
+      </div>
+      <div class="auth-field">
+        <label for="auth-pw">Password</label>
+        <div class="pw-wrap">
+          <input id="auth-pw" type="password"
+                 placeholder="${signup ? 'At least 8 characters'
+                                       : 'Your password'}"
+                 autocomplete="${signup ? 'new-password'
+                                        : 'current-password'}"
+                 onkeydown="if (event.key === 'Enter')
+                   submitAuth('${mode}')">
+          <button type="button" class="pw-eye" aria-label="Show password"
+                  onclick="togglePw(this)">Show</button>
+        </div>
+      </div>
+      <div class="auth-err" id="auth-err" role="alert"></div>
+      <button class="auth-submit" id="auth-go"
+              onclick="submitAuth('${mode}')">
+        ${signup ? 'Create account' : 'Log in'}</button>
+      ${!signup ? `<div class="auth-alt" style="text-align:center">
+        <a href="#" onclick="openForgot(); return false;">Forgot your
+        password?</a></div>` : ''}
+      <div class="auth-switch">${signup
+        ? `Already have an account? <a href="#"
+           onclick="openAuth('login'); return false;">Log in</a>`
+        : `New here? <a href="#"
+           onclick="openAuth('signup'); return false;">Create a free
+           account</a>`}</div>
+      <div class="auth-alt" style="text-align:center">By continuing you
+        agree to the <a href="/terms.html" target="_blank">terms</a> and
+        <a href="/privacy.html" target="_blank">privacy policy</a>.</div>
+    </div>`;
+  const em = document.getElementById('auth-email');
+  em.value = keepEmail;
+  em.focus();
+}
+
+function togglePw(btn) {
+  const pw = document.getElementById('auth-pw');
+  const show = pw.type === 'password';
+  pw.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+  btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+}
+
+function openForgot() {
+  const keepEmail = document.getElementById('auth-email')
+    ? document.getElementById('auth-email').value : '';
+  modalWrap.classList.add('show');
+  modalBox.classList.add('slim');
+  modalBox.innerHTML = `<h3 style="margin-bottom:2px">
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <div class="auth-hero">
+        <div class="mark">ZW</div>
+        <h4>Reset your password</h4>
+        <p>We will email you a link to set a new one.</p>
+      </div>
+      <div class="auth-field">
+        <label for="forgot-email">Email</label>
+        <input id="forgot-email" type="email"
+          placeholder="you@example.com" autocomplete="email"
+          autocapitalize="none" spellcheck="false"
+          onkeydown="if (event.key === 'Enter') submitForgot()">
+      </div>
+      <div class="auth-err" id="forgot-err" role="alert"></div>
+      <button class="auth-submit" id="forgot-go"
+        onclick="submitForgot()">Send reset link</button>
+      <div class="auth-switch"><a href="#"
+        onclick="openAuth('login'); return false;">&larr; Back to sign
+        in</a></div>
+    </div>`;
+  const em = document.getElementById('forgot-email');
+  em.value = keepEmail;
+  em.focus();
+}
+
+async function submitForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const err = document.getElementById('forgot-err');
+  const btn = document.getElementById('forgot-go');
+  err.textContent = '';
+  if (!email || !email.includes('@')) {
+    err.textContent = 'Please enter a valid email address.';
+    document.getElementById('forgot-email').focus(); return;
+  }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="pay-spin"></span>Sending\u2026';
+  try {
+    const r = await fetch('/api/auth/forgot', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const d = data.detail;
+      err.textContent = (typeof d === 'string' ? d : (d && d.message))
+        || 'Something went wrong. Please try again.';
+      btn.disabled = false; btn.innerHTML = orig;
+      return;
+    }
+    err.style.color = 'var(--accent)';
+    err.textContent = data.message || 'Check your email for the link.';
+    btn.innerHTML = 'Link sent \u2713';
+  } catch {
+    err.textContent = 'Network problem. Please try again.';
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+}
+
+async function submitAuth(mode) {
+  const email = document.getElementById('auth-email').value.trim();
+  const pw = document.getElementById('auth-pw').value;
+  const err = document.getElementById('auth-err');
+  const btn = document.getElementById('auth-go');
+  err.textContent = '';
+  if (!email || !email.includes('@')) {
+    err.textContent = 'Please enter a valid email address.';
+    document.getElementById('auth-email').focus(); return;
+  }
+  if (mode === 'signup' && pw.length < 8) {
+    err.textContent = 'Password must be at least 8 characters.';
+    document.getElementById('auth-pw').focus(); return;
+  }
+  if (!pw) {
+    err.textContent = 'Please enter your password.';
+    document.getElementById('auth-pw').focus(); return;
+  }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="pay-spin"></span>${mode === 'signup'
+      ? 'Creating account\u2026' : 'Signing in\u2026'}`;
+  try {
+    const r = await fetch(`/api/auth/${mode}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const d = data.detail;
+      err.textContent = (typeof d === 'string' ? d : (d && d.message))
+        || 'Something went wrong. Please try again.';
+      btn.disabled = false; btn.innerHTML = orig;
+      return;
+    }
+    closeModal();
+    await refreshAuth();
+  } catch {
+    err.textContent = 'Network problem. Please try again.';
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+}
+
+function openAccount() {
+  modalWrap.classList.add('show');
+  modalBox.classList.remove('slim');
+  const p = authState.plan;
+  const watchLine = authState.watch_limit != null
+    ? ` \u00b7 ${authState.watches_used ?? 0}/${authState.watch_limit}
+       watches` : '';
+  const planLine = p === 'pro'
+    ? `Pro plan \u00b7 deep research \u00b7 unlimited
+       exports${watchLine} \u00b7 until ${authState.paid_until || ''}`
+    : p === 'plus'
+      ? `Plus plan \u00b7 unlimited questions \u00b7
+         ${authState.exports_left ?? '?'} export${
+           authState.exports_left === 1 ? '' : 's'} left this
+         month${watchLine} \u00b7 until ${authState.paid_until || ''}`
+      : `Free plan \u00b7 ${authState.daily_left ?? '?'} of 5 questions
+         left today`;
+  const renew = (p !== 'free' && authState.days_left != null
+      && authState.days_left <= 5)
+    ? `<div class="auth-notice">Your ${p === 'pro' ? 'Pro' : 'Plus'}
+       pass ends in ${authState.days_left}
+       day${authState.days_left === 1 ? '' : 's'}. Renewing now adds
+       30 days on top.</div>
+       <button class="auth-tab" onclick="openUpgrade()">Renew now
+       </button>`
+    : '';
+  const upgrade = p === 'free'
+    ? `<button class="auth-tab" onclick="openUpgrade()">Upgrade</button>`
+    : p === 'plus'
+      ? `<button class="auth-tab" onclick="openUpgrade()">Upgrade to
+         Pro: unlimited exports, 20 watches, API</button>` : '';
+  const proTools =
+    (p === 'plus' || p === 'pro'
+      ? `<button class="auth-tab" onclick="openWatches()">Watched
+           instruments</button>` : '') +
+    (p === 'pro'
+      ? `<button class="auth-tab" onclick="openKeys()">API keys</button>`
+      : '');
+  modalBox.innerHTML = `<h3>Your account
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <p style="font-size:14px">Signed in as
+        <strong>${authState.email}</strong><br>
+        <span style="color:var(--muted);font-size:13px">${planLine}
+        </span></p>
+      ${renew}${upgrade}${proTools}
+      <button class="auth-submit" onclick="doLogout()">Sign out</button>
+      <div class="auth-alt">You can also
+        <a href="#" onclick="deleteAccount(); return false;">delete your
+        account</a> and its data permanently${p !== 'free' ? `, or
+        <a href="#" onclick="cancelPlan(); return false;">cancel your
+        ${p === 'pro' ? 'Pro' : 'Plus'} pass</a>` : ''}.</div>
+    </div>`;
+}
+
+/* ---------------- Pro: watched instruments ---------------- */
+async function openWatches() {
+  modalWrap.classList.add('show');
+  modalBox.innerHTML = `<h3>Watched instruments
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <p style="font-size:13px;color:var(--muted)">Watch an Act or
+      instrument and see newly gazetted amendments and notices that
+      mention it as the corpus is updated.
+      <span id="watch-count"></span></p>
+      <input id="watch-term" placeholder="e.g. Labour Act"
+        onkeydown="if (event.key === 'Enter') addWatch()">
+      <div class="auth-err" id="watch-err"></div>
+      <button class="auth-submit" onclick="addWatch()">Watch</button>
+      <div id="watch-list" style="font-size:13px">Loading\u2026</div>
+      <div class="auth-alt"><a href="#"
+        onclick="openAccount(); return false;">&larr; Back to account
+        </a></div>
+    </div>`;
+  await renderWatches();
+  fetch('/api/watches/seen', { method: 'POST' }).catch(() => {});
+}
+
+async function renderWatches() {
+  const box = document.getElementById('watch-list');
+  if (!box) return;
+  try {
+    const r = await fetch('/api/watches');
+    if (!r.ok) { box.textContent = 'Could not load watches.'; return; }
+    const ws = await r.json();
+    const cnt = document.getElementById('watch-count');
+    if (cnt && authState.watch_limit != null) {
+      cnt.textContent = `Using ${ws.length} of ${authState.watch_limit}`
+        + (authState.plan === 'plus' ? ' (Pro: 20).' : '.');
+    }
+    if (!ws.length) { box.textContent = 'Nothing watched yet.'; return; }
+    box.innerHTML = ws.map(w => `
+      <div style="margin:10px 0;padding:10px;border:1px solid var(--line);
+                  border-radius:10px">
+        <strong>${esc(w.term)}</strong>
+        ${w.new ? `<span style="color:var(--accent);font-weight:700">
+           \u00b7 ${w.new} new</span>` : ''}
+        <a href="#" style="float:right"
+          onclick="removeWatch('${esc(w.term)}'); return false;">Remove</a>
+        ${w.matches.slice(0, 4).map(m =>
+          `<div style="color:var(--muted)">${esc(m.title)}</div>`)
+          .join('') || '<div style="color:var(--muted)">No matches in the corpus yet.</div>'}
+      </div>`).join('');
+  } catch { box.textContent = 'Network problem.'; }
+}
+
+async function addWatch() {
+  const term = document.getElementById('watch-term').value.trim();
+  const err = document.getElementById('watch-err');
+  err.textContent = '';
+  try {
+    const r = await fetch('/api/watches', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const d = data.detail;
+      const m = (typeof d === 'string' ? d : (d && d.message))
+        || 'Could not add the watch.';
+      err.innerHTML = esc(m) + (/Pro/.test(m)
+        ? ` <a href="#" onclick="openUpgrade(); return false">Upgrade
+           </a>` : '');
+      return;
+    }
+    document.getElementById('watch-term').value = '';
+    await renderWatches();
+  } catch { err.textContent = 'Network problem.'; }
+}
+
+async function removeWatch(term) {
+  try {
+    await fetch('/api/watches/remove', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term }) });
+  } catch {}
+  await renderWatches();
+}
+
+/* ---------------- Pro: API keys ---------------- */
+async function openKeys() {
+  modalWrap.classList.add('show');
+  modalBox.innerHTML = `<h3>API keys
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <p style="font-size:13px;color:var(--muted)">Use OneGov from your
+      own software: <code>POST /api/v1/ask</code> with
+      <code>Authorization: Bearer &lt;key&gt;</code> and JSON
+      <code>{"question": "..."}</code>. See the
+      <a href="/docs.html" target="_blank">developer docs</a>.</p>
+      <div class="auth-err" id="key-err"></div>
+      <button class="auth-submit" onclick="createKey()">Create a new
+        key</button>
+      <div id="key-list" style="font-size:13px">Loading\u2026</div>
+      <div class="auth-alt"><a href="#"
+        onclick="openAccount(); return false;">&larr; Back to account
+        </a></div>
+    </div>`;
+  await renderKeys();
+}
+
+async function renderKeys() {
+  const box = document.getElementById('key-list');
+  if (!box) return;
+  try {
+    const r = await fetch('/api/keys');
+    if (!r.ok) { box.textContent = 'Could not load keys.'; return; }
+    const d = await r.json();
+    if (!d.keys.length) { box.textContent = 'No keys yet.'; return; }
+    box.innerHTML = d.keys.map(k => `
+      <div style="margin:10px 0;padding:10px;border:1px solid var(--line);
+                  border-radius:10px;word-break:break-all">
+        <code>${esc(k.key)}</code><br>
+        <span style="color:var(--muted)">${esc(k.label)} \u00b7
+          ${k.used_this_month} of ${d.limit} calls this month</span>
+        <a href="#" style="float:right"
+          onclick="revokeKey('${esc(k.key)}'); return false;">Revoke</a>
+      </div>`).join('');
+  } catch { box.textContent = 'Network problem.'; }
+}
+
+async function createKey() {
+  const err = document.getElementById('key-err');
+  err.textContent = '';
+  try {
+    const r = await fetch('/api/keys/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: 'default' }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const d = data.detail;
+      err.textContent = (typeof d === 'string' ? d : (d && d.message))
+        || 'Could not create the key.';
+      return;
+    }
+    await renderKeys();
+  } catch { err.textContent = 'Network problem.'; }
+}
+
+async function revokeKey(key) {
+  if (!confirm('Revoke this API key? Software using it will stop '
+               + 'working.')) return;
+  try {
+    await fetch('/api/keys/revoke', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }) });
+  } catch {}
+  await renderKeys();
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  closeModal(); await refreshAuth();
+}
+
+async function cancelPlan() {
+  const days = authState.days_left;
+  if (!confirm('Cancel your paid pass now? You go back to the Free plan '
+    + 'immediately' + (days ? ` and forfeit the ${days} remaining `
+    + `day${days === 1 ? '' : 's'}` : '') + '. Passes are one-off '
+    + 'payments (nothing renews automatically) and this is not refunded.'))
+    return;
+  try {
+    const r = await fetch('/api/account/cancel-plan', { method: 'POST' });
+    if (!r.ok) {
+      const d = (await r.json().catch(() => ({}))).detail;
+      toast((typeof d === 'string' ? d : (d && d.message))
+        || 'Could not cancel the plan.');
+      return;
+    }
+  } catch { toast('Network problem. Please try again.'); return; }
+  await refreshAuth();
+  openAccount();
+}
+
+async function deleteAccount() {
+  if (!confirm('Delete your account permanently? This cannot be undone.'))
+    return;
+  try { await fetch('/api/auth/delete', { method: 'POST' }); } catch {}
+  closeModal(); await refreshAuth();
+}
+
+refreshAuth();
+
+/* ---------------- Language ---------------- */
+/* Minimal UI strings; answers themselves are localised server-side. */
+const I18N = {
+  en: { newChat: 'New chat', chats: 'Chats', search: 'Search chats\u2026',
+        placeholder: 'Ask about an Act, statutory instrument, notice, or the Constitution\u2026',
+        welcome: 'What would you like to know?',
+        browseDocs: 'Browse documents', signIn: 'Sign in' },
+  sn: { newChat: 'Hurukuro itsva', chats: 'Hurukuro', search: 'Tsvaga hurukuro\u2026',
+        placeholder: 'Bvunza nezveMutemo, statutory instrument, chiziviso, kana Bumbiro\u2026',
+        welcome: 'Ungada kuziva chii?',
+        browseDocs: 'Ona magwaro', signIn: 'Pinda' },
+  nd: { newChat: 'Ingxoxo entsha', chats: 'Ingxoxo', search: 'Dinga ingxoxo\u2026',
+        placeholder: 'Buza ngoMthetho, statutory instrument, isaziso, loba uMthethosisekelo\u2026',
+        welcome: 'Ufuna ukwazini?',
+        browseDocs: 'Bona amadokhumenti', signIn: 'Ngena' },
+};
+function uiLang() { return localStorage.getItem('onegov_lang') || 'en'; }
+function t(k) { return (I18N[uiLang()] || I18N.en)[k] || I18N.en[k]; }
+function applyLang() {
+  const nc = document.querySelector('.new-chat-btn');
+  if (nc) nc.lastChild.textContent = ' ' + t('newChat');
+  const lbl = document.querySelector('.side-label');
+  if (lbl) lbl.textContent = t('chats');
+  const cs = document.getElementById('chat-search');
+  if (cs) cs.placeholder = t('search');
+  input.placeholder = t('placeholder');
+  const bp = document.querySelector('.top-pill');
+  if (bp) bp.lastChild.textContent = ' ' + t('browseDocs');
+  if (!authState.email && authBtn && authBtn.textContent.trim() === 'Sign in')
+    authBtn.textContent = t('signIn');
+  if (!current || !current.messages.length) renderThread();
+}
+function setLang(v) { localStorage.setItem('onegov_lang', v); applyLang(); }
+
+/* Drag the panel edge to resize the workspace */
+document.getElementById('wp-resize').addEventListener('mousedown', e => {
+  e.preventDefault();
+  workpane.style.transition = 'none';
+  document.body.style.userSelect = 'none';
+  const move = ev => {
+    workpane.style.width =
+      Math.min(Math.max(340, window.innerWidth - ev.clientX),
+               window.innerWidth - 420) + 'px';
+  };
+  const up = () => {
+    workpane.style.transition = '';
+    document.body.style.userSelect = '';
+    const w = parseInt(workpane.style.width);
+    if (w) localStorage.setItem('onegov_wp_w', w);
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+  };
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+});
+
+/* ---------------- Maintenance banner (shown through 24 July 2026) --- */
+const MAINT_KEY = 'onegov_maint_20260724';
+if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
+    !localStorage.getItem(MAINT_KEY))
+  document.getElementById('maint-banner').classList.add('show');
+function dismissMaint() {
+  localStorage.setItem(MAINT_KEY, '1');
+  document.getElementById('maint-banner').classList.remove('show');
+}
+
+/* ---------------- Offline banner ---------------- */
+const netBanner = document.getElementById('net-banner');
+window.addEventListener('offline', () => netBanner.classList.add('show'));
+window.addEventListener('online', () => netBanner.classList.remove('show'));
+if (!navigator.onLine) netBanner.classList.add('show');
+
+/* ---------------- Corpus meta ---------------- */
+let corpusMeta = null;
+fetch('/api/meta').then(r => r.json()).then(m => {
+  corpusMeta = m;
+  if (!current || !current.messages.length) renderThread();
+}).catch(() => {});
+
+/* ---------------- Init ---------------- */
+marked.setOptions({ breaks: true });
+renderChatList();
+renderThread();
+input.focus();
+const langSel = document.getElementById('lang-sel');
+if (langSel) langSel.value = localStorage.getItem('onegov_lang') || 'en';
+applyLang();
+if ('serviceWorker' in navigator)
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+/* ---------------- Mobile keyboard ---------------- */
+/* Keep the thread pinned to the latest message while the on-screen
+   keyboard opens/closes (the viewport height jumps around). */
+if (window.visualViewport) {
+  let vvT = null;
+  visualViewport.addEventListener('resize', () => {
+    clearTimeout(vvT);
+    vvT = setTimeout(() => scrollIfNear(), 60);
+  });
+}
+input.addEventListener('focus', () => setTimeout(() => scrollIfNear(), 250));
+
+/* ---------------- Mobile swipe: open/close the sidebar -------------- */
+/* Right-swipe starting at the left edge opens it; left-swipe anywhere
+   closes it. Vertical scrolls and short flicks are ignored. */
+let swStart = null;
+document.addEventListener('touchstart', (e) => {
+  swStart = null;
+  if (!matchMedia('(max-width: 768px)').matches) return;
+  if (workpane.classList.contains('open')) return;
+  const t = e.touches[0];
+  swStart = { x: t.clientX, y: t.clientY };
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (!swStart) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - swStart.x;
+  const dy = Math.abs(t.clientY - swStart.y);
+  const fromEdge = swStart.x < 36;
+  swStart = null;
+  if (Math.abs(dx) < 60 || dy > 60) return;
+  const open = sidebar.classList.contains('open');
+  if (dx > 0 && fromEdge && !open) toggleSidebar();
+  else if (dx < 0 && open) closeSidebar();
+}, { passive: true });
+
+/* ---------------- PWA install ---------------- */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installEvt = e;
+  const b = document.getElementById('install-btn');
+  if (b) b.style.display = '';
+});
+async function installApp() {
+  if (!installEvt) return;
+  installEvt.prompt();
+  await installEvt.userChoice.catch(() => {});
+  installEvt = null;
+  const b = document.getElementById('install-btn');
+  if (b) b.style.display = 'none';
+}
+window.addEventListener('appinstalled', () => {
+  const b = document.getElementById('install-btn');
+  if (b) b.style.display = 'none';
+});
+
+/* Deep links from the landing page: ?q=... asks, ?browse=1 opens catalogue */
+const params = new URLSearchParams(location.search);
+if (params.get('q')) {
+  const q = params.get('q');
+  history.replaceState(null, '', '/app.html');
+  newChat();
+  ask(q);
+} else if (params.get('browse')) {
+  history.replaceState(null, '', '/app.html');
+  openBrowse();
+}
+</script>
+</body>
+</html>

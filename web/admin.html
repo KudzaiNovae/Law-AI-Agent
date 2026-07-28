@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>OneGov Admin</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #17171c; --muted: #70707c;
+    --border: #e6e6ea; --hover: #f0f0f4; --accent: #4f46e5;
+    --accent-2: #7c6cf0; --accent-soft: #eef0fe; --accent-ink: #4338ca;
+    --good: #16a34a; --bad: #dc2626; --warn: #d97706;
+    --side: #101017; --side-ink: #b9b9c6; --side-on: #ffffff;
+    --shadow: 0 1px 2px rgba(16,16,23,.05), 0 4px 16px rgba(16,16,23,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121216; --card: #1b1b21; --ink: #f2f2f5; --muted: #9c9ca8;
+      --border: #2a2a31; --hover: #222229; --accent: #818cf8;
+      --accent-2: #a5b4fc; --accent-soft: #262649; --accent-ink: #b4bdfc;
+      --side: #0c0c11; --side-ink: #8f8f9c; --side-on: #ffffff;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { font-family: Inter, -apple-system, "Segoe UI", Roboto, Arial,
+         sans-serif; background: var(--bg); color: var(--ink); margin: 0;
+         line-height: 1.55; font-size: 14px; }
+
+  /* ---------- layout: sidebar + main ---------- */
+  .shell { display: none; min-height: 100vh; }
+  .shell.on { display: flex; }
+  .side { width: 218px; flex-shrink: 0; background: var(--side);
+          color: var(--side-ink); display: flex; flex-direction: column;
+          padding: 18px 12px; position: sticky; top: 0; height: 100vh; }
+  .side .brand { display: flex; align-items: center; gap: 10px;
+                 color: var(--side-on); font-weight: 800; font-size: 15px;
+                 padding: 4px 10px 18px; letter-spacing: -.01em; }
+  .side .zw { display: inline-grid; place-items: center; width: 30px;
+              height: 30px; border-radius: 9px; flex-shrink: 0;
+              background: linear-gradient(135deg, var(--accent),
+                                          var(--accent-2));
+              color: #fff; font-size: 11px; font-weight: 800; }
+  .nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav button { display: flex; align-items: center; gap: 10px;
+                font: inherit; font-size: 13.5px; font-weight: 600;
+                color: var(--side-ink); background: none; border: none;
+                border-radius: 9px; padding: 9px 10px; cursor: pointer;
+                text-align: left; width: 100%; }
+  .nav button:hover { color: var(--side-on);
+                      background: rgba(255,255,255,.06); }
+  .nav button.on { color: var(--side-on);
+                   background: rgba(255,255,255,.1); }
+  .nav svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+  .nav .badge { margin-left: auto; background: var(--bad); color: #fff;
+                border-radius: 99px; font-size: 10.5px; font-weight: 700;
+                padding: 1px 7px; }
+  .side .foot { border-top: 1px solid rgba(255,255,255,.08);
+                padding-top: 10px; margin-top: 10px; }
+
+  .main { flex: 1; min-width: 0; padding: 22px 28px 60px; }
+  .mainbar { display: flex; align-items: center; gap: 10px;
+             margin-bottom: 20px; flex-wrap: wrap; }
+  .mainbar h1 { font-size: 19px; margin: 0; letter-spacing: -.01em; }
+  .spacer { flex: 1; }
+  .stamp { font-size: 12px; color: var(--muted); }
+  .auto { display: flex; align-items: center; gap: 6px; font-size: 12.5px;
+          color: var(--muted); cursor: pointer; user-select: none; }
+  .tbtn { font: inherit; font-size: 13px; padding: 7px 13px;
+          border-radius: 9px; border: 1px solid var(--border);
+          background: var(--card); color: var(--ink); cursor: pointer;
+          font-weight: 500; }
+  .tbtn:hover { border-color: var(--accent); }
+  .tbtn.primary { background: var(--accent); border-color: var(--accent);
+                  color: #fff; font-weight: 600; }
+  .tbtn.primary:hover { filter: brightness(1.08); }
+
+  /* ---------- login ---------- */
+  .login { max-width: 380px; margin: 12vh auto 0; background: var(--card);
+           border: 1px solid var(--border); border-radius: 18px;
+           padding: 30px 28px; box-shadow: var(--shadow);
+           text-align: center; }
+  .login .zw { display: inline-grid; place-items: center; width: 44px;
+               height: 44px; border-radius: 13px; margin-bottom: 12px;
+               background: linear-gradient(135deg, var(--accent),
+                                           var(--accent-2));
+               color: #fff; font-size: 15px; font-weight: 800; }
+  .login h1 { font-size: 18px; margin: 0 0 4px; }
+  .login p { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+  .login input { width: 100%; margin-bottom: 10px; }
+  .login button { width: 100%; }
+  #err { color: var(--bad); margin-top: 10px; font-size: 13px;
+         min-height: 18px; }
+
+  .pane { display: none; }
+  .pane.on { display: block; }
+
+  /* ---------- cards ---------- */
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+       color: var(--muted); margin: 26px 0 10px; font-weight: 700; }
+  h2:first-child { margin-top: 0; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr);
+           gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--border);
+          border-radius: 15px; padding: 15px 17px;
+          box-shadow: var(--shadow); }
+  .card .n { font-size: 24px; font-weight: 800; letter-spacing: -.02em;
+             line-height: 1.25; overflow-wrap: anywhere; }
+  .card .l { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .card .sub { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+               font-size: 11.5px; color: var(--muted); }
+  .card .sub span { background: var(--hover); border-radius: 7px;
+                    padding: 2px 8px; white-space: nowrap; }
+  .card .sub b { color: var(--ink); font-weight: 700; }
+  .card.hero .sub span { background: rgba(255,255,255,.16); }
+  .card.hero .sub b { color: #fff; }
+  .card.hero { background: linear-gradient(135deg, var(--accent),
+                                           var(--accent-2));
+               border: none; color: #fff; }
+  .card.hero .l { color: rgba(255,255,255,.75); }
+  .skel .n { color: transparent; background: var(--hover);
+             border-radius: 7px; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .45; } }
+
+  /* ---------- chart ---------- */
+  .chart { background: var(--card); border: 1px solid var(--border);
+           border-radius: 15px; padding: 18px 18px 10px;
+           box-shadow: var(--shadow); }
+  .chart .bars { display: flex; align-items: flex-end; gap: 6px;
+                 height: 120px; }
+  .cbar { flex: 1; display: flex; flex-direction: column;
+          align-items: center; gap: 5px; height: 100%;
+          justify-content: flex-end; min-width: 0; }
+  .cbar .fill { width: 100%; max-width: 34px; border-radius: 6px 6px 3px 3px;
+                background: linear-gradient(180deg, var(--accent-2),
+                                            var(--accent));
+                position: relative; overflow: hidden; min-height: 2px;
+                transition: height .4s ease; }
+  .cbar .errfill { position: absolute; bottom: 0; left: 0; right: 0;
+                   background: var(--bad); opacity: .85; }
+  .cbar span { font-size: 10.5px; color: var(--muted); }
+
+  /* ---------- tables ---------- */
+  .tblwrap { background: var(--card); border: 1px solid var(--border);
+             border-radius: 15px; overflow: auto;
+             box-shadow: var(--shadow); max-height: 65vh; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { text-align: left; padding: 9px 14px;
+           border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td.q { white-space: normal; overflow-wrap: anywhere; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--hover); }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+       color: var(--muted); position: sticky; top: 0; z-index: 1;
+       background: var(--card); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .pill { display: inline-block; padding: 1px 9px; border-radius: 99px;
+          font-size: 11.5px; font-weight: 700; }
+  .pill.free { background: var(--hover); color: var(--muted); }
+  .pill.plus { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill.pro  { background: var(--accent); color: #fff; }
+  .pill.err  { background: rgba(220, 38, 38, .12); color: var(--bad); }
+  .pill.ok   { background: rgba(22, 163, 74, .12); color: var(--good); }
+
+  /* ---------- forms ---------- */
+  input, select { font: inherit; font-size: 13.5px; padding: 9px 13px;
+                  border-radius: 10px; border: 1px solid var(--border);
+                  background: var(--card); color: var(--ink); }
+  input:focus, select:focus { outline: 2px solid var(--accent);
+                              outline-offset: -1px; }
+  button.go { font: inherit; font-size: 13.5px; padding: 9px 16px;
+              border-radius: 10px; border: none; background: var(--accent);
+              color: #fff; cursor: pointer; font-weight: 600; }
+  button.go:hover { filter: brightness(1.08); }
+  .row-form { display: flex; gap: 8px; flex-wrap: wrap;
+              align-items: center; margin-bottom: 14px; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 6px 0 12px; }
+  .msg { font-size: 13px; margin-left: 6px; }
+  .msg.ok { color: var(--good); }
+  .msg.bad { color: var(--bad); }
+
+  /* ---------- errors ---------- */
+  .errcard { background: var(--card); border: 1px solid var(--border);
+             border-left: 3px solid var(--bad); border-radius: 12px;
+             padding: 11px 14px; margin-bottom: 10px; font-size: 13px; }
+  .errcard .ts { color: var(--muted); font-size: 12px; }
+  .errcard .e { color: var(--bad); overflow-wrap: anywhere; }
+  .errcard .q { margin-top: 3px; overflow-wrap: anywhere; }
+  .empty { color: var(--muted); font-size: 13.5px; padding: 20px;
+           text-align: center; }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 860px) {
+    .shell.on { display: block; }
+    .side { width: auto; height: auto; position: sticky; top: 0;
+            z-index: 20; flex-direction: row; align-items: center;
+            padding: 10px 12px; gap: 6px; overflow-x: auto; }
+    .side .brand { padding: 0 6px 0 0; }
+    .side .brand .bt { display: none; }
+    .nav { flex-direction: row; flex: initial; }
+    .nav button { padding: 7px 10px; white-space: nowrap; }
+    .nav svg { display: none; }
+    .side .foot { border: none; padding: 0; margin: 0; }
+    .main { padding: 18px 14px 50px; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .stamp, .auto { display: none; }
+    .cbar:nth-child(odd) span { visibility: hidden; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <div class="zw">ZW</div>
+  <h1>OneGov admin</h1>
+  <p>Enter the admin token to view the dashboard.</p>
+  <input id="token" type="password" placeholder="Admin token"
+         onkeydown="if (event.key === 'Enter') go()">
+  <button class="go" onclick="go()">Open dashboard</button>
+  <div id="err"></div>
+</div>
+
+<div class="shell" id="shell">
+  <aside class="side">
+    <div class="brand"><span class="zw">ZW</span>
+      <span class="bt">OneGov admin</span></div>
+    <nav class="nav" id="nav">
+      <button class="on" data-pane="overview" onclick="showPane('overview')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/>
+          <rect x="14" y="3" width="7" height="5" rx="1"/>
+          <rect x="14" y="12" width="7" height="9" rx="1"/>
+          <rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Overview</button>
+      <button data-pane="users" onclick="showPane('users')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"><circle cx="9" cy="8" r="3.5"/>
+          <path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/>
+          <path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M17.8 15.4c2 .7 3.3 2.2 3.7 4.6"/>
+        </svg>
+        Users</button>
+      <button data-pane="activity" onclick="showPane('activity')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        Activity</button>
+      <button data-pane="errors" onclick="showPane('errors')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"><path d="M12 3l10 18H2z"/>
+          <path d="M12 10v5M12 18.2v.1"/></svg>
+        Errors<span class="badge" id="err-badge" style="display:none"></span>
+      </button>
+      <button data-pane="scrapers" onclick="showPane('scrapers')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"><circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a7.7 7.7 0 0 0 .1-6l-2.2.5a5.7 5.7 0 0 0-2.8-2.8
+                   l.5-2.2a7.7 7.7 0 0 0-6 .1l.5 2.1a5.7 5.7 0 0 0-2.8 2.8
+                   l-2.2-.5a7.7 7.7 0 0 0 .1 6l2.1-.5a5.7 5.7 0 0 0 2.8 2.8
+                   l-.5 2.2a7.7 7.7 0 0 0 6-.1l-.5-2.1a5.7 5.7 0 0 0
+                   2.8-2.8z"/></svg>
+        Scrapers</button>
+    </nav>
+    <div class="foot">
+      <div class="nav">
+        <button onclick="signOut()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1
+                     2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="mainbar">
+      <h1 id="pane-title">Overview</h1>
+      <span class="spacer"></span>
+      <label class="auto"><input type="checkbox" id="auto-ck"
+        onchange="autoRefresh()"> Auto-refresh</label>
+      <span class="stamp" id="stamp"></span>
+      <button class="tbtn" onclick="downloadBackup()">DB backup</button>
+      <button class="tbtn primary" onclick="refresh()">Refresh</button>
+    </div>
+
+    <!-- Overview -->
+    <div class="pane on" id="pane-overview">
+      <div class="cards">
+        <div class="card hero skel"><div class="n" id="u-total">&ndash;</div>
+          <div class="l">registered users</div>
+          <div class="sub" id="u-plans-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-signups">&ndash;</div>
+          <div class="l">new signups, last 7 days</div>
+          <div class="sub" id="u-signups-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-rev">&ndash;</div>
+          <div class="l">revenue, last 30 days</div>
+          <div class="sub" id="u-rev-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-plans">&ndash;</div>
+          <div class="l">paying subscribers</div>
+          <div class="sub" id="u-paying-sub"></div></div>
+      </div>
+      <h2>Questions per day (last 14 days)</h2>
+      <div class="chart"><div class="bars" id="chart">
+        <div class="empty" style="width:100%">Loading&hellip;</div>
+      </div></div>
+      <h2>Usage</h2>
+      <div class="cards">
+        <div class="card skel"><div class="n" id="u-q">&ndash;</div>
+          <div class="l">questions today, signed-in users</div>
+          <div class="sub" id="u-q-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-traffic">&ndash;</div>
+          <div class="l">visitors today</div>
+          <div class="sub" id="u-traffic-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-api">&ndash;</div>
+          <div class="l">API calls this month</div>
+          <div class="sub" id="u-api-sub"></div></div>
+        <div class="card skel"><div class="n" id="u-watch">&ndash;</div>
+          <div class="l">active watch alerts</div></div>
+      </div>
+      <h2>Answering</h2>
+      <div class="cards">
+        <div class="card skel"><div class="n" id="c-chats">&ndash;</div>
+          <div class="l">recent chats analysed</div></div>
+        <div class="card skel"><div class="n" id="c-errors">&ndash;</div>
+          <div class="l">failed answers</div></div>
+        <div class="card skel"><div class="n" id="c-ms">&ndash;</div>
+          <div class="l">avg answer time</div></div>
+        <div class="card skel"><div class="n" id="c-fb">&ndash;</div>
+          <div class="l">helpful votes</div>
+          <div class="sub" id="c-fb-sub"></div></div>
+      </div>
+      <h2>Top questions</h2>
+      <div class="tblwrap">
+        <table id="top">
+          <thead><tr><th>Question</th>
+            <th class="num">Count</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="pane" id="pane-users">
+      <h2>Change a plan</h2>
+      <div class="row-form">
+        <input id="sp-email" type="email" placeholder="user@email.com"
+               style="min-width:230px">
+        <select id="sp-plan">
+          <option value="free">free</option>
+          <option value="plus">plus</option>
+          <option value="pro">pro</option>
+        </select>
+        <button class="go" onclick="setPlan()">Set plan</button>
+        <span class="msg" id="sp-msg"></span>
+      </div>
+      <h2>Latest signups <span id="u-count"
+          style="text-transform:none;letter-spacing:0"></span></h2>
+      <div class="row-form">
+        <input id="u-search" type="search" placeholder="Search email&hellip;"
+               style="min-width:230px" oninput="filterUsers()">
+        <select id="u-plan-f" onchange="filterUsers()">
+          <option value="">all plans</option>
+          <option value="free">free</option>
+          <option value="plus">plus</option>
+          <option value="pro">pro</option>
+        </select>
+      </div>
+      <div class="tblwrap">
+        <table id="users-tbl">
+          <thead><tr><th>Email</th><th>Plan</th><th>Created</th>
+            <th></th></tr></thead>
+          <tbody><tr><td colspan="4" class="empty">Loading&hellip;
+          </td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="pane" id="pane-activity">
+      <h2>Recent questions (latest 100)</h2>
+      <div class="tblwrap">
+        <table id="act-tbl">
+          <thead><tr><th>Time (UTC)</th><th>Question</th>
+            <th class="num">ms</th><th>Status</th></tr></thead>
+          <tbody><tr><td colspan="4" class="empty">Loading&hellip;
+          </td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    <div class="pane" id="pane-errors">
+      <h2>Recent errors</h2>
+      <div id="errors"><div class="empty">Loading&hellip;</div></div>
+    </div>
+
+    <!-- Scrapers -->
+    <div class="pane" id="pane-scrapers">
+      <h2>Scraper credentials</h2>
+      <p class="hint">Cookie + User-Agent copied from your browser
+        (DevTools &rarr; Network &rarr; request headers). Parlzim's
+        cf_clearance expires after ~30 min, so paste it right before
+        running the scraper.</p>
+      <div style="display:grid;gap:8px;max-width:640px">
+        <input id="parlzim_cookie" placeholder="PARLZIM_COOKIE">
+        <input id="parlzim_ua" placeholder="PARLZIM_UA">
+        <input id="veritas_cookie" placeholder="VERITAS_COOKIE">
+        <input id="veritas_ua" placeholder="VERITAS_UA">
+        <input id="lawsafrica_token"
+               placeholder="LAWSAFRICA_TOKEN (api.laws.africa)">
+        <div><button class="go" onclick="saveCreds()">Save</button>
+          <span class="msg" id="creds-msg"></span></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let TOKEN = '';
+let autoTimer = null;
+
+const TITLES = { overview: 'Overview', users: 'Users',
+                 activity: 'Activity', errors: 'Errors',
+                 scrapers: 'Scrapers' };
+
+function showPane(name) {
+  document.querySelectorAll('#nav button').forEach(t =>
+    t.classList.toggle('on', t.dataset.pane === name));
+  document.querySelectorAll('.pane').forEach(p =>
+    p.classList.toggle('on', p.id === 'pane-' + name));
+  document.getElementById('pane-title').textContent =
+    TITLES[name] || name;
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;',
+    '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function api(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const r = await fetch(path + sep + 'token=' + encodeURIComponent(TOKEN));
+  if (!r.ok) throw new Error(r.status === 403
+    ? 'Wrong token (or ADMIN_TOKEN not set on the server)'
+    : 'Error ' + r.status);
+  return r.json();
+}
+
+async function go() {
+  TOKEN = document.getElementById('token').value.trim();
+  document.getElementById('err').textContent = '';
+  try {
+    await refresh();
+  } catch (e) {
+    document.getElementById('err').textContent = e.message;
+    return;
+  }
+  localStorage.setItem('onegov_admin', TOKEN);
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('shell').classList.add('on');
+}
+
+async function refresh() {
+  const s = await api('/api/admin/stats');
+  renderStats(s);
+  document.getElementById('stamp').textContent =
+    'Updated ' + new Date().toLocaleTimeString();
+  // Non-critical panels load in the background.
+  loadUsers().catch(() => {});
+  loadActivity().catch(() => {});
+  loadCreds().catch(() => {});
+}
+
+function autoRefresh() {
+  clearInterval(autoTimer);
+  autoTimer = null;
+  if (document.getElementById('auto-ck').checked)
+    autoTimer = setInterval(() => refresh().catch(() => {}), 60000);
+}
+
+function renderStats(s) {
+  const u = s.users || {};
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    el.textContent = v;
+    el.closest('.card')?.classList.remove('skel');
+  };
+  const sub = (id, html) =>
+    document.getElementById(id).innerHTML = html;
+  const p = u.plans || {};
+  set('u-total', u.users_total ?? '\u2013');
+  sub('u-plans-sub',
+    `<span>free <b>${p.free ?? 0}</b></span>` +
+    `<span>plus <b>${p.plus ?? 0}</b></span>` +
+    `<span>pro <b>${p.pro ?? 0}</b></span>`);
+  set('u-signups', u.signups ? u.signups.last_7d : '\u2013');
+  sub('u-signups-sub', u.signups
+    ? `<span>last 30 days <b>${u.signups.last_30d}</b></span>` : '');
+  set('u-rev', u.revenue_usd
+    ? '$' + u.revenue_usd.last_30d : '\u2013');
+  sub('u-rev-sub', u.revenue_usd
+    ? `<span>all time <b>$${u.revenue_usd.all_time}</b></span>` : '');
+  set('u-plans', (p.plus ?? 0) + (p.pro ?? 0));
+  sub('u-paying-sub',
+    `<span>plus <b>${p.plus ?? 0}</b></span>` +
+    `<span>pro <b>${p.pro ?? 0}</b></span>`);
+  set('u-q', u.questions_today_logged_in ?? '\u2013');
+  sub('u-q-sub', `<span>anonymous, all time <b>${
+    u.questions_anonymous_total ?? '\u2013'}</b></span>`);
+  set('u-traffic', u.traffic ? u.traffic.today.visitors : '\u2013');
+  sub('u-traffic-sub', u.traffic
+    ? `<span>7 days <b>${u.traffic.last_7d.visitors}</b></span>` +
+      `<span>30 days <b>${u.traffic.last_30d.visitors}</b></span>` : '');
+  if (u.traffic)
+    document.getElementById('u-traffic').title =
+      'Pageviews: ' + u.traffic.today.pageviews + ' today, ' +
+      u.traffic.last_7d.pageviews + ' (7d), ' +
+      u.traffic.last_30d.pageviews + ' (30d)';
+  set('u-api', u.api ? u.api.calls_this_month : '\u2013');
+  sub('u-api-sub', u.api
+    ? `<span>active keys <b>${u.api.active_keys}</b></span>` : '');
+  set('u-watch', u.watches_total ?? '\u2013');
+  set('c-chats', s.chats);
+  set('c-errors', s.errors);
+  set('c-ms', s.avg_ms >= 1000
+    ? (s.avg_ms / 1000).toFixed(1) + 's' : s.avg_ms + 'ms');
+  set('c-fb', s.feedback.up);
+  sub('c-fb-sub',
+    `<span>not helpful <b>${s.feedback.down}</b></span>`);
+  const badge = document.getElementById('err-badge');
+  badge.style.display = s.errors ? '' : 'none';
+  badge.textContent = s.errors || '';
+
+  const tb = document.querySelector('#top tbody');
+  tb.innerHTML = (s.top_questions || []).map(({ q, n }) =>
+    `<tr><td class="q">${esc(q)}</td>
+     <td class="num">${n}</td></tr>`).join('')
+    || '<tr><td colspan="2" class="empty">No questions yet</td></tr>';
+
+  const errBox = document.getElementById('errors');
+  errBox.innerHTML = (s.recent_errors || []).length
+    ? s.recent_errors.map(e =>
+        `<div class="errcard">
+           <div class="ts">${esc(e.ts)}</div>
+           <div class="e">${esc(e.error || '')}</div>
+           <div class="q">Q: ${esc(e.question)}</div>
+         </div>`).join('')
+    : '<div class="empty">No recent errors \u2713</div>';
+}
+
+/* ----- questions/day chart, built from the activity log ----- */
+function renderChart(rows) {
+  const days = [...Array(14)].map((_, i) => new Date(
+    Date.now() - (13 - i) * 86400e3).toISOString().slice(0, 10));
+  const counts = {}, errs = {};
+  for (const e of rows) {
+    const d = (e.ts || '').slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+    if (e.error) errs[d] = (errs[d] || 0) + 1;
+  }
+  const max = Math.max(1, ...days.map(d => counts[d] || 0));
+  document.getElementById('chart').innerHTML = days.map(d => {
+    const n = counts[d] || 0, er = errs[d] || 0;
+    const h = Math.round(n / max * 100);
+    const eh = n ? Math.round(er / n * h) : 0;
+    return `<div class="cbar" title="${d}: ${n} question${n === 1 ? '' : 's'}${
+        er ? ', ' + er + ' error' + (er === 1 ? '' : 's') : ''}">
+      <div class="fill" style="height:${Math.max(h, n ? 4 : 2)}%">
+        <div class="errfill" style="height:${eh}%"></div></div>
+      <span>${d.slice(8)}</span></div>`;
+  }).join('');
+}
+
+/* ----- users ----- */
+async function loadUsers() {
+  const rows = await api('/api/admin/users?n=200');
+  document.getElementById('u-count').textContent =
+    '(' + rows.length + ')';
+  document.querySelector('#users-tbl tbody').innerHTML =
+    rows.map(r =>
+      `<tr data-email="${esc(r.email.toLowerCase())}"
+           data-plan="${esc(r.plan)}">
+       <td>${esc(r.email)}</td>
+       <td><span class="pill ${esc(r.plan)}">${esc(r.plan)}</span></td>
+       <td>${esc((r.created || '').slice(0, 16).replace('T', ' '))}</td>
+       <td><button class="tbtn" style="padding:3px 10px;font-size:12px"
+         onclick="pickUser('${esc(r.email)}')">Set plan</button></td>
+       </tr>`).join('')
+    || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
+  filterUsers();
+}
+
+function filterUsers() {
+  const q = document.getElementById('u-search').value.trim().toLowerCase();
+  const pf = document.getElementById('u-plan-f').value;
+  let shown = 0;
+  document.querySelectorAll('#users-tbl tbody tr').forEach(tr => {
+    if (!tr.dataset.email) return;
+    const hit = (!q || tr.dataset.email.includes(q)) &&
+                (!pf || tr.dataset.plan === pf);
+    tr.style.display = hit ? '' : 'none';
+    if (hit) shown++;
+  });
+  const total = document.querySelectorAll(
+    '#users-tbl tbody tr[data-email]').length;
+  document.getElementById('u-count').textContent = (q || pf)
+    ? '(' + shown + ' of ' + total + ')' : '(' + total + ')';
+}
+
+function pickUser(email) {
+  document.getElementById('sp-email').value = email;
+  document.getElementById('sp-email')
+    .scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function setPlan() {
+  const email = document.getElementById('sp-email').value.trim();
+  const plan = document.getElementById('sp-plan').value;
+  const msg = document.getElementById('sp-msg');
+  msg.className = 'msg';
+  if (!email) { msg.textContent = 'Enter an email.'; return; }
+  try {
+    const r = await fetch('/api/admin/set-plan', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: TOKEN, email, plan }) });
+    const out = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof out.detail === 'string'
+      ? out.detail : 'Error ' + r.status);
+    msg.className = 'msg ok';
+    msg.textContent = email + ' \u2192 ' + plan + ' \u2713';
+    loadUsers().catch(() => {});
+  } catch (e) {
+    msg.className = 'msg bad';
+    msg.textContent = e.message;
+  }
+}
+
+/* ----- activity (also feeds the chart) ----- */
+async function loadActivity() {
+  const rows = await api('/api/admin/log?n=1000');
+  renderChart(rows);
+  const latest = rows.slice(-100).reverse();
+  document.querySelector('#act-tbl tbody').innerHTML =
+    latest.map(e =>
+      `<tr><td>${esc((e.ts || '').slice(5, 16).replace('T', ' '))}</td>
+       <td class="q">${esc(e.question)}</td>
+       <td class="num">${e.ms ?? ''}</td>
+       <td>${e.error
+         ? `<span class="pill err" title="${esc(e.error)}">error</span>`
+         : '<span class="pill ok">ok</span>'}</td></tr>`).join('')
+    || '<tr><td colspan="4" class="empty">No activity yet</td></tr>';
+}
+
+function downloadBackup() {
+  location.href = '/api/admin/backup?token=' + encodeURIComponent(TOKEN);
+}
+
+function signOut() {
+  localStorage.removeItem('onegov_admin');
+  location.reload();
+}
+
+/* ----- scraper creds ----- */
+const CRED_KEYS = ['PARLZIM_COOKIE', 'PARLZIM_UA',
+                   'VERITAS_COOKIE', 'VERITAS_UA',
+                   'LAWSAFRICA_TOKEN'];
+async function loadCreds() {
+  const set = await api('/api/admin/scraper-creds');
+  for (const k of CRED_KEYS) {
+    const el = document.getElementById(k.toLowerCase());
+    if (set[k]) el.placeholder = k + ' (set: paste to replace)';
+  }
+}
+async function saveCreds() {
+  const values = {};
+  for (const k of CRED_KEYS) {
+    const v = document.getElementById(k.toLowerCase()).value.trim();
+    if (v) values[k] = v;
+  }
+  const msg = document.getElementById('creds-msg');
+  msg.className = 'msg';
+  if (!Object.keys(values).length) {
+    msg.textContent = 'Nothing to save'; return;
+  }
+  const r = await fetch('/api/admin/scraper-creds', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: TOKEN, values }),
+  });
+  const out = await r.json().catch(() => ({}));
+  if (r.ok) {
+    msg.className = 'msg ok';
+    msg.textContent = 'Saved: ' + out.saved.join(', ');
+    for (const k of Object.keys(values)) {
+      const el = document.getElementById(k.toLowerCase());
+      el.value = ''; el.placeholder = k + ' (set: paste to replace)';
+    }
+  } else {
+    msg.className = 'msg bad';
+    msg.textContent = (typeof out.detail === 'string'
+      ? out.detail : 'Error ' + r.status);
+  }
+}
+
+const saved = localStorage.getItem('onegov_admin');
+if (saved) { document.getElementById('token').value = saved; go(); }
+</script>
+</body>
+</html>

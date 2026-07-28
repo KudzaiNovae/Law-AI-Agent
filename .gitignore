@@ -1,0 +1,25 @@
+# secrets — never commit
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# runtime data (users, payments, logs) and backups
+data/onegov.db
+data/chat_log.jsonl
+data/feedback.jsonl
+backups/
+server.log
+*.log
+
+# large corpus artifacts (rebuilt by ingest/index; too big for git)
+data/raw/
+data/chroma/
+data/processed/
+vendor/
+
+# misc
+*.tmp
+.DS_Store

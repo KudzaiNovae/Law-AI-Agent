@@ -1,0 +1,23 @@
+.env
+.venv
+__pycache__
+**/__pycache__
+*.tmp
+.git
+.github
+README.md
+DEPLOY.md
+tests
+# runtime data must not be baked into the image
+data/chat_log.jsonl
+data/feedback.jsonl
+data/onegov.db
+data/processed/graph_cache
+data/quarantine
+backups
+data/backups
+scripts
+server.log
+*.log
+*.pyc
+.DS_Store
