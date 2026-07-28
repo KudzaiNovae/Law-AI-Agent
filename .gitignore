@@ -14,8 +14,8 @@ backups/
 server.log
 *.log
 
-# large corpus artifacts (rebuilt by ingest/index; too big for git)
-data/raw/
+# index artifacts (rebuilt from data/raw by ingest+index; files exceed
+# GitHub 100MB limit). data/raw IS tracked: it is the source corpus.
 data/chroma/
 data/processed/
 vendor/
