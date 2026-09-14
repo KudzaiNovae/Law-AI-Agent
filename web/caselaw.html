@@ -339,7 +339,7 @@
       <select id="court" title="Court division">
         <option value="">Division</option></select>
       <select id="year"><option value="">Year</option></select>
-      <select id="source"><option value="">Source</option></select>
+      <select id="source" hidden><option value="">Source</option></select>
       <button class="clear" id="clear">✕ Clear filters</button>
     </div>
   </div>
@@ -355,9 +355,8 @@
   </div>
 
   <footer>
-    Judgments sourced from the Judicial Service Commission, ZimLII,
-    Law Portal Zimbabwe and Veritas. Documents are provided as published
-    by their sources. <a href="/terms.html">Terms</a> ·
+    Judgments are sourced from official public records and provided as
+    published. <a href="/terms.html">Terms</a> ·
     <a href="/privacy.html">Privacy</a>
   </footer>
 </div>
@@ -608,8 +607,8 @@ function render(d) {
         : '') +
       '</div>' +
       '<div class="info">' + info.join('<span>·</span>') +
-      ' <span class="badge' + (official ? ' official' : '') + '">' +
-      esc(SRC_LABEL[i.source] || i.source) + '</span></div>' + preview +
+      (official ? ' <span class="badge official">Official</span>' : '') +
+      '</div>' + preview +
       '<div class="actions">' +
       '<button class="alink" data-read="' + n + '">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -617,9 +616,6 @@ function render(d) {
       '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 ' +
       '6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/></svg>' +
       (isPdf ? "View PDF" : "Read judgment") + '</button>' +
-      (i.original_url
-        ? '<a class="alink plain" target="_blank" href="' +
-          i.original_url + '">Original document</a>' : '') +
       '<a class="alink plain" href="' + askUrl(i) + '">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
       'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +

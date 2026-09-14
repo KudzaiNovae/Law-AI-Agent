@@ -215,6 +215,12 @@ def main() -> None:
                 print(f"  no file link: {title[:60]}")
                 continue
             stem = prefix_for(title) + slugify(f"{date} {title}")
+            # normalise JSC slugs to the Veritas naming convention so
+            # ingest.run derives clean titles ("SI 2026-110 ...")
+            stem = re.sub(r"^si_s_?i_(\d{1,4})([a-z]?)_of_(\d{4})_",
+                          r"si_si_\3_\1\2_", stem)
+            stem = re.sub(r"^act_act_no_(\d{1,4})_of_(\d{4})_",
+                          r"act_\2_\1_", stem)
             dest = RAW_DIR / f"{stem}.pdf"
             if dest.exists():
                 continue

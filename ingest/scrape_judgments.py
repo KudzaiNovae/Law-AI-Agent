@@ -188,6 +188,21 @@ def scrape_zimlii(manifest: dict, years: list[int]) -> int:
     return new
 
 
+def clean_zimlii_content(content) -> None:
+    """Strip ZimLII page chrome from a div.document-content (in place):
+    skip-links, the Summary/TOC/Search navigation panel (which duplicates
+    the Held + flynote we already put in the stub header), and make
+    site-relative links absolute so they don't resolve against our own
+    server when the file is viewed locally."""
+    for sel in (".skip-links", "#navigation-content", "#navigation-column",
+                "[data-offcanvas-body]", "nav", ".toc"):
+        for el in content.select(sel):
+            el.decompose()
+    for a in content.find_all("a", href=True):
+        if a["href"].startswith("/"):
+            a["href"] = "https://zimlii.org" + a["href"]
+
+
 def upgrade_zimlii_full(manifest: dict, limit: int | None) -> int:
     """Replace zimlii summary stubs with full judgment text.
 
@@ -271,6 +286,8 @@ def upgrade_zimlii_full(manifest: dict, limit: int | None) -> int:
             continue
         soup = BeautifulSoup(r.text, "html.parser")
         content = soup.select_one("div.document-content")
+        if content:
+            clean_zimlii_content(content)
         text = content.get_text(" ", strip=True) if content else ""
         fetch_pdf(meta, fname)
         if len(text) < 1200:      # PDF-only judgment or empty shell
@@ -283,8 +300,7 @@ def upgrade_zimlii_full(manifest: dict, limit: int | None) -> int:
         e = html_mod.escape
         (RAW_DIR / fname).write_text(
             stub + "\n<h2>Full judgment</h2>\n" + str(content)
-            + f"\n<p>Source: {e(url)}</p></body></html>",
-            encoding="utf-8")
+            + "</body></html>", encoding="utf-8")
         meta["full_text"] = "yes"
         new += 1
         if new % 25 == 0:

@@ -1619,6 +1619,13 @@ def _caselaw_items() -> list[dict]:
             if nm:
                 citation = nm.group(0)
         date = m.get("date", "")
+        if date and not re.match(r"\d{4}-\d{2}-\d{2}", date):
+            try:   # ZimLII dates are "20 November 2026" — normalise so
+                from datetime import datetime as _dt   # sorting works
+                date = _dt.strptime(date.strip(),
+                                    "%d %B %Y").strftime("%Y-%m-%d")
+            except ValueError:
+                pass
         ym = _YEAR_RE.search(date) or _YEAR_RE.search(title)
         original = m.get("original", "")
         summary = flynote = ""

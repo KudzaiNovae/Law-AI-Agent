@@ -83,6 +83,10 @@ def infer_meta(path: Path) -> dict:
     title = re.sub(r"^(Si|Gn)\s+(\d{4})\s+(\d+)\s*",
                    lambda m: f"{m.group(1).upper()} {m.group(2)}-{m.group(3)} ",
                    title)
+    # act_2025_3_x -> "X (No. 3 of 2025)"
+    am = re.match(r"^(\d{4})\s+(\d+[A-Za-z]?)\s+(.*)$", title)
+    if doc_type == "act" and am:
+        title = f"{am.group(3)} (No. {am.group(2)} of {am.group(1)})"
     return {"title": title, "doc_type": doc_type}
 
 
