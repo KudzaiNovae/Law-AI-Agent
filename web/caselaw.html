@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Law | OneGov AI — Zimbabwe court judgments</title>
+<meta name="description" content="Search Zimbabwe court judgments — Constitutional Court, Supreme Court, High Court and Labour Court. Read the full judgments and ask AI about the case law.">
+<link rel="canonical" href="https://onegovai.app/caselaw.html">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#f9f9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131316" media="(prefers-color-scheme: dark)">
+<style>
+  :root {
+    --bg: #f9f9fb; --ink: #18181b; --muted: #71717a; --border: #e4e4e7;
+    --card: #fff; --accent: #4f46e5; --accent-ink: #4338ca;
+    --accent-soft: #eef0fe; --ring: rgba(99,102,241,.25);
+    --grad: linear-gradient(135deg, #4f46e5, #8b5cf6);
+    --shadow: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 32px rgba(0,0,0,.10);
+    --glass: rgba(249,249,251,.82);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #131316; --ink: #ececee; --muted: #9d9da6;
+      --border: #27272c; --card: #1a1a1f;
+      --accent: #818cf8; --accent-ink: #a5b4fc; --accent-soft: #232345;
+      --ring: rgba(129,140,248,.3); --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-lg: 0 10px 32px rgba(0,0,0,.55);
+      --grad: linear-gradient(135deg, #6366f1, #a78bfa);
+      --glass: rgba(19,19,22,.82);
+    }
+  }
+  html { color-scheme: light dark; scroll-behavior: smooth; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.6;
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(700px 460px at 85% -10%, var(--ring), transparent 70%),
+      radial-gradient(560px 400px at -10% 30%, var(--ring), transparent 70%);
+    opacity: .5;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; width: 100%; }
+
+  /* ---------- Nav ---------- */
+  nav { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+  .mark { width: 36px; height: 36px; border-radius: 11px; color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 800; font-size: 13px; background: var(--grad);
+          box-shadow: 0 3px 12px var(--ring); }
+  .brand { font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+  .beta-tag { display: inline-block; vertical-align: 3px; margin-left: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-soft); border-radius: 99px; padding: 2px 8px; }
+  nav .links { margin-left: auto; display: flex; gap: 22px;
+    align-items: center; font-size: 14px; color: var(--muted);
+    font-weight: 500; }
+  nav .links a:hover { color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 8px;
+         background: var(--grad); color: #fff; font-weight: 700;
+         font-size: 14px; border-radius: 12px; padding: 10px 18px;
+         box-shadow: 0 5px 18px var(--ring); border: none; cursor: pointer;
+         transition: transform .15s, box-shadow .15s; }
+  .btn:hover { transform: translateY(-2px);
+               box-shadow: 0 9px 26px var(--ring); }
+
+  /* ---------- Hero ---------- */
+  header { padding: 30px 0 6px; }
+  .eyebrow { display: inline-block; font-size: 12px; font-weight: 700;
+             letter-spacing: .06em; text-transform: uppercase;
+             color: var(--accent-ink); background: var(--accent-soft);
+             border-radius: 999px; padding: 5px 13px; margin-bottom: 14px; }
+  h1 { font-size: clamp(26px, 4.5vw, 42px); font-weight: 900;
+       letter-spacing: -.03em; line-height: 1.12; margin-bottom: 10px; }
+  h1 .g { background: var(--grad); -webkit-background-clip: text;
+          background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 15.5px; max-width: 680px; }
+  .hero-stats { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+  .stat { display: inline-flex; align-items: baseline; gap: 6px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 7px 15px; font-size: 12.5px;
+    color: var(--muted); box-shadow: var(--shadow); }
+  .stat strong { color: var(--ink); font-size: 14px; font-weight: 800;
+                 letter-spacing: -.01em; }
+
+  /* ---------- Sticky filter bar ---------- */
+  .filters { position: sticky; top: -1px; z-index: 30;
+    margin: 22px -22px 6px;
+    padding: 12px 22px; background: var(--glass);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s, box-shadow .2s; }
+  .filters.stuck { border-color: var(--border);
+    box-shadow: 0 6px 18px rgba(0,0,0,.05); }
+  .search-row { display: flex; gap: 10px; }
+  .search-box { flex: 1; position: relative; }
+  .search-box svg { position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); width: 16px; height: 16px;
+    color: var(--muted); pointer-events: none; }
+  .search-box input {
+    width: 100%; font: inherit; font-size: 14.5px; color: var(--ink);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 13px; padding: 12px 74px 12px 40px;
+    box-shadow: var(--shadow); outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search-box input:focus { border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring); }
+  .search-box .kbd { position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%); font-size: 11px; font-weight: 600;
+    color: var(--muted); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 7px; background: var(--bg);
+    pointer-events: none; }
+  .sel-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+    align-items: center; }
+  .gpill { border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); font-size: 13px; font-weight: 600;
+    border-radius: 999px; padding: 7px 15px; cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: color .12s, border-color .12s, background .12s,
+                transform .12s; }
+  .gpill:hover { color: var(--ink); border-color: var(--accent);
+    transform: translateY(-1px); }
+  .gpill.on { color: #fff; background: var(--grad); border-color:
+    transparent; box-shadow: 0 4px 14px var(--ring); }
+  .sel-row select {
+    font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 7px 11px; box-shadow: var(--shadow);
+    max-width: 200px; cursor: pointer; outline: none;
+  }
+  .sel-row select:focus, .sel-row select.set { color: var(--accent-ink);
+    border-color: var(--accent); }
+  .sel-row .clear { margin-left: auto; font-size: 12.5px; font-weight: 600;
+    color: var(--accent); cursor: pointer; display: none; border: none;
+    background: none; }
+  .sel-row .clear:hover { text-decoration: underline; }
+
+  .count-row { color: var(--muted); font-size: 13px; margin: 8px 2px 12px;
+    min-height: 20px; }
+  .count-row strong { color: var(--ink); }
+
+  /* ---------- Result cards ---------- */
+  .case { position: relative; background: var(--card);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 17px 19px 15px 22px; margin-bottom: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    animation: rise .3s ease both; }
+  .case:hover { transform: translateY(-2px); border-color: var(--accent);
+    box-shadow: var(--shadow-lg); }
+  .case::before { content: ""; position: absolute; left: 0; top: 0;
+    bottom: 0; width: 3px; background: var(--cc, var(--accent));
+    opacity: .55; transition: opacity .15s, width .15s; }
+  .case:hover::before { opacity: 1; width: 4px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; } }
+  .case .trow { display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 7px; }
+  .case .title { font-weight: 700; font-size: 15px; line-height: 1.45;
+    letter-spacing: -.01em; cursor: pointer; flex: 1; }
+  .case .title:hover { color: var(--accent-ink); }
+  .cite-chip { flex-shrink: 0; font-family: ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 600;
+    color: var(--accent-ink); background: var(--accent-soft);
+    border: none; border-radius: 8px; padding: 4px 9px; cursor: pointer;
+    white-space: nowrap; transition: transform .12s; }
+  .cite-chip:hover { transform: translateY(-1px); }
+  .cite-chip.copied { background: #16a34a; color: #fff; }
+  .case .info { color: var(--muted); font-size: 12.5px; display: flex;
+    flex-wrap: wrap; align-items: center; gap: 5px 12px;
+    margin-bottom: 10px; }
+  .case .info b { color: var(--ink); font-weight: 600; display:
+    inline-flex; align-items: center; gap: 6px; }
+  .cdot { width: 7px; height: 7px; border-radius: 50%;
+    background: var(--cc, var(--accent)); flex-shrink: 0; }
+  .badge { display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 99px; padding: 2px 9px; }
+  .badge.official::before { content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: #22c55e; }
+  .case .preview { color: var(--muted); font-size: 13.5px;
+    line-height: 1.55; margin: 0 0 11px;
+    border-left: 2px solid var(--border); padding-left: 11px; }
+  .case .preview b { color: var(--ink); font-weight: 600; }
+  .case .fly { display: block; font-size: 12.5px; margin-top: 4px;
+    color: var(--accent-ink); }
+  .case .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .alink { display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 10px; padding: 7px 13px;
+    transition: transform .12s, box-shadow .12s; cursor: pointer;
+    border: none; }
+  .alink:hover { transform: translateY(-1px);
+    box-shadow: 0 3px 10px var(--ring); }
+  .alink svg { width: 13px; height: 13px; }
+  .alink.plain { background: transparent; border: 1px solid var(--border);
+    color: var(--muted); box-shadow: none; }
+  .alink.plain:hover { color: var(--ink); border-color: var(--accent); }
+
+  /* ---------- Skeletons ---------- */
+  .skel { border: 1px solid var(--border); border-radius: 16px;
+    background: var(--card); padding: 17px 19px; margin-bottom: 12px; }
+  .sk { border-radius: 7px; background:
+    linear-gradient(90deg, var(--border) 25%, var(--accent-soft) 50%,
+                    var(--border) 75%);
+    background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+  @keyframes shimmer { from { background-position: 200% 0; }
+                       to { background-position: -200% 0; } }
+
+  .empty { text-align: center; color: var(--muted); font-size: 14.5px;
+    padding: 54px 0; }
+  .empty .big { font-size: 34px; display: block; margin-bottom: 10px; }
+
+  /* ---------- Pager ---------- */
+  .pager { display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 24px 0; color: var(--muted); font-size: 13.5px; }
+  .pager button { font-size: 13.5px; font-weight: 600;
+    color: var(--accent-ink); background: var(--card);
+    border: 1px solid var(--border); border-radius: 11px;
+    padding: 9px 18px; cursor: pointer; box-shadow: var(--shadow);
+    transition: transform .12s, border-color .12s; }
+  .pager button:hover:not(:disabled) { transform: translateY(-1px);
+    border-color: var(--accent); }
+  .pager button:disabled { opacity: .35; cursor: default; }
+
+  /* ---------- Reader drawer ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    z-index: 40; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .reader { position: fixed; top: 0; right: 0; bottom: 0; z-index: 41;
+    width: min(880px, 96vw); background: var(--bg);
+    border-left: 1px solid var(--border);
+    box-shadow: -16px 0 48px rgba(0,0,0,.28);
+    transform: translateX(102%);
+    transition: transform .25s cubic-bezier(.32,.72,.24,1);
+    display: flex; flex-direction: column; }
+  .reader.open { transform: none; }
+  .reader-head { display: flex; align-items: flex-start; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    background: var(--card); }
+  .reader-head .rtitle { font-weight: 700; font-size: 14px;
+    line-height: 1.4; flex: 1; }
+  .reader-head .rsub { color: var(--muted); font-size: 12px;
+    font-weight: 400; margin-top: 2px; }
+  .reader-head .alink { flex-shrink: 0; }
+  .reader-close { flex-shrink: 0; width: 32px; height: 32px;
+    border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--muted); font-size: 15px;
+    cursor: pointer; transition: color .12s, border-color .12s; }
+  .reader-close:hover { color: var(--ink); border-color: var(--accent); }
+  .reader-body { flex: 1; position: relative; }
+  .reader-body iframe { position: absolute; inset: 0; width: 100%;
+    height: 100%; border: none; background: #fff; }
+  .reader-load { position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center; background: var(--bg);
+    transition: opacity .25s; }
+  .reader-load.off { opacity: 0; pointer-events: none; }
+  .spin { width: 28px; height: 28px;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: sp .8s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  footer { padding: 30px 0 38px; color: var(--muted); font-size: 12.5px;
+           text-align: center; }
+  footer a { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 0 16px; }
+    nav .links { gap: 13px; font-size: 13px; }
+    nav .links .btn { padding: 8px 13px; font-size: 13px; }
+    header { padding: 20px 0 2px; }
+    .filters { margin: 18px -16px 4px; padding: 10px 16px; }
+    .search-box .kbd { display: none; }
+    .search-box input { padding-right: 15px; }
+    .gpill { font-size: 12px; padding: 6px 12px; }
+    .sel-row select { flex: 1 1 44%; max-width: none; }
+    .sel-row .clear { flex-basis: 100%; text-align: right;
+      margin: 2px 0 0; }
+    .case { padding: 15px 15px 13px 18px; }
+    .case .actions .alink { flex: 1; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a href="/" style="display:flex;align-items:center;gap:12px">
+      <div class="mark">ZW</div>
+      <div class="brand">OneGov AI <span class="beta-tag">Beta</span></div>
+    </a>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/docs.html">API</a>
+      <a class="btn" href="/app.html">Ask OneGov AI</a>
+    </div>
+  </nav>
+
+  <header>
+    <span class="eyebrow">Case law · Free to browse</span>
+    <h1>Zimbabwe <span class="g">court judgments</span></h1>
+    <p class="sub">Search judgments of the Constitutional Court, Supreme
+      Court, High Court and Labour Court. Read the original documents, or
+      ask the AI how a case interprets the law.</p>
+    <div class="hero-stats" id="hero-stats" style="display:none">
+      <span class="stat"><strong id="st-total">–</strong> judgments</span>
+      <span class="stat"><strong id="st-courts">–</strong> courts</span>
+      <span class="stat">newest: <strong id="st-latest">–</strong></span>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <div class="search-row">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" autocomplete="off"
+          placeholder="Search parties, citation or case number… e.g. Chamisa, HH 179/26">
+        <span class="kbd">/</span>
+      </div>
+    </div>
+    <div class="sel-row" id="gpills">
+      <button class="gpill on" data-g="">All courts</button>
+      <select id="court" title="Court division">
+        <option value="">Division</option></select>
+      <select id="year"><option value="">Year</option></select>
+      <select id="source"><option value="">Source</option></select>
+      <button class="clear" id="clear">✕ Clear filters</button>
+    </div>
+  </div>
+
+  <div class="count-row" id="count"></div>
+
+  <div id="results"></div>
+
+  <div class="pager" id="pager" style="display:none">
+    <button id="prev">&larr; Previous</button>
+    <span id="pageinfo"></span>
+    <button id="next">Next &rarr;</button>
+  </div>
+
+  <footer>
+    Judgments sourced from the Judicial Service Commission, ZimLII,
+    Law Portal Zimbabwe and Veritas. Documents are provided as published
+    by their sources. <a href="/terms.html">Terms</a> ·
+    <a href="/privacy.html">Privacy</a>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="reader" id="reader" aria-modal="true" role="dialog">
+  <div class="reader-head">
+    <div class="rtitle" id="rtitle"></div>
+    <a class="alink" id="rask" href="#">Ask AI</a>
+    <a class="alink plain" id="ropen" href="#" target="_blank">Open ↗</a>
+    <button class="reader-close" id="rclose" aria-label="Close">✕</button>
+  </div>
+  <div class="reader-body">
+    <iframe id="rframe" title="Judgment document"></iframe>
+    <div class="reader-load off" id="rload"><span class="spin"></span></div>
+  </div>
+</aside>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { q: "", court: "", group: "", year: "", source: "",
+                page: 1 };
+let facetsLoaded = false, debounce = null;
+
+// ---- URL state: restore filters from the query string ----
+(function () {
+  const p = new URLSearchParams(location.search);
+  for (const k of ["q", "court", "group", "year", "source", "page"])
+    if (p.get(k)) state[k] = k === "page" ? +p.get(k) : p.get(k);
+})();
+
+function pushUrl() {
+  const p = new URLSearchParams();
+  for (const k of ["q", "court", "group", "year", "source"])
+    if (state[k]) p.set(k, state[k]);
+  if (state.page > 1) p.set("page", state.page);
+  const qs = p.toString();
+  history.replaceState(null, "",
+    location.pathname + (qs ? "?" + qs : ""));
+}
+
+const SRC_LABEL = {
+  "jsc.org.zw": "JSC official",
+  "zimlii.org": "ZimLII",
+  "lawportalzim.co.zw": "Law Portal",
+  "veritaszim.net": "Veritas",
+};
+const GROUPS = ["Constitutional Court", "Supreme Court", "High Court",
+                "Labour Court", "Magistrates Court"];
+
+function esc(s) {
+  return (s || "").replace(/[&<>"]/g,
+    c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+
+// court-group accent colours (left bar + dot)
+const GCOLOR = {
+  "Constitutional Court": "#8b5cf6", "Supreme Court": "#6366f1",
+  "High Court": "#0ea5e9", "Labour Court": "#10b981",
+  "Magistrates Court": "#f59e0b",
+};
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun",
+                "Jul","Aug","Sep","Oct","Nov","Dec"];
+function prettyDate(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || "");
+  if (m) return +m[3] + " " + MONTHS[+m[2] - 1] + " " + m[1];
+  return s || "";
+}
+
+// Scraped titles are messy: JSC gives SHOUTING party lists with a
+// trailing "(court, date)", ZimLII appends case no. + citation + date.
+function prettyTitle(i) {
+  let t = i.title;
+  // drop trailing parentheticals / neutral citation that duplicate the
+  // court, date, case number and citation shown elsewhere on the card
+  for (let k = 0; k < 4; k++)
+    t = t.replace(/\s*\((?:[^()]|\([^()]*\))*\)\s*$/, "")
+         .replace(/\s*\[\d{4}\]\s+ZW[A-Z]{2,6}\s+\d+\s*$/, "");
+  t = t.replace(/\s+Versus\s+/gi, " v ")
+       .replace(/\s+And\s+/g, ", ")
+       .replace(/\s{2,}/g, " ").trim();
+  // de-shout mostly-uppercase titles
+  const letters = t.replace(/[^A-Za-z]/g, "");
+  const caps = t.replace(/[^A-Z]/g, "");
+  if (letters.length > 10 && caps.length / letters.length > 0.7) {
+    t = t.toLowerCase().replace(/(^|[\s(,'"-])([a-z])/g,
+      (m, p, c) => p + c.toUpperCase());
+    t = t.replace(/\bV\b/g, "v")
+         .replace(/\b(Of|And)\b/g, m => m.toLowerCase())
+         .replace(/\bN\.?o\.?($|[\s,])/gi, "N.O.$1");
+  }
+  if (t.length > 160) t = t.slice(0, 157).trimEnd() + "…";
+  return t || i.title;
+}
+
+function skeletons() {
+  $("results").innerHTML = Array.from({length: 5}, () =>
+    '<div class="skel">' +
+    '<div class="sk" style="height:15px;width:72%;margin-bottom:10px"></div>' +
+    '<div class="sk" style="height:11px;width:45%;margin-bottom:12px"></div>' +
+    '<div class="sk" style="height:30px;width:210px;border-radius:10px">' +
+    '</div></div>').join("");
+}
+
+async function load(soft) {
+  pushUrl();
+  if (!soft) skeletons();
+  const p = new URLSearchParams({ page: state.page, page_size: 25 });
+  for (const k of ["q", "court", "group", "year", "source"])
+    if (state[k]) p.set(k, state[k]);
+  let d;
+  try {
+    const r = await fetch("/api/caselaw?" + p);
+    d = await r.json();
+  } catch (e) {
+    $("results").innerHTML = '<div class="empty"><span class="big">⚠️' +
+      '</span>Could not load judgments. Try again shortly.</div>';
+    return;
+  }
+  if (!facetsLoaded) { fillFacets(d.facets); heroStats(d); facetsLoaded = true; }
+  render(d);
+}
+
+function courtGroup(c) {
+  const l = c.toLowerCase();
+  if (l.includes("constitutional")) return "Constitutional Court";
+  if (l.includes("supreme")) return "Supreme Court";
+  if (l.includes("high court")) return "High Court";
+  if (l.includes("labour")) return "Labour Court";
+  if (l.includes("magistr")) return "Magistrates Court";
+  if (l.includes("commercial") ||
+      /(harare|bulawayo|mutare|masvingo|chinhoyi)\s+court/.test(l))
+    return "High Court";
+  return "Other";
+}
+
+async function heroStats(d) {
+  // if the first load was filtered (deep link), fetch corpus-wide stats
+  if (state.q || state.court || state.group || state.year || state.source)
+    d = await fetch("/api/caselaw?page_size=1").then(r => r.json())
+             .catch(() => d);
+  if (!d.total) return;
+  $("st-total").textContent = d.total.toLocaleString();
+  $("st-courts").textContent = d.facets.courts.length;
+  const latest = d.items[0];
+  $("st-latest").textContent = latest ? (latest.date || latest.year) : "–";
+  $("hero-stats").style.display = "flex";
+}
+
+function fillFacets(f) {
+  // court-group pills
+  const present = new Set(f.courts.map(courtGroup));
+  const bar = $("gpills");
+  const anchor = $("court");
+  for (const g of GROUPS) {
+    if (!present.has(g)) continue;
+    const b = document.createElement("button");
+    b.className = "gpill"; b.dataset.g = g;
+    b.textContent = g.replace(" Court", "");
+    bar.insertBefore(b, anchor);
+  }
+  // division select (populated per selected group)
+  fillDivisions(f.courts);
+  for (const y of f.years) $("year").add(new Option(y, y));
+  for (const s of f.sources)
+    $("source").add(new Option(SRC_LABEL[s] || s, s));
+  // restore from URL
+  $("q").value = state.q;
+  $("year").value = state.year;
+  $("source").value = state.source;
+  if (state.court && !state.group) state.group = courtGroup(state.court);
+  paintPills();
+  window._courts = f.courts;
+  fillDivisions(f.courts);
+  $("court").value = state.court;
+  paintSelects();
+  bar.addEventListener("click", e => {
+    const b = e.target.closest(".gpill");
+    if (!b) return;
+    state.group = b.dataset.g;
+    state.court = "";
+    state.page = 1;
+    paintPills(); fillDivisions(window._courts); paintSelects(); load();
+  });
+}
+
+function paintPills() {
+  document.querySelectorAll(".gpill").forEach(b =>
+    b.classList.toggle("on", (b.dataset.g || "") === state.group));
+}
+
+function fillDivisions(courts) {
+  const sel = $("court");
+  sel.innerHTML = '<option value="">Division</option>';
+  if (!state.group) { sel.style.display = "none"; return; }
+  const divs = courts.filter(c => courtGroup(c) === state.group).sort();
+  if (divs.length < 2) { sel.style.display = "none"; return; }
+  sel.style.display = "";
+  for (const c of divs) sel.add(new Option(c, c));
+  sel.value = state.court;
+}
+
+function paintSelects() {
+  for (const k of ["court", "year", "source"])
+    $(k).classList.toggle("set", !!state[k]);
+}
+
+function render(d) {
+  const el = $("results");
+  const filtered = state.q || state.court || state.group || state.year ||
+                   state.source;
+  $("count").innerHTML = d.total
+    ? "<strong>" + d.total.toLocaleString() + "</strong> judgment" +
+      (d.total === 1 ? "" : "s") + (filtered ? " match" : "")
+    : "";
+  $("clear").style.display = filtered ? "inline" : "none";
+  if (!d.items.length) {
+    el.innerHTML = '<div class="empty"><span class="big">🔍</span>' +
+      'No judgments match. Try fewer words or clear the filters.</div>';
+    $("pager").style.display = "none";
+    return;
+  }
+  el.innerHTML = d.items.map((i, n) => {
+    const cc = GCOLOR[i.group] || "var(--accent)";
+    const info = [];
+    if (i.court) info.push('<b><span class="cdot"></span>' +
+                           esc(i.court) + "</b>");
+    if (i.date) info.push(esc(prettyDate(i.date)));
+    if (i.case_number) info.push("Case " + esc(i.case_number));
+    if (i.judge) info.push(esc(i.judge));
+    const isPdf = i.file.endsWith(".pdf");
+    const official = i.source === "jsc.org.zw";
+    const preview = (i.summary || i.flynote)
+      ? '<div class="preview">' +
+        (i.summary ? '<b>Held:</b> ' + esc(i.summary) : '') +
+        (i.flynote ? '<span class="fly">' + esc(i.flynote) + '</span>'
+                   : '') + '</div>'
+      : '';
+    return '<div class="case" style="--cc:' + cc + ';animation-delay:' +
+      (n * 25) + 'ms">' +
+      '<div class="trow">' +
+      '<div class="title" data-read="' + n + '">' + esc(prettyTitle(i)) +
+      '</div>' +
+      (i.citation
+        ? '<button class="cite-chip" data-cite="' + esc(i.citation) +
+          '" title="Copy citation">' + esc(i.citation) + '</button>'
+        : '') +
+      '</div>' +
+      '<div class="info">' + info.join('<span>·</span>') +
+      ' <span class="badge' + (official ? ' official' : '') + '">' +
+      esc(SRC_LABEL[i.source] || i.source) + '</span></div>' + preview +
+      '<div class="actions">' +
+      '<button class="alink" data-read="' + n + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 ' +
+      '6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/></svg>' +
+      (isPdf ? "View PDF" : "Read judgment") + '</button>' +
+      (i.original_url
+        ? '<a class="alink plain" target="_blank" href="' +
+          i.original_url + '">Original document</a>' : '') +
+      '<a class="alink plain" href="' + askUrl(i) + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9' +
+      'L3 21l1.9-5.7a8.5 8.5 0 1 1 16.1-3.8z"/></svg>' +
+      'Ask AI about this case</a>' +
+      '</div></div>';
+  }).join("");
+  el.querySelectorAll("[data-read]").forEach(a =>
+    a.addEventListener("click", e => {
+      e.preventDefault();
+      openReader(d.items[+a.dataset.read]);
+    }));
+  el.querySelectorAll(".cite-chip").forEach(b =>
+    b.addEventListener("click", () => {
+      navigator.clipboard.writeText(b.dataset.cite).then(() => {
+        const t = b.textContent;
+        b.textContent = "Copied ✓"; b.classList.add("copied");
+        setTimeout(() => {
+          b.textContent = t; b.classList.remove("copied");
+        }, 1200);
+      });
+    }));
+  const pages = Math.max(1, Math.ceil(d.total / d.page_size));
+  $("pager").style.display = pages > 1 ? "flex" : "none";
+  $("pageinfo").textContent = "Page " + d.page + " of " + pages;
+  $("prev").disabled = d.page <= 1;
+  $("next").disabled = d.page >= pages;
+}
+
+function askUrl(i) {
+  const name = (prettyTitle(i) +
+    (i.citation ? " " + i.citation : "")).slice(0, 180);
+  return "/app.html?q=" + encodeURIComponent(
+    "What was held in " + name +
+    " and what legal principles does it establish?");
+}
+
+// ---- Reader drawer ----
+function openReader(i) {
+  $("rtitle").innerHTML = esc(prettyTitle(i)) +
+    '<div class="rsub">' + esc([i.citation, i.court, prettyDate(i.date),
+      i.case_number].filter(Boolean).join(" · ")) + '</div>';
+  $("rask").href = askUrl(i);
+  $("ropen").href = i.url;
+  $("rload").classList.remove("off");
+  const fr = $("rframe");
+  fr.onload = () => $("rload").classList.add("off");
+  fr.src = i.url;
+  $("reader").classList.add("open");
+  $("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeReader() {
+  $("reader").classList.remove("open");
+  $("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+  setTimeout(() => { $("rframe").src = "about:blank"; }, 260);
+}
+$("rclose").onclick = $("overlay").onclick = closeReader;
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeReader();
+  if (e.key === "/" && document.activeElement !== $("q")) {
+    e.preventDefault(); $("q").focus();
+  }
+});
+
+// ---- Filter events ----
+$("q").addEventListener("input", () => {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => {
+    state.q = $("q").value.trim(); state.page = 1; load(true);
+  }, 300);
+});
+$("court").addEventListener("change", () => {
+  state.court = $("court").value; state.page = 1;
+  paintSelects(); load();
+});
+for (const k of ["year", "source"])
+  $(k).addEventListener("change", () => {
+    state[k] = $(k).value; state.page = 1; paintSelects(); load();
+  });
+$("clear").onclick = () => {
+  state.q = state.court = state.group = state.year = state.source = "";
+  state.page = 1;
+  $("q").value = ""; $("year").value = ""; $("source").value = "";
+  paintPills(); fillDivisions(window._courts || []); paintSelects();
+  load();
+};
+$("prev").onclick = () => { state.page--; loadScroll(); };
+$("next").onclick = () => { state.page++; loadScroll(); };
+function loadScroll() {
+  load();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// sticky-bar shadow
+const filtersEl = $("filters");
+new IntersectionObserver(([e]) =>
+  filtersEl.classList.toggle("stuck", e.intersectionRatio < 1),
+  { threshold: [1] }).observe(filtersEl);
+
+load();
+</script>
+</body>
+</html>

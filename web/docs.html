@@ -84,6 +84,7 @@
   <div class="topnav">
     <a class="brand" href="/"><span class="mark">ZW</span>OneGov AI</a>
     <div class="links">
+      <a href="/caselaw.html">Case Law</a>
       <a href="/#pricing">Pricing</a>
       <a class="app" href="/app.html">Open the app</a>
     </div>
@@ -247,6 +248,15 @@ console.log(data.answer);</code></pre>
     <tr><td><code>GET /api/answer/{id}</code></td>
       <td>A stored question and answer (the JSON behind
       <code>share_url</code>).</td></tr>
+    <tr><td><code>GET /api/caselaw</code></td>
+      <td>Court judgments (case law), newest first, with court, judge,
+      date, case number and document URL. Filters:
+      <code>?q=</code> (parties, citation or case number — punctuation
+      is ignored, so <code>HH 179/26</code> and
+      <code>[2026] ZWHHC 179</code> both work),
+      <code>?court=</code>, <code>?group=High Court</code>,
+      <code>?year=</code>, <code>?source=</code>; paginated with
+      <code>?page=</code> and <code>?page_size=</code> (max 100).</td></tr>
   </table>
   <p>Example: list this year's statutory instruments:</p>
   <pre><code>curl "https://onegovai.app/api/catalog?doc_type=si&amp;year=2026"</code></pre>

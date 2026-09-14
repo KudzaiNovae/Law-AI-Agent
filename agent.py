@@ -74,6 +74,18 @@ Tools:
 - list_legislation: lists the instruments in the corpus by type and year.
   Use it for "what are the latest SIs", "which Acts were passed in 2025".
 
+Case law: the corpus also holds court judgments (doc_type="judgment") —
+full-text judgments from Law Portal Zimbabwe and Veritas, and recent-case
+summaries from ZimLII (title, court, date, holding and flynote only; their
+text says so and links to the full judgment on zimlii.org). When a
+question asks how courts have interpreted or applied a provision, or for
+authority/precedent, run search_legislation with doc_type="judgment" IN
+ADDITION to the legislation search. Cite cases by their neutral citation
+(e.g. [2026] ZWHHC 179) when it appears in the title. Statute text remains
+the primary authority for what the law says; judgments show how it has
+been applied. If a judgment is only a ZimLII summary, say the full text
+is on zimlii.org.
+
 How to research (before answering):
 a. Search 2-3 times with DIFFERENT phrasings: the user's plain words, the
    likely statutory wording, and key nouns alone. Legal drafting rarely
@@ -199,9 +211,11 @@ Writing style (follow strictly):
 
 DOC_TYPE_PARAM = {
     "type": "string",
-    "enum": ["constitution", "act", "si", "gn", "gazette", "policy"],
+    "enum": ["constitution", "act", "si", "gn", "gazette", "policy",
+             "judgment"],
     "description": "Optional filter by document type. 'gazette' = full "
-                   "Government Gazette issues.",
+                   "Government Gazette issues; 'judgment' = court "
+                   "judgments (case law).",
 }
 
 # (name, description, JSON-schema params) — provider-neutral
@@ -209,8 +223,9 @@ TOOLS = [
     (
         "search_legislation",
         "Search the indexed corpus of Zimbabwean legislation (Constitution, "
-        "Acts, statutory instruments, general notices). Returns relevant "
-        "sections with citations.",
+        "Acts, statutory instruments, general notices) and court judgments "
+        "(case law). Returns relevant sections with citations. Use "
+        "doc_type='judgment' to search case law specifically.",
         {
             "type": "object",
             "properties": {

@@ -1545,6 +1545,168 @@ def resolve_source(title: str):
             "url": f"/api/download/{best_file}"}
 
 
+_CASELAW_CACHE: dict = {"mtime": 0.0, "items": []}
+_YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
+_HELD_RE = re.compile(r"<p>Held:\s*(.*?)</p>", re.S)
+_FLY_RE = re.compile(r"<p>Flynote[^:]*:\s*(.*?)</p>", re.S)
+
+
+def _court_group(court: str) -> str:
+    c = court.lower()
+    if "constitutional" in c:
+        return "Constitutional Court"
+    if "supreme" in c:
+        return "Supreme Court"
+    if "high court" in c:
+        return "High Court"
+    if "labour" in c:
+        return "Labour Court"
+    if "magistr" in c:
+        return "Magistrates Court"
+    # JSC quirks: "Commercial Court" and "Mutare Court" are High Court
+    # divisions
+    if "commercial" in c or re.search(
+            r"(harare|bulawayo|mutare|masvingo|chinhoyi)\s+court", c):
+        return "High Court"
+    return court or "Other"
+
+
+def _norm_cite(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+_JSC_COURT_IDS = {
+    "1": "Constitutional Court", "2": "Harare Supreme Court",
+    "4": "Harare Labour Court", "5": "Administrative Court",
+    "6": "Commercial Court", "7": "Sheriff of the High Court",
+    "8": "Magistrate Court", "9": "Harare High Court",
+}
+
+
+def _caselaw_items() -> list[dict]:
+    """Judgment entries from data/raw/_manifest.json, cached by mtime.
+    Reads the scraper's manifest directly so new cases appear as soon as
+    they are downloaded — before ingest/indexing."""
+    mp = RAW_DIR / "_manifest.json"
+    if not mp.is_file():
+        return []
+    mt = mp.stat().st_mtime
+    if mt == _CASELAW_CACHE["mtime"]:
+        return _CASELAW_CACHE["items"]
+    try:
+        manifest = json.loads(mp.read_text(encoding="utf-8"))
+    except ValueError:
+        return _CASELAW_CACHE["items"]
+    items = []
+    for fname, m in manifest.items():
+        if m.get("doc_type") != "judgment":
+            continue
+        if m.get("duplicate_of"):   # same case kept under another source
+            continue
+        if not (RAW_DIR / fname).is_file():
+            continue
+        title = m.get("title", fname)
+        # "Judgment HMA49-26: ..." — the prefix is the citation
+        citation = ""
+        cm = re.match(r"^Judgment\s+([\w/-]+):\s*", title)
+        if cm:
+            citation = cm.group(1)
+            title = title[cm.end():]
+        elif title.startswith("Judgment: "):   # veritas
+            title = title[10:]
+        if not citation:
+            nm = re.search(r"\[(19|20)\d{2}\]\s+ZW[A-Z]{2,6}\s+\d+", title)
+            if nm:
+                citation = nm.group(0)
+        date = m.get("date", "")
+        ym = _YEAR_RE.search(date) or _YEAR_RE.search(title)
+        original = m.get("original", "")
+        summary = flynote = ""
+        if fname.endswith(".html") and m.get("source") == "zimlii.org":
+            try:  # stub header holds Held + flynote — cheap preview
+                head = (RAW_DIR / fname).open(
+                    encoding="utf-8", errors="replace").read(4096)
+                hm = _HELD_RE.search(head)
+                fm = _FLY_RE.search(head)
+                summary = re.sub(r"\s+", " ", hm.group(1)) if hm else ""
+                flynote = re.sub(r"\s+", " ", fm.group(1)) if fm else ""
+            except OSError:
+                pass
+        court = m.get("court", "")
+        if court in _JSC_COURT_IDS:  # JSC numeric court ids (running
+            fixed = _JSC_COURT_IDS[court]  # scrapers rewrite old entries)
+            title = title.replace(f"({court},", f"({fixed},")
+            court = fixed
+        items.append({
+            "title": title,
+            "citation": citation,
+            "court": court,
+            "group": _court_group(court),
+            "judge": m.get("judge", ""),
+            "date": date,
+            "year": int(ym.group(0)) if ym else None,
+            "case_number": m.get("case_number", ""),
+            "source": m.get("source", ""),
+            "full_text": m.get("full_text", ""),
+            "summary": summary[:400],
+            "flynote": flynote[:400],
+            "file": fname,
+            "url": f"/api/download/{fname}",
+            "original_url": (f"/api/download/{original}"
+                             if original else ""),
+        })
+    # newest first; undated last
+    items.sort(key=lambda i: (i["year"] or 0, i["date"]), reverse=True)
+    _CASELAW_CACHE.update(mtime=mt, items=items)
+    return items
+
+
+@app.get("/api/caselaw")
+def caselaw(q: str | None = None, court: str | None = None,
+            group: str | None = None, year: int | None = None,
+            source: str | None = None,
+            page: int = 1, page_size: int = 25):
+    """Browse court judgments. Free, no key. Filters: q (title/parties/
+    case number/citation), court, group (e.g. 'High Court'), year,
+    source. Paginated."""
+    items = _caselaw_items()
+    facets = {
+        "courts": sorted({i["court"] for i in items if i["court"]}),
+        "groups": sorted({i["group"] for i in items if i["group"]}),
+        "years": sorted({i["year"] for i in items if i["year"]},
+                        reverse=True),
+        "sources": sorted({i["source"] for i in items if i["source"]}),
+    }
+    if court:
+        items = [i for i in items if i["court"] == court]
+    if group:
+        items = [i for i in items if i["group"] == group]
+    if year:
+        items = [i for i in items if i["year"] == year]
+    if source:
+        items = [i for i in items if i["source"] == source]
+    if q:
+        toks = [t for t in _tokenize(q) if t]
+        nq = _norm_cite(q)
+        cite_q = len(nq) >= 5 and any(c.isdigit() for c in nq)
+
+        def match(i):
+            hay = " ".join((i["title"], i["citation"], i["case_number"],
+                            i["judge"])).lower()
+            if toks and all(t in hay for t in toks):
+                return True
+            # citation forms: "HH 179/26", "[2026] ZWHHC 179",
+            # "HCH 5667/24" all match once punctuation is stripped
+            return cite_q and nq in _norm_cite(hay)
+        items = [i for i in items if match(i)]
+    page = max(1, page)
+    page_size = min(max(1, page_size), 100)
+    start = (page - 1) * page_size
+    return {"total": len(items), "page": page, "page_size": page_size,
+            "facets": facets,
+            "items": items[start:start + page_size]}
+
+
 @app.get("/api/download/{filename}")
 def download(filename: str):
     """Serve a raw source document (PDF/HTML) from the corpus."""

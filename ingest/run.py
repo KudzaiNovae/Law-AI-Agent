@@ -51,7 +51,9 @@ def infer_meta(path: Path) -> dict:
     name = path.stem.lower()
     # Scraper prefixes (si_/gn_/act_) are authoritative — check them first,
     # otherwise a "GN ... Constitution Notice" gets typed as constitution.
-    if name.startswith("si_"):
+    if name.startswith("judgment_"):
+        doc_type = "judgment"
+    elif name.startswith("si_"):
         doc_type = "si"
     elif name.startswith("gn_"):
         doc_type = "gn"
@@ -128,6 +130,10 @@ def main() -> None:
             # noise for QA, and pdfplumber OOMs parsing the big ones.
             if re.search(r"voter_?s?_roll|voters_roll", path.name, re.I):
                 print(f"skip (voters-roll bulk list): {path.name}")
+                continue
+            # same judgment available from another source (see
+            # ingest/dedupe_judgments.py) — index only the kept copy
+            if RAW_MANIFEST.get(path.name, {}).get("duplicate_of"):
                 continue
 
             cache = _cache_path(path)

@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OneGov AI | Zimbabwe's Constitution, Acts, statutory instruments, notices and policies</title>
-<meta name="description" content="Ask anything about Zimbabwe's Constitution, Acts of Parliament, statutory instruments, general notices, Government Gazettes and national policies. Answers cite the exact sections.">
+<title>OneGov AI | Zimbabwe's Constitution, Acts, statutory instruments and court judgments</title>
+<meta name="description" content="Ask anything about Zimbabwe's Constitution, Acts of Parliament, statutory instruments, gazettes and court judgments. Answers cite the exact sections and cases.">
 <meta property="og:title" content="OneGov AI: ask anything about Zimbabwe's Constitution, Acts, statutory instruments and notices">
-<meta property="og:description" content="Free AI answers from the Constitution, Acts, statutory instruments, general notices, gazettes and policies, with exact section references.">
+<meta property="og:description" content="Free AI answers from the Constitution, Acts, statutory instruments, gazettes and court judgments, with exact section and case references.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://onegovai.app/">
 <meta property="og:image" content="https://onegovai.app/icon-512.png">
@@ -96,6 +96,29 @@
           padding: 8px 16px; box-shadow: var(--shadow);
           transition: border-color .15s, transform .15s; }
   .chip:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .latest-cases { text-align: center; padding: 26px 0 6px; }
+  .latest-cases h2 { font-size: 26px; font-weight: 800;
+    letter-spacing: -.02em; margin-bottom: 6px; }
+  .latest-cases .plead { color: var(--muted); font-size: 14.5px;
+    margin-bottom: 20px; }
+  .lc-grid { display: flex; gap: 14px; max-width: 920px; margin: 0 auto;
+    align-items: stretch; text-align: left; }
+  .lc-card { flex: 1; background: var(--card); border: 1px solid
+    var(--border); border-radius: 16px; padding: 18px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column;
+    gap: 8px; transition: border-color .15s, transform .15s; }
+  .lc-card:hover { border-color: var(--accent); transform:
+    translateY(-2px); }
+  .lc-court { font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 99px;
+    padding: 3px 10px; align-self: flex-start; }
+  .lc-title { font-weight: 700; font-size: 14px; line-height: 1.45;
+    flex: 1; display: -webkit-box; -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden; }
+  .lc-date { color: var(--muted); font-size: 12.5px; }
+  @media (max-width: 640px) { .lc-grid { flex-direction: column; } }
 
   .pricing { text-align: center; padding: 30px 0 14px; }
   .pricing h2 { font-size: 26px; font-weight: 800; letter-spacing: -.02em;
@@ -241,6 +264,7 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
     <div class="mark">ZW</div>
     <div class="brand">OneGov AI <span class="beta-tag">Beta</span></div>
     <div class="links">
+      <a href="/caselaw.html">Case Law</a>
       <a href="#pricing">Pricing</a>
       <a href="/docs.html">API</a>
       <a href="/app.html?auth=login">Sign in</a>
@@ -251,25 +275,26 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
   <header>
     <span class="eyebrow">Free to start · English · chiShona · isiNdebele</span>
     <h1>Ask anything about <span class="g">Zimbabwe's Constitution, Acts,
-      statutory instruments, notices and policies</span></h1>
-    <p class="sub"><strong>OneGov AI</strong> reads the actual gazetted texts and answers simply and clearly,
-      citing the exact sections and pointing you to the exact spot in the
-      original Gazette PDF. No more digging through pages.</p>
+      statutory instruments and court judgments</span></h1>
+    <p class="sub"><strong>OneGov AI</strong> reads the actual gazetted
+      texts and court judgments and answers simply and clearly, citing the
+      exact sections and cases and pointing you to the exact spot in the
+      original document. No more digging through pages.</p>
     <div class="cta-row">
       <a class="btn" href="/app.html">Ask OneGov AI &rarr;</a>
-      <a class="btn ghost" href="/app.html?auth=signup">Create a free
-        account</a>
+      <a class="btn ghost" href="/caselaw.html">Search case law</a>
       <a class="btn ghost" href="/app.html?browse=1">Browse the catalogue</a>
     </div>
     <div class="stats" id="stats">Constitution &middot; Acts of Parliament
       &middot; Statutory Instruments &middot; General Notices &middot;
-      Gazettes &middot; Policies &middot; Tabled Reports</div>
+      Gazettes &middot; Policies &middot; Court Judgments</div>
     <div class="chips">
       <a class="chip" href="/app.html?q=What+are+my+rights+when+arrested+by+the+police%3F">What are my rights when arrested?</a>
       <a class="chip" href="/app.html?q=What+are+the+most+recent+statutory+instruments%3F">Latest statutory instruments</a>
       <a class="chip" href="/app.html?q=What+does+the+Labour+Act+say+about+termination+of+employment%3F">Termination of employment</a>
       <a class="chip" href="/app.html?q=How+do+I+register+a+private+company+in+Zimbabwe%3F">Registering a company</a>
       <a class="chip" href="/app.html?q=What+are+the+requirements+for+a+civil+marriage%3F">Civil marriage requirements</a>
+      <a class="chip" href="/caselaw.html">Browse court judgments</a>
     </div>
 
     <div class="demo">
@@ -288,6 +313,14 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
           Ask the full question &rarr;</a></div></div>
     </div>
   </header>
+
+  <section class="latest-cases" id="latest-cases" style="display:none">
+    <h2>Latest court judgments</h2>
+    <p class="plead">Fresh from the courts — search thousands more on the
+      <a href="/caselaw.html" style="color:var(--accent);font-weight:600">
+        Case Law page</a>.</p>
+    <div class="lc-grid" id="lc-grid"></div>
+  </section>
 
   <section class="pricing" id="pricing">
     <h2>Simple pricing</h2>
@@ -356,6 +389,15 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
         legal practitioner.</p>
     </details>
     <details>
+      <summary>Do you cover court judgments?</summary>
+      <p>Yes. OneGov indexes judgments from the Constitutional Court,
+        Supreme Court, High Court, Labour Court and more, sourced from
+        the Judicial Service Commission and ZimLII. You can
+        <a href="/caselaw.html">search case law</a> by party name,
+        citation or court, and the AI can discuss how the courts have
+        interpreted a provision.</p>
+    </details>
+    <details>
       <summary>How current are the documents?</summary>
       <p>Records are updated regularly from official sources, and each
         consolidated text shows its "as at" date so you always know the
@@ -406,16 +448,35 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
 
 </div>
 <script>
-fetch('/api/meta').then(r => r.json()).then(m => {
+Promise.all([
+  fetch('/api/meta').then(r => r.json()),
+  fetch('/api/caselaw?page_size=1').then(r => r.json()).catch(() => ({}))
+]).then(([m, c]) => {
   if (m.instruments)
     document.getElementById('stats').innerHTML =
-      '<strong>' + m.instruments.toLocaleString() + '</strong> instruments ' +
-      'in the corpus &middot; last updated <strong>' + m.updated +
-      '</strong> &middot; Constitution, Acts, SIs, notices, gazettes ' +
-      'and policies';
+      '<strong>' + m.instruments.toLocaleString() + '</strong> instruments' +
+      (c.total ? ' &middot; <strong>' + c.total.toLocaleString() +
+        '</strong> judgments' : '') +
+      ' in the corpus &middot; last updated <strong>' + m.updated +
+      '</strong> &middot; Constitution, Acts, SIs, gazettes and case law';
 }).catch(() => {});
 if ('serviceWorker' in navigator)
   navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+// Latest judgments strip
+fetch('/api/caselaw?page_size=3&source=jsc.org.zw').then(r => r.json())
+  .then(d => {
+    if (!d.items || !d.items.length) return;
+    const e = s => (s || '').replace(/[&<>"]/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    document.getElementById('lc-grid').innerHTML = d.items.map(i =>
+      '<a class="lc-card" href="/caselaw.html?q=' +
+      encodeURIComponent(i.case_number || i.title.slice(0, 60)) + '">' +
+      '<span class="lc-court">' + e(i.court) + '</span>' +
+      '<span class="lc-title">' + e(i.title) + '</span>' +
+      '<span class="lc-date">' + e(i.date) + '</span></a>').join('');
+    document.getElementById('latest-cases').style.display = '';
+  }).catch(() => {});
 </script>
 <script type="application/ld+json">
 {
@@ -423,7 +484,7 @@ if ('serviceWorker' in navigator)
   "@type": "WebApplication",
   "name": "OneGov AI",
   "url": "https://onegovai.app/",
-  "description": "Ask anything about Zimbabwe's Constitution, Acts of Parliament, statutory instruments, general notices, Government Gazettes and national policies. Answers cite the exact sections.",
+  "description": "Ask anything about Zimbabwe's Constitution, Acts of Parliament, statutory instruments, gazettes and court judgments. Answers cite the exact sections and cases.",
   "applicationCategory": "ReferenceApplication",
   "operatingSystem": "Web",
   "inLanguage": ["en", "sn", "nd"],

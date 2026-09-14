@@ -899,6 +899,12 @@
               padding: 6px 13px; transition: transform .1s; }
   .top-pill:hover { transform: translateY(-1px); }
   .top-pill svg { width: 14px; height: 14px; }
+  .top-pill.toggled { color: #fff; background: var(--grad);
+                      box-shadow: 0 3px 10px var(--ring); }
+  .md .case-chip { display: inline-block; background: var(--accent-soft);
+    color: var(--accent-ink); border-radius: 6px; padding: 0 6px;
+    font-size: .92em; font-weight: 600; text-decoration: none; }
+  .md .case-chip:hover { text-decoration: underline; }
   @media (max-width: 900px) {
     #workpane.open { position: fixed; top: 0; right: 0; bottom: 0;
                      width: 100% !important; z-index: 55;
@@ -1007,6 +1013,17 @@
       <span class="top-title">Constitution &middot; Acts &middot; SIs
         &middot; Notices &middot; Gazettes &middot; Policies</span>
       <span style="flex:1"></span>
+      <button class="top-pill" id="cl-toggle" onclick="toggleCaselaw()"
+              title="Bias answers towards court judgments and precedent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18M8 21h8M6 7l-4 7a4 4 0 0 0 8 0L6 7zm12 0l-4 7a4 4 0 0 0 8 0l-4-7zM4 7h16"/></svg>
+        Case-law mode
+      </button>
+      <button class="top-pill" onclick="location.href='/caselaw.html'"
+              title="Browse court judgments">
+        Judgments
+      </button>
       <button class="top-pill" onclick="openBrowse()" title="Browse legislation">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -1238,7 +1255,55 @@ function ensureChat(firstMsg) {
 function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-function md(text) { return DOMPurify.sanitize(marked.parse(text)); }
+function md(text) {
+  return linkifyCases(DOMPurify.sanitize(marked.parse(text)));
+}
+
+/* Neutral citations like [2026] ZWHHC 179 become chips that open the
+   case on the Case Law page. */
+const CASE_RE = /\[(19|20)\d{2}\]\s+ZW[A-Z]{2,6}\s+\d+/g;
+function linkifyCases(html) {
+  if (!CASE_RE.test(html)) { CASE_RE.lastIndex = 0; return html; }
+  CASE_RE.lastIndex = 0;
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) {
+    CASE_RE.lastIndex = 0;
+    if (CASE_RE.test(n.data) &&
+        !(n.parentElement && n.parentElement.closest('a, code, pre')))
+      nodes.push(n);
+  }
+  for (const node of nodes) {
+    const span = document.createElement('span');
+    CASE_RE.lastIndex = 0;
+    span.innerHTML = esc(node.data).replace(CASE_RE, m =>
+      `<a class="case-chip" target="_blank" ` +
+      `href="/caselaw.html?q=${encodeURIComponent(m)}">${m}</a>`);
+    node.replaceWith(span);
+  }
+  return tpl.innerHTML;
+}
+
+/* ---------- Case-law mode: bias the agent towards judgments ---------- */
+let caselawMode = localStorage.getItem('onegov_caselaw') === '1';
+const CL_PREFIX = '[Case-law focus: in addition to legislation, search ' +
+  'court judgments (doc_type="judgment"), discuss how the courts have ' +
+  'interpreted the provisions, and cite cases by neutral citation.]\n';
+function toggleCaselaw() {
+  caselawMode = !caselawMode;
+  localStorage.setItem('onegov_caselaw', caselawMode ? '1' : '0');
+  paintCaselaw();
+}
+function paintCaselaw() {
+  const b = document.getElementById('cl-toggle');
+  if (b) b.classList.toggle('toggled', caselawMode);
+  if (input) input.placeholder = caselawMode
+    ? 'Ask about case law: precedent, how courts applied a section…'
+    : 'Ask about an Act, statutory instrument, notice, or the Constitution…';
+}
 
 /* "(consolidated as at YYYY-MM-DD)" in a title -> vintage info */
 const VINTAGE_RE = /\s*\(consolidated as at (\d{4}-\d{2}-\d{2})\)\s*/i;
@@ -1612,7 +1677,8 @@ async function ask(text, isRegen) {
     const resp = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, session_id: chat.session_id,
+      body: JSON.stringify({ message: caselawMode ? CL_PREFIX + msg : msg,
+                             session_id: chat.session_id,
                              lang: localStorage.getItem('onegov_lang') || 'en' }),
       signal: aborter.signal,
     });
@@ -3068,6 +3134,8 @@ window.addEventListener('appinstalled', () => {
   const b = document.getElementById('install-btn');
   if (b) b.style.display = 'none';
 });
+
+paintCaselaw();
 
 /* Deep links from the landing page: ?q=... asks, ?browse=1 opens catalogue */
 const params = new URLSearchParams(location.search);
