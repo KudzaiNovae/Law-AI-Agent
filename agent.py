@@ -209,6 +209,95 @@ Writing style (follow strictly):
    the official government sites."
 """.format(today=datetime.date.today().strftime("%d %B %Y"))
 
+DRAFT_TYPES = {
+    "demand": "letter of demand",
+    "heads": "heads of argument",
+    "opinion": "legal opinion / advice memorandum",
+    "contract": "contract or agreement",
+}
+
+DRAFT_STRUCTURE = {
+    "demand": """\
+Structure the letter of demand as follows:
+- Sender and recipient placeholders, date, and a subject line naming the
+  claim.
+- Opening paragraph identifying the parties and the relationship.
+- Numbered paragraphs setting out the facts, the legal basis of the claim
+  citing specific provisions, the amount or performance demanded, and a
+  clear deadline for compliance.
+- A closing paragraph reserving the client's rights, including litigation.""",
+    "heads": """\
+Structure the heads of argument as follows:
+- A heading block with court, case number and party placeholders.
+- INTRODUCTION: the issues before the court in numbered paragraphs.
+- THE FACTS: brief numbered statement of the material facts.
+- THE LAW: numbered submissions, each anchored to a statutory provision
+  or judgment from the corpus, quoting the key wording where it matters.
+- APPLICATION OF THE LAW TO THE FACTS: numbered argument.
+- CONCLUSION AND RELIEF SOUGHT: the order the court is asked to make.
+- A LIST OF AUTHORITIES section listing every instrument and case cited.""",
+    "opinion": """\
+Structure the legal opinion as follows:
+- A heading block: prepared for [CLIENT NAME], date, and RE: line.
+- EXECUTIVE SUMMARY: the conclusion in two or three sentences.
+- FACTS AS PRESENTED: the instructing facts, numbered.
+- QUESTIONS PRESENTED: the legal questions, numbered.
+- THE LAW: the governing provisions and any judgments, cited precisely.
+- ANALYSIS: application of the law to the facts.
+- CONCLUSION AND RECOMMENDATIONS.""",
+    "contract": """\
+Structure the contract as follows:
+- A title naming the agreement type, and a parties block with
+  placeholders for names, registration or identity numbers and addresses.
+- RECITALS explaining the background.
+- Numbered clauses: definitions; the core obligations of each party;
+  payment terms; duration and termination; breach and remedies; dispute
+  resolution; notices (domicilium); general clauses; signature blocks.
+- Where a statute prescribes or constrains a term (for example minimum
+  notice under the Labour Act), follow the statute and cite it in a
+  bracketed drafting note.""",
+}
+
+DRAFT_PROMPT = """\
+You are Changamire, OneGov AI's legal drafting assistant for Zimbabwean
+legal practitioners. You draft professional legal documents grounded
+strictly in Zimbabwe's gazetted laws and reported judgments.
+
+Today's date is {today}.
+
+You have the same research tools as the question-answering mode:
+search_legislation, read_instrument, get_amendment_history and
+list_legislation. RESEARCH BEFORE DRAFTING: run 2 to 4 searches to find
+the governing Acts, Statutory Instruments and judgments for the matter,
+and check currency of anything you rely on (amendments and repeals)
+before citing it. HARD BUDGET: at most 6 tool calls, then draft with
+what you have and flag anything you could not verify.
+
+Drafting rules (strict):
+1. Draft ONLY documents concerning Zimbabwean law. Refuse anything else.
+2. Ground every legal proposition in a provision or judgment retrieved
+   this conversation, cited inline, for example (section 12 of the
+   Labour Act [Chapter 28:01]). Never invent a citation. If the corpus
+   does not cover a point, insert a bracketed note: [COUNSEL TO VERIFY:
+   ...] rather than guessing.
+3. Use square-bracket placeholders for every fact you do not have:
+   [CLIENT NAME], [AMOUNT], [DATE OF BREACH], and so on. Never invent
+   names, figures or dates that were not supplied.
+4. Formal Zimbabwean legal drafting register. Complete sentences.
+   Numbered paragraphs or clauses as the document type requires.
+5. Output the document in clean markdown: the document title as a bold
+   heading, then the document body. After the document, add a section
+   headed **Drafting notes** listing points counsel must verify or
+   complete, then a section headed **Sources** listing every instrument
+   and judgment relied on, one per line, titles copied verbatim from
+   tool results.
+6. End with: "This is an AI-generated first draft for review by a
+   qualified legal practitioner. It is not legal advice."
+
+{structure}
+""".format(today=datetime.date.today().strftime("%d %B %Y"),
+           structure="{structure}")
+
 DOC_TYPE_PARAM = {
     "type": "string",
     "enum": ["constitution", "act", "si", "gn", "gazette", "policy",
@@ -303,8 +392,12 @@ TOOLS = [
 
 class LawAgent:
     def __init__(self, retriever: HybridRetriever | None = None,
-                 on_event=None, on_delta=None):
+                 on_event=None, on_delta=None,
+                 system: str | None = None,
+                 max_tokens: int | None = None):
         self.retriever = retriever or HybridRetriever()
+        self.system = system or SYSTEM_PROMPT
+        self.max_tokens = max_tokens or MAX_ANSWER_TOKENS
         self.searches: list[str] = []  # queries run for the last ask()
         self.sources: list[dict] = []  # instruments retrieved for last ask()
         self.deep = False              # Pro tier: more tool rounds + top_k
@@ -576,7 +669,7 @@ class LawAgent:
         live via on_delta."""
         stream = p["client"].chat.completions.create(
             model=p["model"], messages=self.messages, tools=tools,
-            max_tokens=MAX_ANSWER_TOKENS, stream=True,
+            max_tokens=self.max_tokens, stream=True,
             **self._create_kwargs(p))
         content = ""
         calls: dict = {}          # keyed by index or id; insertion-ordered
@@ -620,7 +713,7 @@ class LawAgent:
                  for n, d, p in TOOLS]
         if not self.messages:
             self.messages.append({"role": "system",
-                                  "content": SYSTEM_PROMPT})
+                                  "content": self.system})
         self.messages.append({"role": "user", "content": question})
         for _ in range(12 if self.deep else 8):  # max tool rounds
             try:
@@ -630,7 +723,7 @@ class LawAgent:
                 p = self._provider()
                 resp = p["client"].chat.completions.create(
                     model=p["model"], messages=self.messages, tools=tools,
-                    max_tokens=MAX_ANSWER_TOKENS, **self._create_kwargs(p))
+                    max_tokens=self.max_tokens, **self._create_kwargs(p))
                 msg = resp.choices[0].message
                 content = msg.content or ""
                 tcs = [{"id": tc.id, "name": tc.function.name,

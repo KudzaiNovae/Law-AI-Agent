@@ -549,6 +549,9 @@
     .top-pill { padding: 6px 10px; font-size: 12px; }
     .top-pill svg { width: 13px; height: 13px; }
     #topbar { gap: 6px; }
+    /* five controls no longer fit: drop the pills duplicated by
+       in-app links, keep Case-law mode and Draft */
+    #judg-pill, #browse-pill { display: none; }
     .qleft span { font-size: 11.5px; }
     .src-chip .t { max-width: 30ch; }
     .followup { max-width: 100%; white-space: normal; text-align: left; }
@@ -1020,11 +1023,20 @@
           <path d="M12 3v18M8 21h8M6 7l-4 7a4 4 0 0 0 8 0L6 7zm12 0l-4 7a4 4 0 0 0 8 0l-4-7zM4 7h16"/></svg>
         Case-law mode
       </button>
-      <button class="top-pill" onclick="location.href='/caselaw.html'"
+      <button class="top-pill" id="judg-pill"
+              onclick="location.href='/caselaw.html'"
               title="Browse court judgments">
         Judgments
       </button>
-      <button class="top-pill" onclick="openBrowse()" title="Browse legislation">
+      <button class="top-pill" id="draft-btn" onclick="openDraft()"
+              title="Draft a legal document grounded in cited law">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Draft
+      </button>
+      <button class="top-pill" id="browse-pill" onclick="openBrowse()"
+              title="Browse legislation">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/></svg>
@@ -1745,6 +1757,128 @@ async function ask(text, isRegen) {
   }
 }
 
+/* ---------------- Case drafting ---------------- */
+const DRAFT_LABELS = { demand: 'Letter of demand',
+                       heads: 'Heads of argument',
+                       opinion: 'Legal opinion / memo',
+                       contract: 'Contract / agreement' };
+
+function openDraft() {
+  modalWrap.classList.add('show');
+  modalBox.classList.remove('wide');
+  modalBox.classList.add('slim');
+  modalBox.innerHTML = `<h3>Draft a document
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <p style="margin:0 0 10px;font-size:13px;color:var(--muted)">
+        Changamire researches the governing law, then writes a first
+        draft with citations. Free accounts get a preview; Plus and Pro
+        get the full draft with Word export.</p>
+      <label style="font-size:12px;font-weight:600">Document type</label>
+      <select id="draft-type" class="lang-sel"
+              style="width:100%;margin:4px 0 10px">
+        ${Object.entries(DRAFT_LABELS).map(([k, v]) =>
+          `<option value="${k}">${v}</option>`).join('')}
+      </select>
+      <label style="font-size:12px;font-weight:600">The matter: parties,
+        facts, what you want the document to achieve</label>
+      <textarea id="draft-facts" rows="6" style="width:100%;margin:4px 0 12px;
+        resize:vertical;font:inherit;padding:8px;border-radius:8px;
+        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
+        placeholder="Example: My client, a landlord in Harare, is owed four months rent of $200 per month by a commercial tenant. Lease signed January 2025. Demand payment within 7 days or eviction proceedings follow."></textarea>
+      <button class="auth-submit" onclick="submitDraft()">Generate draft</button>
+    </div>`;
+}
+
+function submitDraft() {
+  const dt = document.getElementById('draft-type').value;
+  const facts = document.getElementById('draft-facts').value.trim();
+  if (facts.length < 20) {
+    document.getElementById('draft-facts').focus();
+    return;
+  }
+  closeModal();
+  runDraft(dt, facts);
+}
+
+async function runDraft(dt, facts) {
+  if (busy) return;
+  const label = DRAFT_LABELS[dt] || 'document';
+  const chat = ensureChat(label + ' (draft)');
+  chat.messages.push({ role: 'user',
+                       text: 'Draft a ' + label.toLowerCase() + ':\n' + facts });
+  save(); renderThread();
+
+  setBusy(true);
+  aborter = new AbortController();
+  const typing = typingRow();
+  typing.querySelector('.lbl').textContent = 'Researching the law';
+  scrollDown();
+
+  let finalMsg = null;
+  let liveText = '', liveMd = null;
+  try {
+    const resp = await fetch('/api/draft/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_type: dt, facts }),
+      signal: aborter.signal,
+    });
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      const d = data.detail;
+      if (resp.status === 401 && d && d.code === 'needs_auth') {
+        typing.remove(); openAuth('signup', d.message); return;
+      }
+      if (resp.status === 402 && d) {
+        typing.remove(); openUpgrade(d.message); return;
+      }
+      throw new Error((typeof d === 'string' ? d : (d && d.message))
+                      || resp.statusText);
+    }
+    await readStream(resp, ev => {
+      if (ev.type === 'search') {
+        addLiveTag(typing, ev.query);
+        if (liveMd) { liveMd.remove(); liveMd = null; liveText = ''; }
+        typing.querySelector('.typing').style.display = '';
+      } else if (ev.type === 'delta') {
+        if (!liveMd) {
+          typing.querySelector('.typing').style.display = 'none';
+          liveMd = document.createElement('div');
+          liveMd.className = 'md';
+          typing.querySelector('.bot-body').appendChild(liveMd);
+        }
+        liveText += ev.text;
+        liveMd.innerHTML = md(liveText) + '<span class="cursor-blink"></span>';
+        scrollIfNear();
+      } else if (ev.type === 'done') {
+        finalMsg = { role: 'bot', text: ev.answer,
+                     searches: ev.searches || [],
+                     sources: ev.sources || [],
+                     aid: ev.answer_id || null };
+      } else if (ev.type === 'error') throw new Error(ev.error);
+    });
+    if (!finalMsg) throw new Error('Connection closed early');
+    typing.remove();
+    chat.messages.push(finalMsg);
+    save();
+    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches);
+  } catch (err) {
+    typing.remove();
+    if (err.name !== 'AbortError') {
+      chat.messages.push({ role: 'bot', error: true,
+        text: 'Sorry, something went wrong: ' +
+              String(err.message || err) + '. Please try again.' });
+      save();
+    }
+  } finally {
+    aborter = null;
+    setBusy(false);
+    renderThread();
+    if (!authState.email || authState.plan === 'free') refreshAuth();
+  }
+}
+
 function regenerate() {
   if (busy || !current) return;
   const msgs = current.messages;
@@ -2440,6 +2574,8 @@ function openUpgrade(msg) {
           <div class="plan-price">$5<span class="per">/ 30 days</span></div>
           <ul class="plan-feats">
             <li>Unlimited questions</li>
+            <li>Full document drafting (demands, opinions,
+                heads, contracts)</li>
             <li>Full answer history \u00b7 no ads</li>
             <li>10 PDF / Word exports a month</li>
             <li>Watch 3 instruments (in-app alerts)</li>
@@ -2452,8 +2588,9 @@ function openUpgrade(msg) {
           <div class="plan-price">$15<span class="per">/ 30 days</span></div>
           <ul class="plan-feats">
             <li>Everything in Plus</li>
+            <li>Deeper research on drafts and answers</li>
             <li>Unlimited exports \u00b7 20 watches</li>
-            <li>Priority answers + deeper research</li>
+            <li>Priority answers</li>
             <li>One-click ZIP archives by year</li>
             <li>API access \u00b7 1,000 calls/mo</li>
           </ul>
@@ -3147,6 +3284,9 @@ if (params.get('q')) {
 } else if (params.get('browse')) {
   history.replaceState(null, '', '/app.html');
   openBrowse();
+} else if (params.get('draft')) {
+  history.replaceState(null, '', '/app.html');
+  setTimeout(() => openDraft(), 300);
 }
 </script>
 </body>

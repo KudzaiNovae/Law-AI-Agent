@@ -23,7 +23,8 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from agent import LawAgent, SYSTEM_PROMPT
+from agent import (LawAgent, SYSTEM_PROMPT, DRAFT_PROMPT, DRAFT_TYPES,
+                   DRAFT_STRUCTURE)
 from config import PROCESSED_DIR, RAW_DIR
 from index.retriever import (HybridRetriever, Q_INSTR_RE, _tokenize,
                              normalize_refs)
@@ -1850,6 +1851,113 @@ def chat_stream(req: ChatRequest, request: Request):
                     {"type": "done", "answer": answer, "session_id": sid,
                      "searches": agent.searches,
                      "answer_id": aid,
+                     "sources": getattr(agent, "sources", [])}) + "\n\n"
+                return
+            else:
+                yield "data: " + json.dumps(
+                    {"type": "error", "error": payload}) + "\n\n"
+                return
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "X-Accel-Buffering": "no"})
+
+
+# ---------- Case drafting (free preview, paid full) ----------
+
+class DraftRequest(BaseModel):
+    doc_type: str        # demand | heads | opinion | contract
+    facts: str
+
+
+DRAFT_PREVIEW_CHARS = 1500
+DRAFT_MAX_TOKENS = 3000
+DRAFT_UPGRADE_NOTICE = (
+    "\n\n---\n\n**This is a preview.** The full draft, with all clauses, "
+    "citations and drafting notes, plus export to Word or PDF, is "
+    "available on the Plus and Pro plans.")
+
+
+@app.post("/api/draft/stream")
+def draft_stream(req: DraftRequest, request: Request):
+    """SSE draft generation. Anyone signed in or anonymous gets a
+    truncated preview; active Plus/Pro subscribers get the full draft."""
+    _check_rate(request)
+    _check_gate(request)
+    dt = (req.doc_type or "").strip().lower()
+    if dt not in DRAFT_TYPES:
+        raise HTTPException(400, "Unknown document type.")
+    facts = (req.facts or "").strip()
+    if len(facts) < 20:
+        raise HTTPException(400, "Describe the matter in a few sentences "
+                                 "so the draft has facts to work from.")
+    if len(facts) > 8000:
+        raise HTTPException(400, "Instructions too long (max 8000 chars).")
+
+    user = _user_from(request)
+    paid = bool(user and user["plan"] in ("plus", "pro")
+                and user["paid_until"] > time.time())
+
+    agent = LawAgent(
+        retriever=_retriever,
+        system=DRAFT_PROMPT.format(structure=DRAFT_STRUCTURE[dt]),
+        max_tokens=DRAFT_MAX_TOKENS)
+    agent.deep = paid
+    q: queue.Queue = queue.Queue()
+    streamed = {"n": 0}
+
+    def on_delta(text: str) -> None:
+        # Free tier: stop live-streaming once the preview budget is
+        # spent; the final 'done' event carries the truncated text.
+        if not paid and streamed["n"] >= DRAFT_PREVIEW_CHARS:
+            return
+        if not paid and streamed["n"] + len(text) > DRAFT_PREVIEW_CHARS:
+            text = text[:DRAFT_PREVIEW_CHARS - streamed["n"]]
+        streamed["n"] += len(text)
+        q.put(("delta", text))
+
+    agent.on_event = lambda label: q.put(("search", label))
+    agent.on_delta = on_delta
+    question = (f"Draft a {DRAFT_TYPES[dt]} based on the following "
+                f"instructions and facts:\n\n{facts}")
+
+    def work():
+        t0 = time.time()
+        try:
+            answer = agent.ask(question)
+            truncated = False
+            if not paid and len(answer) > DRAFT_PREVIEW_CHARS:
+                answer = (answer[:DRAFT_PREVIEW_CHARS].rsplit(" ", 1)[0]
+                          + " ..." + DRAFT_UPGRADE_NOTICE)
+                truncated = True
+            aid = _store_answer(f"[draft:{dt}] {facts[:200]}", answer,
+                                agent.searches)
+            log_chat("draft", f"[draft:{dt}] {facts[:200]}", answer=answer,
+                     searches=agent.searches,
+                     ms=int((time.time() - t0) * 1000))
+            q.put(("done", (answer, aid, truncated)))
+        except Exception as e:
+            log_chat("draft", f"[draft:{dt}]", error=str(e),
+                     ms=int((time.time() - t0) * 1000))
+            q.put(("error", _friendly_error(e)[1]))
+
+    threading.Thread(target=work, daemon=True).start()
+
+    def gen():
+        while True:
+            kind, payload = q.get()
+            if kind == "search":
+                yield "data: " + json.dumps(
+                    {"type": "search", "query": payload}) + "\n\n"
+            elif kind == "delta":
+                yield "data: " + json.dumps(
+                    {"type": "delta", "text": payload}) + "\n\n"
+            elif kind == "done":
+                answer, aid, truncated = payload
+                yield "data: " + json.dumps(
+                    {"type": "done", "answer": answer, "answer_id": aid,
+                     "truncated": truncated,
+                     "searches": agent.searches,
                      "sources": getattr(agent, "sources", [])}) + "\n\n"
                 return
             else:
