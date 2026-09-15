@@ -32,7 +32,7 @@ GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 GEMINI_MODELS: list[str] = []
 for _m in os.getenv(
         "GEMINI_MODELS",
-        f"{GEMINI_MODEL},gemini-flash-latest,gemini-2.0-flash").split(","):
+        f"{GEMINI_MODEL},gemini-flash-latest,gemini-3.6-flash").split(","):
     _m = _m.strip()
     if _m and _m not in GEMINI_MODELS:
         GEMINI_MODELS.append(_m)

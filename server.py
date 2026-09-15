@@ -1274,7 +1274,12 @@ CACHE_TTL = int(os.getenv("CACHE_TTL", str(24 * 3600)))
 
 
 def _cache_key(req: "ChatRequest") -> str:
-    norm = " ".join(req.message.lower().split())
+    # Normalise aggressively so phrasing variants of frequently asked
+    # questions share one cache entry: lowercase, strip punctuation and
+    # filler whitespace ("What's the speed limit?" == "whats the speed
+    # limit").
+    norm = re.sub(r"[^\w\s]", "", req.message.lower())
+    norm = " ".join(norm.split())
     return hashlib.sha256(
         ((req.lang or "en") + "|" + norm).encode()).hexdigest()
 
@@ -1783,7 +1788,9 @@ def chat(req: ChatRequest, request: Request):
              searches=agent.searches, ms=int((time.time() - t0) * 1000))
     return {"session_id": sid, "answer": answer,
             "searches": agent.searches, "answer_id": aid,
-            "sources": getattr(agent, "sources", [])}
+            "sources": getattr(agent, "sources", []),
+            "followups": getattr(agent, "followups", []),
+            "unverified": getattr(agent, "unverified", [])}
 
 
 @app.post("/api/chat/stream")
@@ -1851,7 +1858,10 @@ def chat_stream(req: ChatRequest, request: Request):
                     {"type": "done", "answer": answer, "session_id": sid,
                      "searches": agent.searches,
                      "answer_id": aid,
-                     "sources": getattr(agent, "sources", [])}) + "\n\n"
+                     "sources": getattr(agent, "sources", []),
+                     "followups": getattr(agent, "followups", []),
+                     "unverified": getattr(agent, "unverified", [])
+                     }) + "\n\n"
                 return
             else:
                 yield "data: " + json.dumps(
@@ -1866,8 +1876,9 @@ def chat_stream(req: ChatRequest, request: Request):
 # ---------- Case drafting (free preview, paid full) ----------
 
 class DraftRequest(BaseModel):
-    doc_type: str        # demand | heads | opinion | contract
+    doc_type: str        # any key of DRAFT_TYPES
     facts: str
+    previous_draft: str | None = None   # refine mode: the draft to revise
 
 
 DRAFT_PREVIEW_CHARS = 1500
@@ -1888,7 +1899,8 @@ def draft_stream(req: DraftRequest, request: Request):
     if dt not in DRAFT_TYPES:
         raise HTTPException(400, "Unknown document type.")
     facts = (req.facts or "").strip()
-    if len(facts) < 20:
+    refining = bool((req.previous_draft or "").strip())
+    if len(facts) < (5 if refining else 20):
         raise HTTPException(400, "Describe the matter in a few sentences "
                                  "so the draft has facts to work from.")
     if len(facts) > 8000:
@@ -1918,8 +1930,19 @@ def draft_stream(req: DraftRequest, request: Request):
 
     agent.on_event = lambda label: q.put(("search", label))
     agent.on_delta = on_delta
-    question = (f"Draft a {DRAFT_TYPES[dt]} based on the following "
-                f"instructions and facts:\n\n{facts}")
+    prev = (req.previous_draft or "").strip()
+    if len(prev) > 30000:
+        raise HTTPException(400, "Previous draft too long.")
+    if prev:
+        question = (f"Below is a {DRAFT_TYPES[dt]} you drafted earlier, "
+                    f"followed by revision instructions. Produce the "
+                    f"complete revised document, keeping everything not "
+                    f"affected by the instructions unchanged.\n\n"
+                    f"PREVIOUS DRAFT:\n{prev}\n\n"
+                    f"REVISION INSTRUCTIONS:\n{facts}")
+    else:
+        question = (f"Draft a {DRAFT_TYPES[dt]} based on the following "
+                    f"instructions and facts:\n\n{facts}")
 
     def work():
         t0 = time.time()

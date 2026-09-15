@@ -19,6 +19,28 @@ from index.build_index import chunk_id
 
 RRF_K = 60
 MIN_CHUNK_CHARS = 120   # drop TOC lines / bare headings from results
+
+# Cross-encoder reranker (ONNX via fastembed, CPU, ~10ms per pair).
+# Reranking the fused candidates before the top_k cut measurably lifts
+# precision over RRF scores alone. RERANK=0 disables; loads lazily and
+# fails soft (missing package / model download failure = no rerank).
+import os
+RERANK = os.getenv("RERANK", "1") != "0"
+RERANK_MODEL = os.getenv("RERANK_MODEL", "Xenova/ms-marco-MiniLM-L-6-v2")
+_reranker = None          # None = not tried, False = unavailable
+
+
+def _get_reranker():
+    global _reranker
+    if _reranker is None:
+        try:
+            from fastembed.rerank.cross_encoder import TextCrossEncoder
+            _reranker = TextCrossEncoder(RERANK_MODEL)
+        except Exception as e:
+            print(f"[retriever] reranker unavailable ({e}); "
+                  "falling back to RRF order")
+            _reranker = False
+    return _reranker or None
 YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 # Query understanding: exact references beat semantic similarity.
@@ -373,8 +395,10 @@ class HybridRetriever:
         # Precision boosts from exact references in the query
         self._apply_boosts(query, scores)
 
-        # Rank, then dedupe: one chunk per citation, skip TOC-line chunks
+        # Rank, then dedupe: one chunk per citation, skip TOC-line chunks.
+        # Collect ~3x top_k candidates so the reranker has room to work.
         ranked = sorted(scores, key=scores.get, reverse=True)
+        cand_cap = max(top_k * 3, 24) if RERANK else top_k
         out: list[dict] = []
         seen_cites: set[str] = set()
         for i in ranked:
@@ -389,6 +413,26 @@ class HybridRetriever:
             seen_cites.add(cite)
             # copy with the hybrid score so callers can judge relevance
             out.append({**r, "score": round(scores[i], 4)})
-            if len(out) >= top_k:
+            if len(out) >= cand_cap:
                 break
-        return out
+
+        # Cross-encoder rerank of the candidate pool. When the query
+        # holds an exact reference ("SI 127 of 2021", "section 71") the
+        # boosted RRF #1 is almost always right, so pin it first and let
+        # the reranker order the rest.
+        rr = _get_reranker() if RERANK and len(out) > top_k else None
+        if rr:
+            try:
+                docs = [(r.get("doc_title", "") + " " +
+                         (r.get("citation") or "") + " " +
+                         r["text"][:1200]) for r in out]
+                ce = list(rr.rerank(query, docs))
+                pin = (1 if (Q_INSTR_RE.search(query)
+                             or Q_SECTION_RE.search(query)) else 0)
+                order = list(range(pin)) + sorted(
+                    range(pin, len(out)), key=lambda i: ce[i],
+                    reverse=True)
+                out = [out[i] for i in order]
+            except Exception as e:
+                print(f"[retriever] rerank failed ({e}); using RRF order")
+        return out[:top_k]

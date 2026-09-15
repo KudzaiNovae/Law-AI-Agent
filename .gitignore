@@ -23,3 +23,6 @@ vendor/
 # misc
 *.tmp
 .DS_Store
+
+# Claude Code worktrees (2.6GB of checkouts, never a repo artefact)
+.claude/

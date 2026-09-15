@@ -7,7 +7,7 @@
 <title>OneGov | Zimbabwe's Constitution, Acts, statutory instruments and notices</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -26,15 +26,17 @@
     --accent-2: #8b5cf6;
     --accent-soft: #eef0fe;
     --accent-ink: #4338ca;
+    --gold: #6d28d9;
+    --gold-soft: #f3eefe;
     --card: #ffffff;
-    --shadow: 0 1px 3px rgba(0,0,0,.06);
-    --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
+    --shadow: 0 1px 3px rgba(0,0,0,.07);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,.10);
     --code-bg: #f4f4f5;
     --error-bg: #fdf3f3;
     --error-border: #e2b4b4;
-    --ring: rgba(99,102,241,.25);
+    --ring: rgba(99,102,241,.18);
     --grad: linear-gradient(135deg, #4f46e5, #8b5cf6);
-    --glow: 0 4px 16px rgba(99,102,241,.35);
+    --glow: 0 4px 16px rgba(99,102,241,.30);
   }
   [data-theme="dark"] {
     --bg: #131316;
@@ -48,13 +50,15 @@
     --accent-2: #a78bfa;
     --accent-soft: #232345;
     --accent-ink: #a5b4fc;
+    --gold: #a78bfa;
+    --gold-soft: #2a2345;
     --card: #1a1a1f;
     --shadow: 0 1px 3px rgba(0,0,0,.4);
-    --shadow-lg: 0 8px 30px rgba(0,0,0,.5);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,.55);
     --code-bg: #232328;
     --error-bg: #3a2727;
     --error-border: #7a4444;
-    --ring: rgba(129,140,248,.3);
+    --ring: rgba(129,140,248,.22);
     --grad: linear-gradient(135deg, #6366f1, #a78bfa);
     --glow: 0 4px 16px rgba(99,102,241,.45);
   }
@@ -241,11 +245,9 @@
   }
   @keyframes floaty { 50% { transform: translateY(-5px); } }
   .welcome h2 {
-    font-size: 32px; font-weight: 800; letter-spacing: -.025em;
-    margin-bottom: 12px;
-    background: var(--grad);
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 34px; font-weight: 600; letter-spacing: -.015em;
+    margin-bottom: 12px; color: var(--ink);
   }
   .welcome p {
     color: var(--muted); font-size: 14.5px; line-height: 1.6;
@@ -552,6 +554,7 @@
     /* five controls no longer fit: drop the pills duplicated by
        in-app links, keep Case-law mode and Draft */
     #judg-pill, #browse-pill { display: none; }
+    #cl-toggle, #draft-btn { white-space: nowrap; }
     .qleft span { font-size: 11.5px; }
     .src-chip .t { max-width: 30ch; }
     .followup { max-width: 100%; white-space: normal; text-align: left; }
@@ -608,6 +611,39 @@
     animation: rise .3s ease both;
   }
   .followup:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .followups { display: flex; flex-wrap: wrap; gap: 8px; }
+  .followups .followup { margin-top: 8px; }
+  .unverified {
+    margin-top: 10px; font-size: 12.5px; line-height: 1.5;
+    color: #b45309; cursor: help;
+  }
+  [data-theme="dark"] .unverified { color: #fbbf24; }
+
+  /* Prominent actions under a completed draft */
+  .draft-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .draft-act {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 10px; border: none;
+    background: var(--grad); color: #fff;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: transform .1s, box-shadow .15s;
+  }
+  .draft-act:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .draft-act.alt {
+    background: var(--accent-soft); color: var(--accent-ink);
+    border: 1px solid var(--border);
+  }
+
+  /* Example chips inside the draft dialog */
+  .draft-ex { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+  .draft-ex button {
+    text-align: left; font-size: 12px; line-height: 1.45;
+    padding: 7px 10px; border-radius: 8px; cursor: pointer;
+    border: 1px dashed var(--border);
+    background: transparent; color: var(--muted);
+    transition: border-color .15s, color .15s;
+  }
+  .draft-ex button:hover { border-color: var(--accent); color: var(--ink); }
   .followup:active { transform: scale(.98); }
   #jump-btn {
     position: absolute;
@@ -669,17 +705,18 @@
     border: 1px solid var(--border); background: var(--bg);
     color: var(--ink); font-size: 14px; }
   .auth-submit { padding: 11px; border-radius: 10px; border: 0; color: #fff;
-    background: linear-gradient(135deg,#4f46e5,#8b5cf6);
+    background: var(--grad);
     font-weight: 700; cursor: pointer; font-size: 14px; }
   .auth-err { color: #dc2626; font-size: 13px; min-height: 16px; }
   .auth-alt { font-size: 12.5px; color: var(--muted); }
   .auth-alt a { color: inherit; }
-  .modal.slim { width: min(400px, 100%); }
+  .modal.slim { width: min(440px, 100%); max-height: min(86vh, 720px);
+    overflow-y: auto; }
   .auth-hero { text-align: center; padding: 0 0 4px; }
   .auth-hero .mark { width: 44px; height: 44px; border-radius: 13px;
     margin: 0 auto 10px; display: flex; align-items: center;
     justify-content: center; font-weight: 800; font-size: 14px;
-    color: #fff; background: linear-gradient(135deg,#4f46e5,#8b5cf6); }
+    color: #fff; background: var(--grad); }
   .auth-hero h4 { font-size: 17px; font-weight: 800; }
   .auth-hero p { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
   .auth-tabs { background: var(--hover); border-radius: 11px; padding: 3px; }
@@ -706,7 +743,10 @@
 
   /* ---------- Payment / plans ---------- */
   .plans { display: flex; gap: 10px; align-items: stretch; }
-  @media (max-width: 480px) { .plans { flex-direction: column; } }
+  @media (max-width: 480px) {
+    .plans { flex-direction: column; }
+    .top-title { display: none; }   /* pills matter more than the strap */
+  }
   .plan-card { flex: 1; display: flex; flex-direction: column; gap: 7px;
     border: 1px solid var(--border); border-radius: 14px; padding: 14px;
     background: var(--card); position: relative; }
@@ -1043,7 +1083,7 @@
         Browse documents
       </button>
       <button class="icon-btn" id="export-btn" onclick="exportChat()"
-              title="Download chat as Markdown" aria-label="Download chat" style="display:none">
+              title="Download draft or chat" aria-label="Download" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>
@@ -1347,8 +1387,18 @@ function welcomeHTML() {
     ['Marriage', 'What are the requirements for a civil marriage?'],
     ['Elections', 'How does the Electoral Act regulate voter registration?'],
     ['Currency', 'Which statutory instruments regulate the use of foreign currency?'],
+    ['Property', 'What is the process for transferring immovable property?'],
+    ['Employment', 'What notice period applies when resigning from a job?'],
+    ['Mining', 'How do I apply for a mining claim in Zimbabwe?'],
+    ['Divorce', 'How is property shared on divorce under Zimbabwean law?'],
+    ['Inheritance', 'What happens to an estate when someone dies without a will?'],
+    ['Traffic', 'What are the penalties for driving without a licence?'],
+    ['Consumer', 'What are my rights when a shop refuses a refund?'],
+    ['Immigration', 'What are the requirements for a work permit in Zimbabwe?'],
+    ['Data', 'What does the Data Protection Act require of businesses?'],
+    ['Tenders', 'How does public procurement law regulate government tenders?'],
   ];
-  const cards = pool.sort(() => Math.random() - 0.5).slice(0, 4);
+  const cards = pool.sort(() => Math.random() - 0.5).slice(0, 3);
   return `<div class="welcome">
     <div class="mark">ZW</div>
     <h2>${t('welcome')}</h2>
@@ -1361,7 +1411,10 @@ function welcomeHTML() {
     cards.map(([cat, q]) =>
       `<button class="card" onclick="ask(${JSON.stringify(q).replace(/"/g,'&quot;')})">
          <span class="cat">${cat}</span>${q}</button>`).join('') +
-    `</div>
+    `<button class="card" onclick="openDraft()">
+       <span class="cat">&#9998; Draft</span>Draft a legal document:
+       demand, contract, affidavit, court papers and more</button>
+    </div>
     <button class="followup" style="margin-top:22px" onclick="openBrowse()">
       &#128218; Browse the full catalogue: Acts, SIs, notices and gazettes</button>
     ${corpusMeta ? `<p style="font-size:12px;color:var(--muted);margin-top:18px">
@@ -1386,11 +1439,20 @@ function msgHTML(m, isLast, idx) {
     ? `<div class="searches">` + m.searches.map(q =>
         `<span class="search-tag">&#128269; ${esc(q)}</span>`).join('') + `</div>`
     : '';
-  const fu = isLast && !m.error ? followupOf(m.text) : null;
-  const fuBtn = fu
-    ? `<div><button class="followup"
-         onclick="ask(${JSON.stringify(fu).replace(/"/g, '&quot;')})">
-         &#128172; ${esc(fu)}</button></div>`
+  const fus = isLast && !m.error
+    ? ((m.followups && m.followups.length) ? m.followups.slice(0, 3)
+       : (followupOf(m.text) ? [followupOf(m.text)] : []))
+    : [];
+  const fuBtn = fus.length
+    ? `<div class="followups">` + fus.map(f =>
+        `<button class="followup"
+           onclick="ask(${JSON.stringify(f).replace(/"/g, '&quot;')})">
+           &#128172; ${esc(f)}</button>`).join('') + `</div>`
+    : '';
+  const unv = (!m.error && m.unverified && m.unverified.length)
+    ? `<div class="unverified" title="These cited sections were not seen
+         in the retrieved documents; double-check them in the original.">
+         &#9888;&#65039; Could not verify: ${esc(m.unverified.join(', '))}</div>`
     : '';
   const tools = m.error
     ? `<button class="tool-btn" onclick="regenerate()">Retry</button>`
@@ -1404,6 +1466,8 @@ function msgHTML(m, isLast, idx) {
          onclick="exportMsg('${m.aid}', 'pdf', this)">PDF</button>
        <button class="tool-btn" title="Download as Word (Plus &amp; Pro)"
          onclick="exportMsg('${m.aid}', 'docx', this)">Word</button>` : ''}
+       ${m.draft ? `<button class="tool-btn" title="Revise this draft"
+         onclick="openRefine(${idx})">Refine</button>` : ''}
        <button class="tool-btn fb${m.fb === 'up' ? ' fb-on' : ''}"
          title="Good answer" onclick="sendFeedback(${idx}, 'up', this)">&#128077;</button>
        <button class="tool-btn fb${m.fb === 'down' ? ' fb-on' : ''}"
@@ -1415,9 +1479,19 @@ function msgHTML(m, isLast, idx) {
            &#128196; <span class="t">${esc(s.instrument)}</span></button>`
       ).join('') + `</div>`
     : '';
+  const draftRow = (m.draft && m.aid && !m.error)
+    ? `<div class="draft-actions">
+         <button class="draft-act" onclick="exportMsg('${m.aid}', 'docx', this)">
+           &#11015; Download Word</button>
+         <button class="draft-act" onclick="exportMsg('${m.aid}', 'pdf', this)">
+           &#11015; Download PDF</button>
+         <button class="draft-act alt" onclick="openRefine(${idx})">
+           &#9998; Refine draft</button>
+       </div>`
+    : '';
   return `<div class="row bot${m.error ? ' error' : ''}">
     <div class="avatar">ZW</div>
-    <div class="bot-body">${tags}<div class="md">${md(m.text)}</div>${srcs}${fuBtn}
+    <div class="bot-body">${tags}<div class="md">${md(m.text)}</div>${draftRow}${srcs}${fuBtn}
       <div class="bot-tools">${tools}</div>
     </div></div>`;
 }
@@ -1550,6 +1624,27 @@ async function downloadSource(btn) {
 
 function exportChat() {
   if (!current || !current.messages.length) return;
+  const last = [...current.messages].reverse()
+    .find(m => m.role === 'bot' && m.aid && !m.error);
+  if (!last) { exportChatMd(); return; }
+  const what = last.draft ? 'draft' : 'answer';
+  modalWrap.classList.add('show');
+  modalBox.classList.remove('wide');
+  modalBox.classList.add('slim');
+  modalBox.innerHTML = `<h3>Download
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <button class="auth-submit" onclick="closeModal();
+        exportMsg('${last.aid}', 'docx')">Latest ${what} as Word (.docx)</button>
+      <button class="auth-submit" onclick="closeModal();
+        exportMsg('${last.aid}', 'pdf')">Latest ${what} as PDF</button>
+      <button class="auth-submit" style="background:var(--accent-soft);
+        color:var(--accent-ink)" onclick="closeModal(); exportChatMd()">
+        Whole chat as Markdown (.md)</button>
+    </div>`;
+}
+
+function exportChatMd() {
   const lines = current.messages.map(m =>
     (m.role === 'user' ? '## You\n\n' : '## OneGov\n\n') + m.text);
   const mdText = `# ${current.title || 'OneGov chat'}\n\n` +
@@ -1731,6 +1826,8 @@ async function ask(text, isRegen) {
         finalMsg = { role: 'bot', text: ev.answer,
                      searches: ev.searches || [],
                      sources: ev.sources || [],
+                     followups: ev.followups || [],
+                     unverified: ev.unverified || [],
                      aid: ev.answer_id || null };
       } else if (ev.type === 'error') throw new Error(ev.error);
     });
@@ -1761,7 +1858,56 @@ async function ask(text, isRegen) {
 const DRAFT_LABELS = { demand: 'Letter of demand',
                        heads: 'Heads of argument',
                        opinion: 'Legal opinion / memo',
-                       contract: 'Contract / agreement' };
+                       contract: 'Contract / agreement',
+                       affidavit: 'Affidavit',
+                       application: 'Court application (notice of motion)',
+                       summons: 'Summons and declaration',
+                       plea: 'Plea / notice of opposition',
+                       lease: 'Lease agreement',
+                       will: 'Will / power of attorney',
+                       resolution: 'Company resolution' };
+const DRAFT_GROUPS = [
+  ['Letters & advice', ['demand', 'opinion']],
+  ['Court documents',  ['application', 'summons', 'plea', 'heads',
+                        'affidavit']],
+  ['Contracts & commercial', ['contract', 'lease', 'resolution']],
+  ['Personal', ['will']],
+];
+const DRAFT_EXAMPLES = {
+  demand: [
+    'My client, a landlord in Harare, is owed four months rent of $200 per month by a commercial tenant. Lease signed January 2025. Demand payment within 7 days or eviction proceedings follow.',
+    'My client supplied building materials worth USD 12,000 to a contractor in Bulawayo who has not paid despite three invoices. Demand payment within 14 days with interest.'],
+  opinion: [
+    'Advise a foreign investor on the legal requirements for acquiring a 60% stake in a Zimbabwean mining company, including indigenisation and exchange control approvals.',
+    'Advise an employer whether it may retrench 15 employees on notice, what packages are prescribed, and what approvals are required.'],
+  application: [
+    'Urgent chamber application in the High Court at Harare to interdict a sale in execution of my client\u2019s house scheduled for next week; the judgment debt is disputed and an appeal is pending.',
+    'Court application for a declaratory order that my client\u2019s suspension from a statutory board without a hearing was unlawful, with reinstatement and costs.'],
+  summons: [
+    'Summons in the High Court claiming USD 45,000 for breach of a supply agreement: goods delivered in March, payment due in 30 days, still unpaid. Interest and costs claimed.',
+    'Summons for damages of USD 20,000 arising from a road traffic accident at the corner of Samora Machel and Julius Nyerere caused by the defendant\u2019s negligent driving.'],
+  plea: [
+    'Draft a plea denying liability in a claim for USD 30,000 for goods sold and delivered; my client says the goods were defective and were rejected within 7 days.',
+    'Oppose an application for my client\u2019s eviction: the lease was validly renewed by email exchange and rent has been paid into the agreed account throughout.'],
+  heads: [
+    'Heads of argument in the Labour Court: unfair dismissal appeal where the employee was dismissed without a hearing after 8 years of service.',
+    'Heads of argument opposing summary judgment: there is a bona fide defence that the signature on the acknowledgement of debt was obtained by misrepresentation.'],
+  affidavit: [
+    'Founding affidavit for a company director confirming the company\u2019s resolution to institute proceedings and the facts of an unpaid USD 18,000 invoice.',
+    'Affidavit of a witness who saw the accident at Mbudzi roundabout on 3 May 2026, describing what happened for use in a damages claim.'],
+  contract: [
+    'Service agreement between a Harare software company and a bank: 12-month term, monthly retainer USD 3,000, IP owned by the bank, 30-day termination notice.',
+    'Employment contract for a finance manager: USD 2,500 per month, 3-month probation, confidentiality and restraint clauses, based in Harare.'],
+  lease: [
+    'Commercial lease for a shop in the Gulf Complex, Harare: 2-year term, USD 800 per month with 10% annual escalation, 3-month deposit, lessee pays utilities.',
+    'Residential lease for a house in Borrowdale: 12 months, USD 1,200 per month, deposit one month, no subletting, 3 months\u2019 notice.'],
+  will: [
+    'Will for a married businessman with three children: estate to spouse, then children equally; brother as executor; guardianship of the minor child to the spouse.',
+    'General power of attorney appointing my client\u2019s daughter to manage her Harare properties and bank accounts while she is abroad.'],
+  resolution: [
+    'Board resolution authorising the managing director to open a corporate account with CBZ Bank and sign all related documents.',
+    'Special resolution of shareholders to change the company name and increase share capital, with instructions for filing.'],
+};
 
 function openDraft() {
   modalWrap.classList.add('show');
@@ -1775,38 +1921,72 @@ function openDraft() {
         draft with citations. Free accounts get a preview; Plus and Pro
         get the full draft with Word export.</p>
       <label style="font-size:12px;font-weight:600">Document type</label>
-      <select id="draft-type" class="lang-sel"
+      <select id="draft-type" class="lang-sel" onchange="draftTypeChanged()"
               style="width:100%;margin:4px 0 10px">
-        ${Object.entries(DRAFT_LABELS).map(([k, v]) =>
-          `<option value="${k}">${v}</option>`).join('')}
+        ${DRAFT_GROUPS.map(([g, keys]) =>
+          `<optgroup label="${g}">` + keys.map(k =>
+            `<option value="${k}">${DRAFT_LABELS[k]}</option>`).join('')
+          + `</optgroup>`).join('')}
       </select>
       <label style="font-size:12px;font-weight:600">The matter: parties,
         facts, what you want the document to achieve</label>
-      <textarea id="draft-facts" rows="6" style="width:100%;margin:4px 0 12px;
+      <textarea id="draft-facts" rows="4" style="width:100%;margin:4px 0 8px;
         resize:vertical;font:inherit;padding:8px;border-radius:8px;
         border:1px solid var(--line);background:var(--bg);color:var(--ink)"
-        placeholder="Example: My client, a landlord in Harare, is owed four months rent of $200 per month by a commercial tenant. Lease signed January 2025. Demand payment within 7 days or eviction proceedings follow."></textarea>
+        placeholder="Describe the parties, the facts and what you want the document to achieve \u2014 or tap an example below."></textarea>
+      <div class="draft-ex" id="draft-ex"></div>
+      <label style="font-size:12px;font-weight:600">Your firm details
+        (optional — used on letterheads and signature blocks, saved on
+        this device)</label>
+      <textarea id="draft-firm" rows="2" style="width:100%;margin:4px 0 12px;
+        resize:vertical;font:inherit;padding:8px;border-radius:8px;
+        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
+        placeholder="Example: Moyo &amp; Partners, 12 Samora Machel Ave, Harare. Tel 024-000000."
+        >${localStorage.getItem('onegov-firm') || ''}</textarea>
       <button class="auth-submit" onclick="submitDraft()">Generate draft</button>
     </div>`;
+  draftTypeChanged();
+}
+
+function draftTypeChanged() {
+  const dt = document.getElementById('draft-type').value;
+  const box = document.getElementById('draft-ex');
+  if (!box) return;
+  box.innerHTML = (DRAFT_EXAMPLES[dt] || []).map(ex =>
+    `<button type="button" onclick="useDraftExample(this)"
+       data-ex="${ex.replace(/"/g, '&quot;')}">
+       &#128161; ${esc(ex)}</button>`).join('');
+}
+
+function useDraftExample(btn) {
+  const ta = document.getElementById('draft-facts');
+  ta.value = btn.dataset.ex;
+  ta.focus();
 }
 
 function submitDraft() {
   const dt = document.getElementById('draft-type').value;
-  const facts = document.getElementById('draft-facts').value.trim();
+  let facts = document.getElementById('draft-facts').value.trim();
+  const firm = document.getElementById('draft-firm').value.trim();
   if (facts.length < 20) {
     document.getElementById('draft-facts').focus();
     return;
   }
+  try { localStorage.setItem('onegov-firm', firm); } catch (e) {}
+  if (firm) facts += '\n\nOur firm details (use on the letterhead and ' +
+                     'signature blocks): ' + firm;
   closeModal();
   runDraft(dt, facts);
 }
 
-async function runDraft(dt, facts) {
+async function runDraft(dt, facts, prev) {
   if (busy) return;
   const label = DRAFT_LABELS[dt] || 'document';
   const chat = ensureChat(label + ' (draft)');
   chat.messages.push({ role: 'user',
-                       text: 'Draft a ' + label.toLowerCase() + ':\n' + facts });
+                       text: (prev ? 'Revise the ' + label.toLowerCase()
+                                   : 'Draft a ' + label.toLowerCase())
+                             + ':\n' + facts });
   save(); renderThread();
 
   setBusy(true);
@@ -1821,7 +2001,9 @@ async function runDraft(dt, facts) {
     const resp = await fetch('/api/draft/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ doc_type: dt, facts }),
+      body: JSON.stringify(prev
+        ? { doc_type: dt, facts, previous_draft: prev }
+        : { doc_type: dt, facts }),
       signal: aborter.signal,
     });
     if (!resp.ok) {
@@ -1855,7 +2037,8 @@ async function runDraft(dt, facts) {
         finalMsg = { role: 'bot', text: ev.answer,
                      searches: ev.searches || [],
                      sources: ev.sources || [],
-                     aid: ev.answer_id || null };
+                     aid: ev.answer_id || null,
+                     draft: ev.truncated ? null : dt };
       } else if (ev.type === 'error') throw new Error(ev.error);
     });
     if (!finalMsg) throw new Error('Connection closed early');
@@ -1877,6 +2060,38 @@ async function runDraft(dt, facts) {
     renderThread();
     if (!authState.email || authState.plan === 'free') refreshAuth();
   }
+}
+
+function openRefine(idx) {
+  const m = current && current.messages[idx];
+  if (!m || !m.draft) return;
+  const label = DRAFT_LABELS[m.draft] || 'document';
+  modalWrap.classList.add('show');
+  modalBox.classList.remove('wide');
+  modalBox.classList.add('slim');
+  modalBox.innerHTML = `<h3>Refine: ${label}
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <label style="font-size:12px;font-weight:600">What should change?</label>
+      <textarea id="refine-text" rows="4" style="width:100%;margin:4px 0 12px;
+        resize:vertical;font:inherit;padding:8px;border-radius:8px;
+        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
+        placeholder="Example: Change the payment deadline to 7 days and add an interest clause at the prescribed rate."></textarea>
+      <button class="auth-submit" onclick="submitRefine(${idx})">Revise
+        draft</button>
+    </div>`;
+  setTimeout(() => document.getElementById('refine-text').focus(), 50);
+}
+
+function submitRefine(idx) {
+  const m = current && current.messages[idx];
+  const txt = document.getElementById('refine-text').value.trim();
+  if (!m || txt.length < 5) {
+    document.getElementById('refine-text').focus();
+    return;
+  }
+  closeModal();
+  runDraft(m.draft, txt, m.text);
 }
 
 function regenerate() {
@@ -2574,8 +2789,9 @@ function openUpgrade(msg) {
           <div class="plan-price">$5<span class="per">/ 30 days</span></div>
           <ul class="plan-feats">
             <li>Unlimited questions</li>
-            <li>Full document drafting (demands, opinions,
-                heads, contracts)</li>
+            <li>Full document drafting: demands, contracts, affidavits,
+                court applications, summonses, pleas, leases, wills,
+                heads, opinions, resolutions</li>
             <li>Full answer history \u00b7 no ads</li>
             <li>10 PDF / Word exports a month</li>
             <li>Watch 3 instruments (in-app alerts)</li>
@@ -3151,7 +3367,7 @@ function applyLang() {
   const cs = document.getElementById('chat-search');
   if (cs) cs.placeholder = t('search');
   input.placeholder = t('placeholder');
-  const bp = document.querySelector('.top-pill');
+  const bp = document.getElementById('browse-pill');
   if (bp) bp.lastChild.textContent = ' ' + t('browseDocs');
   if (!authState.email && authBtn && authBtn.textContent.trim() === 'Sign in')
     authBtn.textContent = t('signIn');

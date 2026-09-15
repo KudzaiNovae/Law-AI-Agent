@@ -23,7 +23,10 @@ _PROVIDER_DOWN: dict[str, float] = {}
 QUOTA_COOLDOWN_S = 600
 _QUOTA_RE = re.compile(
     r"429|529|quota|rate.?limit|credit|insufficient|exhaust|overload"
-    r"|401|authentication|invalid.{0,8}key", re.I)
+    r"|401|authentication|invalid.{0,8}key"
+    # retired/renamed models (e.g. "model X is no longer available") and
+    # history replay the provider refuses (missing thought_signature)
+    r"|no longer available|not found|thought_signature", re.I)
 
 MAX_ANSWER_TOKENS = 1000   # responses are cited summaries, not essays
 from index.retriever import HybridRetriever, STOPWORDS, _tokenize
@@ -87,6 +90,11 @@ been applied. If a judgment is only a ZimLII summary, say the full text
 is on zimlii.org.
 
 How to research (before answering):
+a0. DECOMPOSE multi-part questions first: if the message bundles several
+   distinct legal issues ("can my landlord evict me AND keep my
+   deposit?"), identify each issue and run one targeted search per
+   issue rather than one vague combined search. Stay within the tool
+   budget; two well-aimed searches beat five fuzzy ones.
 a. Search 2-3 times with DIFFERENT phrasings: the user's plain words, the
    likely statutory wording, and key nouns alone. Legal drafting rarely
    matches everyday language ("fired from job" -> "termination of
@@ -200,8 +208,13 @@ Writing style (follow strictly):
    answers for genuinely multi-part or "explain" questions. Greetings
    and small talk get one friendly line with no citations and no
    closing disclaimer.
-6. Where helpful, end with ONE short suggested follow-up question the
-   user might ask next, on its own line, phrased as a question.
+6. After the disclaimer (rule 7), append up to THREE short follow-up
+   questions the user might naturally ask next, each on its own line
+   starting with the marker ">>" (two greater-than signs and a
+   space). Keep each under 90 characters. These lines are stripped out
+   and shown as clickable suggestion chips, so they must be the very
+   last lines of the answer, with nothing after them. Skip them for
+   greetings and small talk.
 7. End every substantive answer (not greetings or small talk) with:
    "This answer is drawn from Zimbabwe's
    officially gazetted laws and is general information, not legal advice.
@@ -214,6 +227,13 @@ DRAFT_TYPES = {
     "heads": "heads of argument",
     "opinion": "legal opinion / advice memorandum",
     "contract": "contract or agreement",
+    "affidavit": "affidavit",
+    "application": "court application (notice of motion and founding affidavit)",
+    "summons": "summons and declaration",
+    "plea": "plea / notice of opposition",
+    "lease": "lease agreement",
+    "will": "will / power of attorney",
+    "resolution": "company resolution",
 }
 
 DRAFT_STRUCTURE = {
@@ -252,10 +272,130 @@ Structure the contract as follows:
 - RECITALS explaining the background.
 - Numbered clauses: definitions; the core obligations of each party;
   payment terms; duration and termination; breach and remedies; dispute
-  resolution; notices (domicilium); general clauses; signature blocks.
+  resolution; notices (domicilium); general clauses.
 - Where a statute prescribes or constrains a term (for example minimum
   notice under the Labour Act), follow the statute and cite it in a
-  bracketed drafting note.""",
+  bracketed drafting note.
+- The document MUST end with signature blocks: "SIGNED at [PLACE] on
+  this [DAY] day of [MONTH] [YEAR]" for each party, with signature and
+  witness lines. Never omit the signature blocks.""",
+    "affidavit": """\
+Structure the affidavit as follows:
+- A heading block with court, case number and party placeholders
+  (or a standalone heading if not for court proceedings).
+- An opening averment: "I, [FULL NAME], of [ADDRESS], do hereby make
+  oath and state that:" with placeholders for the deponent's details.
+- Numbered paragraphs: the deponent's identity and capacity; that the
+  facts are within the deponent's personal knowledge and are true and
+  correct (or the source of belief for facts stated on information);
+  then the material facts in chronological order.
+- Where a fact engages a statutory requirement (for example a founding
+  affidavit requirement under the High Court Rules), cite the provision
+  in a bracketed drafting note.
+- A closing block: "Thus done and sworn to at [PLACE] on this [DAY] day
+  of [MONTH] [YEAR], the deponent having acknowledged that he/she knows
+  and understands the contents of this affidavit."
+- Signature line for the DEPONENT and a commissioner of oaths block
+  (BEFORE ME, COMMISSIONER OF OATHS, with name, address and capacity
+  placeholders).""",
+    "application": """\
+Structure the court application as two documents in one draft:
+NOTICE OF MOTION:
+- Court heading, case number placeholder, and parties block
+  (applicant/respondent placeholders).
+- "TAKE NOTICE that the applicant intends to apply to this Honourable
+  Court for an order in terms of the draft order annexed hereto" with
+  the relief sought set out in numbered paragraphs.
+- Notice of the respondent's right to oppose, the dies induciae, and
+  address for service placeholders; cite the applicable High Court
+  Rules provision in a bracketed drafting note.
+- Signature block for legal practitioners with firm placeholders.
+FOUNDING AFFIDAVIT:
+- Full affidavit structure: oath opening, deponent's identity and
+  authority, personal-knowledge averment, jurisdiction, the material
+  facts in numbered chronological paragraphs, the legal basis for the
+  relief citing retrieved provisions, urgency averments only if the
+  facts support urgency, and a prayer.
+- Closing oath block, deponent signature line, commissioner of oaths
+  block.""",
+    "summons": """\
+Structure the summons and declaration as two documents in one draft:
+SUMMONS:
+- Court heading, case number placeholder, plaintiff and defendant
+  placeholders with citations (name, description, address).
+- Command to the defendant to enter appearance to defend within the
+  dies induciae, and the consequence of default; cite the applicable
+  rule in a bracketed drafting note.
+- Statement of the claim amount / relief and address for service.
+DECLARATION:
+- Numbered paragraphs: the parties; jurisdiction; the material facts
+  giving rise to the cause of action in chronological order; the legal
+  basis citing retrieved provisions; damages or amounts claimed with
+  particularity; interest and costs.
+- A prayer setting out the relief claimed.
+- Signature block for the plaintiff's legal practitioners.""",
+    "plea": """\
+Structure the plea (or notice of opposition) as follows:
+- Court heading, case number and parties placeholders.
+- If a plea in an action: respond to the declaration paragraph by
+  paragraph in numbered paragraphs — admit, deny or confess and avoid
+  each allegation, and plead any special defences (prescription,
+  jurisdiction, locus standi) citing retrieved provisions.
+- If opposing a court application: a notice of opposition block plus an
+  opposing affidavit answering the founding affidavit paragraph by
+  paragraph, with oath opening and commissioner of oaths block.
+- A prayer for dismissal of the claim or application with costs.
+- Signature block for the legal practitioners.""",
+    "lease": """\
+Structure the lease agreement as follows:
+- Title, parties block (lessor/lessee with placeholders for names,
+  identity or registration numbers and addresses).
+- RECITALS describing the premises with placeholders.
+- Numbered clauses: definitions; the premises and permitted use; lease
+  period and renewal; rent, deposit and escalation; utilities and
+  levies; maintenance and repairs; alterations; insurance; subletting
+  and cession; breach and cancellation; eviction and applicable rent
+  regulations cited from the corpus (for example the Commercial
+  Premises (Lease Control) Act where it applies); notices (domicilium);
+  general clauses.
+- The document MUST end with signature blocks for lessor, lessee and
+  witnesses: "SIGNED at [PLACE] on this [DAY] day of [MONTH] [YEAR]".""",
+    "will": """\
+Structure the will (or power of attorney, as the facts indicate) as
+follows:
+FOR A WILL:
+- Title "LAST WILL AND TESTAMENT" and testator identification block
+  with placeholders.
+- Numbered clauses: revocation of previous wills; appointment of
+  executor(s) with powers; guardianship of minor children if relevant;
+  specific legacies; the residue; a per stirpes / substitution
+  provision; funeral wishes if instructed.
+- Cite formal validity requirements from the retrieved law (for example
+  the Wills Act) in bracketed drafting notes, including signing and
+  witnessing formalities.
+- Ends with a signing block: testator signature on each page, two
+  competent witnesses present at the same time, place and date
+  placeholders.
+FOR A POWER OF ATTORNEY:
+- Title, principal identification, appointment of the agent, the powers
+  granted in numbered paragraphs (specific or general), duration and
+  revocation, ratification clause, signing block with witnesses.""",
+    "resolution": """\
+Structure the company resolution as follows:
+- Heading: company name, registration number placeholder, and whether
+  it is a resolution of the board of directors or of shareholders
+  (ordinary or special), with the meeting date and place or a written
+  resolution recital.
+- Quorum and notice recitals.
+- "IT WAS RESOLVED THAT:" followed by the substantive resolutions in
+  numbered paragraphs, each specific enough to be acted on (authority
+  to sign, banking, transactions, appointments).
+- Cite the governing provisions of the Companies and Other Business
+  Entities Act retrieved from the corpus for anything the Act
+  regulates (special resolution thresholds, filing requirements) in
+  bracketed drafting notes.
+- Signature blocks for the chairperson and, for written resolutions,
+  all signatories, with date placeholders.""",
 }
 
 DRAFT_PROMPT = """\
@@ -400,6 +540,9 @@ class LawAgent:
         self.max_tokens = max_tokens or MAX_ANSWER_TOKENS
         self.searches: list[str] = []  # queries run for the last ask()
         self.sources: list[dict] = []  # instruments retrieved for last ask()
+        self.followups: list[str] = []   # suggested next questions
+        self.unverified: list[str] = []  # cited sections not seen in tools
+        self._evidence: list[str] = []   # raw tool outputs for last ask()
         self.deep = False              # Pro tier: more tool rounds + top_k
         self.on_event = on_event       # optional callback(label) per tool run
         self.on_delta = on_delta       # optional callback(text) per token chunk
@@ -453,11 +596,19 @@ class LawAgent:
                 pass
 
     def _run_tool(self, name: str, tool_input: dict) -> str:
+        out = self._run_tool_inner(name, tool_input)
+        # Evidence log for the citation-verification pass: everything the
+        # model actually saw this turn (capped so memory stays bounded).
+        if len(self._evidence) < 40:
+            self._evidence.append(out[:20000])
+        return out
+
+    def _run_tool_inner(self, name: str, tool_input: dict) -> str:
         if name == "list_legislation":
             doc_type = tool_input.get("doc_type")
             year = tool_input.get("year")
             parts = " ".join(str(x) for x in (doc_type, year) if x)
-            self._note(f"listing {parts or 'all'}")
+            self._note(f"Listing: {parts or 'all instruments'}")
             items = self.retriever.catalog(doc_type=doc_type, year=year)
             if not items:
                 return "No instruments matching that filter in the corpus."
@@ -469,13 +620,13 @@ class LawAgent:
 
         if name == "get_amendment_history":
             iname = tool_input.get("name", "")
-            self._note(f"amendment history of {iname}")
+            self._note(f"Checking amendments: {iname}")
             return json.dumps(self.retriever.amendment_history(iname),
                               ensure_ascii=False)
 
         if name == "read_instrument":
             iname = tool_input.get("name", "")
-            self._note(f"reading {iname}")
+            self._note(f"Reading: {iname}")
             chunks = self.retriever.get_instrument(iname)
             if not chunks:
                 return ("No instrument matching that name in the corpus. "
@@ -495,7 +646,7 @@ class LawAgent:
             return json.dumps(out, ensure_ascii=False)
 
         # search_legislation
-        self._note(tool_input.get("query", ""))
+        self._note("Searching: " + tool_input.get("query", ""))
         kw = {"doc_type": tool_input.get("doc_type"),
               "year": tool_input.get("year")}
         if self.deep:
@@ -576,8 +727,50 @@ class LawAgent:
     def ask(self, question: str) -> str:
         self.searches = []
         self.sources = []
+        self.followups = []
+        self.unverified = []
+        self._evidence = []
         self._compact_history()
-        return self._ask_openai_compat(question)
+        answer = self._ask_openai_compat(question)
+        answer = self._extract_followups(answer)
+        self.unverified = self._verify_citations(answer)
+        return answer
+
+    _FOLLOWUP_RE = re.compile(r"^\s*(?:>>|&gt;&gt;|\u226b)\s*(.+)$")
+
+    def _extract_followups(self, answer: str) -> str:
+        """Strip trailing '>> question' lines into self.followups."""
+        lines = answer.rstrip().split("\n")
+        fups: list[str] = []
+        while lines:
+            m = self._FOLLOWUP_RE.match(lines[-1])
+            if not m:
+                break
+            fups.insert(0, m.group(1).strip())
+            lines.pop()
+        self.followups = fups[:3]
+        return "\n".join(lines).rstrip()
+
+    _SECTION_RE = re.compile(r"section\s+(\d+[A-Z]{0,2})\b", re.I)
+
+    def _verify_citations(self, answer: str) -> list[str]:
+        """Cheap grounding check: every 'section N' the answer cites
+        should appear somewhere in the tool results the model saw.
+        Returns the citations that do not."""
+        if not self._evidence:
+            return []
+        evidence = " ".join(self._evidence).lower()
+        # citation fields look like "s 12" / "s 12(4)"; normalise both
+        bad: list[str] = []
+        for n in dict.fromkeys(self._SECTION_RE.findall(answer)):
+            n_l = n.lower()
+            if (f"section {n_l}" in evidence or f"s {n_l}" in evidence
+                    or f"s{n_l}" in evidence or f'"s {n_l}' in evidence
+                    or re.search(r"\bs\.?\s*" + re.escape(n_l) + r"\b",
+                                 evidence)):
+                continue
+            bad.append(f"section {n}")
+        return bad[:8]
 
     def retry_after_quota(self, question: str) -> str:
         """Pro priority: clear provider benches, drop the partial turn a
@@ -649,7 +842,11 @@ class LawAgent:
                     break
                 print(f"  [provider {p['name']} quota-benched; "
                       f"switching to {q['name']}]")
-                self._sanitize_history()
+                # Only strip provider extras (thought signatures) when
+                # leaving the provider family: Gemini REQUIRES its own
+                # signatures back, so gemini->gemini must keep them.
+                if p["name"].split(":")[0] != q["name"].split(":")[0]:
+                    self._sanitize_history()
         raise last_exc  # type: ignore[misc]
 
     @staticmethod

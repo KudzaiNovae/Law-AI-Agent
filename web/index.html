@@ -22,18 +22,21 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#f9f9fb" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131316" media="(prefers-color-scheme: dark)">
 <style>
   :root {
     --bg: #f9f9fb; --ink: #18181b; --muted: #71717a; --border: #e4e4e7;
-    --card: #fff; --accent: #4f46e5; --accent-ink: #4338ca;
-    --accent-soft: #eef0fe; --ring: rgba(99,102,241,.25);
+    --card: #ffffff; --accent: #4f46e5; --accent-ink: #4338ca;
+    --accent-soft: #eef0fe; --gold: #6d28d9; --gold-soft: #f3eefe;
+    --ring: rgba(99,102,241,.18);
     --grad: linear-gradient(135deg, #4f46e5, #8b5cf6);
-    --shadow: 0 1px 3px rgba(0,0,0,.06);
+    --shadow: 0 1px 3px rgba(0,0,0,.07);
+    --shadow-lg: 0 14px 40px -12px rgba(0,0,0,.18);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
     font-family: Inter, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     background: var(--bg); color: var(--ink); line-height: 1.65;
@@ -42,74 +45,128 @@
   body::before {
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background:
-      radial-gradient(700px 460px at 85% -10%, var(--ring), transparent 70%),
-      radial-gradient(560px 400px at -10% 30%, var(--ring), transparent 70%);
-    opacity: .5;
+      radial-gradient(720px 480px at 88% -12%, var(--ring), transparent 70%),
+      radial-gradient(560px 420px at -12% 34%, rgba(139,92,246,.10), transparent 70%);
   }
   a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1020px; margin: 0 auto; padding: 0 22px; width: 100%; }
+  .serif { font-family: Fraunces, Georgia, serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; width: 100%; }
 
-  nav { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
-  .mark { width: 36px; height: 36px; border-radius: 11px; color: #fff;
+  /* ---------- Nav ---------- */
+  .navbar { position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+  nav { display: flex; align-items: center; gap: 12px; padding: 13px 0; }
+  .mark { width: 36px; height: 36px; border-radius: 10px; color: #fff;
           display: flex; align-items: center; justify-content: center;
           font-weight: 800; font-size: 13px; background: var(--grad);
           box-shadow: 0 3px 12px var(--ring); }
   .brand { font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
   .beta-tag { display: inline-block; vertical-align: 3px; margin-left: 4px;
     font-size: 10px; font-weight: 700; letter-spacing: .05em;
-    text-transform: uppercase; color: var(--accent, #4f46e5);
-    background: var(--accent-soft, #eef0fe); border-radius: 99px;
-    padding: 2px 8px; }
+    text-transform: uppercase; color: var(--gold);
+    background: var(--gold-soft); border-radius: 99px; padding: 2px 8px; }
   nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center;
                font-size: 14px; color: var(--muted); font-weight: 500; }
   nav .links a:hover { color: var(--ink); }
   .btn { display: inline-flex; align-items: center; gap: 8px;
          background: var(--grad); color: #fff; font-weight: 700;
-         font-size: 14.5px; border-radius: 13px; padding: 12px 22px;
+         font-size: 14.5px; border-radius: 12px; padding: 12px 22px;
+         border: none; cursor: pointer;
          box-shadow: 0 5px 18px var(--ring);
          transition: transform .15s, box-shadow .15s; }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 9px 26px var(--ring); }
   .btn.ghost { background: var(--card); color: var(--accent-ink);
                border: 1px solid var(--border); box-shadow: var(--shadow); }
 
-  header { text-align: center; padding: 72px 0 30px; flex: 1; }
-  .eyebrow { display: inline-block; font-size: 12px; font-weight: 700;
-             letter-spacing: .06em; text-transform: uppercase;
-             color: var(--accent-ink); background: var(--accent-soft);
-             border-radius: 999px; padding: 6px 15px; margin-bottom: 22px; }
-  h1 { font-size: clamp(30px, 5.4vw, 52px); font-weight: 900;
-       letter-spacing: -.03em; line-height: 1.12; max-width: 820px;
-       margin: 0 auto 18px; }
-  h1 .g { background: var(--grad); -webkit-background-clip: text;
-          background-clip: text; color: transparent; }
-  .sub { color: var(--muted); font-size: 17px; max-width: 640px;
-         margin: 0 auto 32px; }
+  /* ---------- Hero ---------- */
+  header { text-align: center; padding: 76px 0 34px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 7px;
+             font-size: 12px; font-weight: 700; letter-spacing: .06em;
+             text-transform: uppercase; color: var(--accent-ink);
+             background: var(--accent-soft); border: 1px solid
+             color-mix(in srgb, var(--accent) 22%, transparent);
+             border-radius: 999px; padding: 6px 15px; margin-bottom: 24px; }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 99px;
+                  background: var(--accent); }
+  h1 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+       font-size: clamp(34px, 5.8vw, 60px); letter-spacing: -.015em;
+       line-height: 1.08; max-width: 880px; margin: 0 auto 20px; }
+  h1 em { font-style: italic; color: var(--accent-ink); }
+  .sub { color: var(--muted); font-size: 17.5px; max-width: 660px;
+         margin: 0 auto 34px; }
+  .sub strong { color: var(--ink); }
   .cta-row { display: flex; gap: 12px; justify-content: center;
-             flex-wrap: wrap; margin-bottom: 26px; }
+             flex-wrap: wrap; margin-bottom: 22px; }
   .stats { color: var(--muted); font-size: 13px; }
   .stats strong { color: var(--ink); }
 
   .chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center;
-           max-width: 760px; margin: 26px auto 0; }
+           max-width: 780px; margin: 26px auto 0; }
   .chip { font-size: 13px; background: var(--card); color: var(--ink);
           border: 1px solid var(--border); border-radius: 999px;
           padding: 8px 16px; box-shadow: var(--shadow);
           transition: border-color .15s, transform .15s; }
   .chip:hover { border-color: var(--accent); transform: translateY(-2px); }
 
-  .latest-cases { text-align: center; padding: 26px 0 6px; }
-  .latest-cases h2 { font-size: 26px; font-weight: 800;
-    letter-spacing: -.02em; margin-bottom: 6px; }
-  .latest-cases .plead { color: var(--muted); font-size: 14.5px;
-    margin-bottom: 20px; }
-  .lc-grid { display: flex; gap: 14px; max-width: 920px; margin: 0 auto;
+  /* ---------- Demo box ---------- */
+  .demo { max-width: 660px; margin: 40px auto 0; text-align: left;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; box-shadow: var(--shadow-lg); overflow: hidden; }
+  .demo .bar { display: flex; align-items: center; gap: 6px;
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 55%, var(--card)); }
+  .demo .bar i { width: 10px; height: 10px; border-radius: 99px;
+    background: var(--border); }
+  .demo .bar span { margin-left: 8px; font-size: 12px; font-weight: 600;
+    color: var(--muted); }
+  .demo .body { padding: 18px 20px; }
+  .demo .dq { font-weight: 600; font-size: 14.5px; margin-bottom: 12px;
+    display: flex; gap: 10px; align-items: baseline; }
+  .demo .who { flex-shrink: 0; font-size: 10.5px; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-soft); border-radius: 6px; padding: 2px 7px; }
+  .demo .da { display: flex; gap: 10px; font-size: 14px; line-height: 1.65; }
+  .demo .da .who { color: var(--gold); background: var(--gold-soft); }
+  .demo .cite { display: inline-block; background: var(--accent-soft);
+    color: var(--accent-ink); border-radius: 6px; padding: 0 6px;
+    font-size: 12.5px; font-weight: 600; }
+  .demo .try { display: inline-block; margin-top: 12px; font-size: 13px;
+    font-weight: 700; color: var(--accent); }
+
+  /* ---------- Section headings ---------- */
+  .sect { padding: 44px 0 10px; text-align: center; }
+  .sect h2 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: clamp(24px, 3.4vw, 34px); letter-spacing: -.01em;
+    margin-bottom: 8px; }
+  .sect .plead { color: var(--muted); font-size: 15px; max-width: 660px;
+    margin: 0 auto 26px; }
+
+  /* ---------- Feature grid ---------- */
+  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; text-align: left; }
+  .feat { background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; box-shadow: var(--shadow);
+    transition: border-color .15s, transform .15s; }
+  .feat:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .feat .ic { width: 38px; height: 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; background: var(--accent-soft); margin-bottom: 12px; }
+  .feat:nth-child(even) .ic { background: var(--gold-soft); }
+  .feat h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+  .feat p { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+  @media (max-width: 820px) { .feat-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 540px) { .feat-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- Latest cases ---------- */
+  .lc-grid { display: flex; gap: 14px; max-width: 960px; margin: 0 auto;
     align-items: stretch; text-align: left; }
   .lc-card { flex: 1; background: var(--card); border: 1px solid
     var(--border); border-radius: 16px; padding: 18px;
     box-shadow: var(--shadow); display: flex; flex-direction: column;
     gap: 8px; transition: border-color .15s, transform .15s; }
-  .lc-card:hover { border-color: var(--accent); transform:
-    translateY(-2px); }
+  .lc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
   .lc-court { font-size: 11px; font-weight: 700; letter-spacing: .05em;
     text-transform: uppercase; color: var(--accent-ink);
     background: var(--accent-soft); border-radius: 99px;
@@ -120,36 +177,56 @@
   .lc-date { color: var(--muted); font-size: 12.5px; }
   @media (max-width: 640px) { .lc-grid { flex-direction: column; } }
 
-  .pricing { text-align: center; padding: 30px 0 14px; }
-  .pricing h2 { font-size: 26px; font-weight: 800; letter-spacing: -.02em;
-    margin-bottom: 6px; }
-  .pricing .plead { color: var(--muted); font-size: 14.5px;
-    margin-bottom: 24px; }
-  .price-grid { display: flex; gap: 14px; max-width: 860px; margin: 0 auto;
+  /* ---------- Pricing ---------- */
+  .price-grid { display: flex; gap: 14px; max-width: 900px; margin: 0 auto;
     align-items: stretch; text-align: left; }
   .price-card { flex: 1; background: var(--card); border: 1px solid
-    var(--border); border-radius: 18px; padding: 24px 22px;
+    var(--border); border-radius: 18px; padding: 26px 22px;
     box-shadow: var(--shadow); display: flex; flex-direction: column;
     gap: 10px; position: relative; }
-  .price-card.hot { border-color: var(--accent);
-    box-shadow: 0 4px 18px var(--ring); }
+  .price-card.hot { border-color: var(--accent); box-shadow: var(--shadow-lg); }
   .price-tag { position: absolute; top: -11px; right: 16px;
     background: var(--grad); color: #fff; font-size: 11px; font-weight: 700;
     letter-spacing: .05em; text-transform: uppercase; padding: 3px 11px;
     border-radius: 999px; }
   .price-name { font-weight: 800; font-size: 16px; }
-  .price-amt { font-size: 30px; font-weight: 900; line-height: 1; }
-  .price-amt .per { font-size: 12.5px; font-weight: 500;
-    color: var(--muted); margin-left: 4px; }
+  .price-amt { font-family: Fraunces, Georgia, serif; font-size: 34px;
+    font-weight: 600; line-height: 1; }
+  .price-amt .per { font-family: Inter, sans-serif; font-size: 12.5px;
+    font-weight: 500; color: var(--muted); margin-left: 4px; }
   .price-feats { list-style: none; color: var(--muted); font-size: 13.5px;
     line-height: 1.6; flex: 1; }
-  .price-feats li { padding-left: 19px; position: relative;
-    margin-bottom: 4px; }
+  .price-feats li { padding-left: 19px; position: relative; margin-bottom: 4px; }
   .price-feats li::before { content: '\2713'; position: absolute; left: 0;
     color: var(--accent); font-weight: 700; }
   .price-card .btn { justify-content: center; }
 
-  footer { padding: 34px 0 40px; color: var(--muted); font-size: 12.5px;
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 680px; margin: 0 auto; padding: 34px 0 10px; }
+  .faq h2 { text-align: center; font-family: Fraunces, Georgia, serif;
+    font-weight: 600; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -.01em; margin-bottom: 18px; }
+  .faq details { border-bottom: 1px solid var(--border); padding: 2px 0; }
+  .faq summary { cursor: pointer; font-weight: 600; font-size: 15px;
+    padding: 14px 4px; list-style: none; display: flex;
+    justify-content: space-between; align-items: center; gap: 14px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--muted);
+    font-weight: 400; font-size: 19px; flex-shrink: 0; }
+  .faq details[open] summary::after { content: '\2212'; }
+  .faq details p { color: var(--muted); font-size: 14px; line-height: 1.65;
+    padding: 0 4px 15px; }
+
+  /* ---------- Footer CTA + footer ---------- */
+  .bigcta { margin: 44px auto 0; max-width: 900px; text-align: center;
+    background: var(--grad); color: #fff; border-radius: 22px;
+    padding: 44px 28px; box-shadow: var(--shadow-lg); }
+  .bigcta h2 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: clamp(24px, 3.6vw, 34px); margin-bottom: 8px; }
+  .bigcta p { opacity: .85; font-size: 14.5px; margin-bottom: 22px; }
+  .bigcta .btn { background: #fff; color: var(--accent-ink);
+    box-shadow: 0 6px 22px rgba(0,0,0,.22); }
+  footer { padding: 38px 0 44px; color: var(--muted); font-size: 12.5px;
            text-align: center; }
   footer a { text-decoration: underline; }
   footer .fineprint { max-width: 640px; margin: 10px auto 0; }
@@ -157,85 +234,38 @@
   /* ---------- Mobile ---------- */
   @media (max-width: 640px) {
     .wrap { padding: 0 16px; }
-    nav { padding: 14px 0; gap: 10px; }
-    .mark { width: 32px; height: 32px; border-radius: 10px; font-size: 12px; }
+    nav { padding: 11px 0; gap: 10px; }
+    .mark { width: 32px; height: 32px; border-radius: 9px; font-size: 12px; }
     .brand { font-size: 15.5px; }
     nav .links { gap: 14px; font-size: 13px; }
-    nav .links .btn { padding: 9px 14px; font-size: 13px;
-                      border-radius: 11px; }
-    header { padding: 42px 0 22px; }
+    nav .links .btn { padding: 9px 14px; font-size: 13px; border-radius: 11px; }
+    header { padding: 46px 0 24px; }
     .eyebrow { font-size: 10.5px; padding: 5px 12px; margin-bottom: 16px; }
-    h1 { line-height: 1.16; margin-bottom: 14px; }
+    h1 { line-height: 1.12; margin-bottom: 14px; }
     .sub { font-size: 15px; margin-bottom: 26px; }
     .cta-row { gap: 9px; }
-    .cta-row .btn { width: 100%; max-width: 320px;
-                    justify-content: center; }
+    .cta-row .btn { width: 100%; max-width: 320px; justify-content: center; }
     .stats { font-size: 12px; padding: 0 6px; }
     .chips { gap: 7px; margin-top: 20px; }
     .chip { font-size: 12.5px; padding: 7px 13px; }
     .price-grid { flex-direction: column; max-width: 380px; }
-    .pricing h2 { font-size: 22px; }
-    footer { padding: 24px 0 32px; }
+    .bigcta { padding: 34px 20px; border-radius: 18px; }
+    footer { padding: 26px 0 34px; }
   }
   @media (max-width: 420px) {
-    /* hero already has the main CTA: drop the nav button so the
-       top bar never overflows on small phones */
     nav .links .btn { display: none; }
     nav .links { gap: 18px; }
   }
 
-  /* ---------- Demo box ---------- */
-  .demo {
-    max-width: 640px; margin: 34px auto 0; text-align: left;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow);
-  }
-  .demo .dq {
-    font-weight: 600; font-size: 14.5px; margin-bottom: 10px;
-    display: flex; gap: 8px; align-items: baseline;
-  }
-  .demo .dq .who, .demo .da .who {
-    flex-shrink: 0; font-size: 11px; font-weight: 700;
-    letter-spacing: .04em; text-transform: uppercase; color: var(--accent);
-  }
-  .demo .da { display: flex; gap: 8px; font-size: 14px; line-height: 1.6; }
-  .demo .da .who { color: var(--muted); }
-  .demo .da .cite {
-    display: inline-block; background: var(--accent-soft);
-    color: var(--accent-ink); border-radius: 6px;
-    padding: 0 6px; font-size: 12.5px; font-weight: 600;
-  }
-  .demo .try {
-    display: inline-block; margin-top: 12px; font-size: 13px;
-    font-weight: 600; color: var(--accent);
-  }
-
-  /* ---------- FAQ ---------- */
-  .faq { max-width: 640px; margin: 0 auto; padding: 26px 0 10px; }
-  .faq h2 { text-align: center; font-size: 26px; font-weight: 800;
-            letter-spacing: -.02em; margin-bottom: 18px; }
-  .faq details {
-    border-bottom: 1px solid var(--line); padding: 2px 0;
-  }
-  .faq summary {
-    cursor: pointer; font-weight: 600; font-size: 15px;
-    padding: 13px 4px; list-style: none;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: '+'; color: var(--muted);
-                        font-weight: 400; font-size: 19px; }
-  .faq details[open] summary::after { content: '\2212'; }
-  .faq details p { color: var(--muted); font-size: 14px; line-height: 1.65;
-                   padding: 0 4px 15px; }
-
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #131316; --ink: #ececee; --muted: #9d9da6;
-      --line: #27272c; --border: #27272c; --card: #1a1a1f;
-      --accent: #818cf8; --accent-ink: #a5b4fc; --accent-soft: #232345;
-      --ring: rgba(129,140,248,.3); --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --bg: #131316; --ink: #ececee; --muted: #9d9da6; --border: #27272c;
+      --card: #1a1a1f; --accent: #818cf8; --accent-ink: #a5b4fc;
+      --accent-soft: #232345; --gold: #a78bfa; --gold-soft: #2a2345;
+      --ring: rgba(129,140,248,.22);
       --grad: linear-gradient(135deg, #6366f1, #a78bfa);
+      --shadow: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-lg: 0 14px 40px -12px rgba(0,0,0,.6);
     }
   }
   html { color-scheme: light dark; }
@@ -258,8 +288,8 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
     !localStorage.getItem('onegov_maint_20260724'))
   document.getElementById('maint-banner').style.display = 'flex';
 </script>
-<div class="wrap">
 
+<div class="navbar"><div class="wrap">
   <nav>
     <div class="mark">ZW</div>
     <div class="brand">OneGov AI <span class="beta-tag">Beta</span></div>
@@ -271,14 +301,18 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
       <a class="btn" href="/app.html?auth=signup">Sign up free</a>
     </div>
   </nav>
+</div></div>
+
+<div class="wrap">
 
   <header>
-    <span class="eyebrow">Free to start · English · chiShona · isiNdebele</span>
-    <h1>Ask anything about <span class="g">Zimbabwe's Constitution, Acts,
-      statutory instruments and court judgments</span></h1>
+    <span class="eyebrow"><span class="dot"></span>
+      Free to start · English · chiShona · isiNdebele</span>
+    <h1>Zimbabwe's laws, <em>answered</em> — with the exact section
+      and case to prove it</h1>
     <p class="sub"><strong>OneGov AI</strong> reads the actual gazetted
-      texts and court judgments and answers simply and clearly, citing the
-      exact sections and cases and pointing you to the exact spot in the
+      texts and court judgments, answers in plain language, and cites the
+      exact sections and cases so you can verify every word in the
       original document. No more digging through pages.</p>
     <div class="cta-row">
       <a class="btn" href="/app.html">Ask OneGov AI &rarr;</a>
@@ -299,23 +333,58 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
     </div>
 
     <div class="demo">
-      <div class="dq"><span class="who">You</span>
-        How much notice must my employer give before terminating my
-        contract?</div>
-      <div class="da"><span class="who">OneGov</span>
-        <div>Under the Labour Act <span class="cite">[Chapter 28:01]</span>,
-        notice depends on your contract: <span class="cite">section
-        12(4)</span> requires <strong>3 months' notice</strong> for
-        contracts without a limit of time or of two years or more, 2 months
-        for one to two years, and less for shorter terms, and
-        termination itself is restricted by <span class="cite">section
-        12(4a)</span>&hellip;
-        <a class="try" href="/app.html?q=How+much+notice+must+my+employer+give+before+terminating+my+contract%3F">
-          Ask the full question &rarr;</a></div></div>
+      <div class="bar"><i></i><i></i><i></i><span>onegovai.app</span></div>
+      <div class="body">
+        <div class="dq"><span class="who">You</span>
+          How much notice must my employer give before terminating my
+          contract?</div>
+        <div class="da"><span class="who">OneGov</span>
+          <div>Under the Labour Act <span class="cite">[Chapter 28:01]</span>,
+          notice depends on your contract: <span class="cite">section
+          12(4)</span> requires <strong>3 months' notice</strong> for
+          contracts without a limit of time or of two years or more, 2 months
+          for one to two years, and less for shorter terms, and
+          termination itself is restricted by <span class="cite">section
+          12(4a)</span>&hellip;
+          <a class="try" href="/app.html?q=How+much+notice+must+my+employer+give+before+terminating+my+contract%3F">
+            Ask the full question &rarr;</a></div></div>
+      </div>
     </div>
   </header>
 
-  <section class="latest-cases" id="latest-cases" style="display:none">
+  <section class="sect" id="features">
+    <h2>Everything a practitioner, researcher or citizen needs</h2>
+    <p class="plead">One place for the law itself, the cases that interpret
+      it, and the documents you need to act on it.</p>
+    <div class="feat-grid">
+      <div class="feat"><div class="ic">&#9878;&#65039;</div>
+        <h3>Answers with citations</h3>
+        <p>Every answer cites the exact section, SI or case and links you
+          to the original gazetted text so you can verify it yourself.</p></div>
+      <div class="feat"><div class="ic">&#127963;&#65039;</div>
+        <h3>Court judgments</h3>
+        <p>Constitutional Court, Supreme Court, High Court and Labour Court
+          decisions, searchable by party, citation or court.</p></div>
+      <div class="feat"><div class="ic">&#9998;&#65039;</div>
+        <h3>Document drafting</h3>
+        <p>Demands, contracts, affidavits, court applications, summonses,
+          pleas, leases, wills, opinions and more, with refine-and-export
+          to Word or PDF.</p></div>
+      <div class="feat"><div class="ic">&#127757;</div>
+        <h3>Three languages</h3>
+        <p>Ask and read answers in English, chiShona or isiNdebele.</p></div>
+      <div class="feat"><div class="ic">&#128196;</div>
+        <h3>All documents free</h3>
+        <p>Browse, read and download every Act, SI, gazette and judgment
+          in the catalogue at no cost, always.</p></div>
+      <div class="feat"><div class="ic">&#128276;</div>
+        <h3>Amendment watches</h3>
+        <p>Watch the instruments you rely on and get notified when they
+          are amended or replaced.</p></div>
+    </div>
+  </section>
+
+  <section class="sect" id="latest-cases" style="display:none">
     <h2>Latest court judgments</h2>
     <p class="plead">Fresh from the courts — search thousands more on the
       <a href="/caselaw.html" style="color:var(--accent);font-weight:600">
@@ -323,14 +392,14 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
     <div class="lc-grid" id="lc-grid"></div>
   </section>
 
-  <section class="pricing" id="pricing">
+  <section class="sect" id="pricing">
     <h2>Simple pricing</h2>
-    <p class="plead">Start free. Upgrade when you need more with one-off
-      30-day passes, no auto-renewal. Pay by EcoCash, OneMoney or card via
-      Paynow. All official documents are free for everyone to browse,
-      read and download; paid passes only unlock more of the AI
-      assistant. Payments go toward the hosting and running costs that
-      keep OneGov AI online.</p>
+    <p class="plead">Start free. Upgrade with one-off 30-day passes, no
+      auto-renewal. Pay by EcoCash, OneMoney or card via Paynow. All
+      official documents are free for everyone to browse, read and
+      download; paid passes only unlock more of the AI assistant.
+      Payments go toward the hosting and running costs that keep
+      OneGov AI online.</p>
     <div class="price-grid">
       <div class="price-card">
         <div class="price-name">Free</div>
@@ -349,8 +418,9 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
         <div class="price-amt">$5<span class="per">/ 30 days</span></div>
         <ul class="price-feats">
           <li>Unlimited questions</li>
-          <li>Full document drafting: demands, opinions, heads of
-            argument, contracts</li>
+          <li>Full document drafting: demands, contracts, affidavits,
+            court applications, summonses, pleas, leases, wills,
+            heads of argument, opinions, resolutions</li>
           <li>No ads &middot; full answer history</li>
           <li>10 PDF &amp; Word exports a month</li>
           <li>Watch 3 instruments for amendments</li>
@@ -430,6 +500,12 @@ if (Date.now() < Date.parse('2026-07-25T00:00:00+02:00') &&
         answer cites its sections precisely so you can check the original
         text right beside it.</p>
     </details>
+  </section>
+
+  <section class="bigcta">
+    <h2>Stop digging through pages</h2>
+    <p>Ask your first question free — no card, no commitment.</p>
+    <a class="btn" href="/app.html">Ask OneGov AI &rarr;</a>
   </section>
 
   <footer>
