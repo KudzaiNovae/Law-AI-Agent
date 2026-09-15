@@ -71,7 +71,11 @@ def _init_db() -> None:
                   "searches TEXT, ts TEXT)")
         c.execute("CREATE TABLE IF NOT EXISTS cache("
                   "key TEXT PRIMARY KEY, answer TEXT, searches TEXT, "
-                  "ts REAL)")
+                  "ts REAL, hits INTEGER DEFAULT 0)")
+        try:    # existing installs predate the FAQ hit counter
+            c.execute("ALTER TABLE cache ADD COLUMN hits INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
         c.execute("CREATE TABLE IF NOT EXISTS users("
                   "id TEXT PRIMARY KEY, email TEXT UNIQUE, salt TEXT, "
                   "pw_hash TEXT, created TEXT, plan TEXT DEFAULT 'free')")
@@ -1271,35 +1275,125 @@ def api_usage(request: Request):
 
 # ---------------- Answer cache (first question of a session) --------
 CACHE_TTL = int(os.getenv("CACHE_TTL", str(24 * 3600)))
+# A handful of questions ("what is the speed limit?", "how much notice
+# must my employer give?") are asked over and over by different people.
+# Each repeat extends how long that answer stays served from cache, up
+# to a week — which is also how often the corpus is re-ingested, so a
+# hot FAQ is effectively cached until the law underneath it changes.
+FAQ_TTL_MAX_MULT = int(os.getenv("FAQ_TTL_MAX_MULT", "7"))
+
+# Wording that changes how a question reads but not what it asks. Only
+# openers and sign-offs are stripped: word order and the words
+# themselves are left alone, because "can I evict" and "can I be
+# evicted" are opposite legal questions and must never share a key.
+_CACHE_FILLER_RE = re.compile(
+    r"^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening))\b[,!.\s]*"
+    r"|^(?:please|kindly)\s+"
+    r"|^(?:can|could|would)\s+you\s+(?:please\s+)?"
+    r"(?:tell\s+me|explain|let\s+me\s+know)\s+(?:about\s+)?"
+    r"|^i\s+(?:want|need|would\s+like)\s+to\s+know\s+(?:about\s+)?"
+    r"|\s*(?:please|thanks|thank\s+you)[!.\s]*$", re.I)
+
+
+def _corpus_version() -> str:
+    """Stamp cached answers with the corpus they were researched against.
+
+    Without this a cached answer outlives the law it describes: the
+    weekly re-ingest can add the very SI that changes the answer, and
+    nothing else would evict the old one.
+    """
+    try:
+        return str(int((PROCESSED_DIR / "chunks.jsonl").stat().st_mtime))
+    except OSError:
+        return "0"
+
+
+def _normalise_question(msg: str) -> str:
+    norm = " ".join(msg.lower().split())
+    for a, b in (("\u2019", "'"), ("\u201c", '"'), ("\u201d", '"')):
+        norm = norm.replace(a, b)
+    for _ in range(3):        # openers stack: "hi, please can you tell me"
+        stripped = _CACHE_FILLER_RE.sub("", norm).strip()
+        if stripped == norm:
+            break
+        norm = stripped
+    return norm.strip(" ?!.,")
 
 
 def _cache_key(req: "ChatRequest") -> str:
-    norm = " ".join(req.message.lower().split())
     return hashlib.sha256(
-        ((req.lang or "en") + "|" + norm).encode()).hexdigest()
+        ((req.lang or "en") + "|" + _corpus_version() + "|" +
+         _normalise_question(req.message)).encode()).hexdigest()
 
 
 def _cache_get(key: str):
     try:
         with _db() as c:
-            row = c.execute("SELECT answer, searches, ts FROM cache "
+            row = c.execute("SELECT answer, searches, ts, hits FROM cache "
                             "WHERE key=?", (key,)).fetchone()
-        if row and time.time() - row[2] < CACHE_TTL:
-            return row[0], json.loads(row[1])
+            if not row:
+                return None
+            ttl = CACHE_TTL * min(1 + (row[3] or 0), FAQ_TTL_MAX_MULT)
+            if time.time() - row[2] >= ttl:
+                return None
+            c.execute("UPDATE cache SET hits=hits+1 WHERE key=?", (key,))
+        return row[0], json.loads(row[1])
     except Exception:
-        pass
-    return None
+        return None
 
 
 def _cache_put(key: str, answer: str, searches: list) -> None:
     try:
         with _db() as c:
-            c.execute("INSERT OR REPLACE INTO cache VALUES(?,?,?,?)",
-                      (key, answer,
-                       json.dumps(searches or [], ensure_ascii=False),
-                       time.time()))
+            # Refreshing an expired answer keeps its hit count: the
+            # question is still an FAQ, only the answer went stale.
+            c.execute(
+                "INSERT INTO cache(key, answer, searches, ts, hits) "
+                "VALUES(?,?,?,?,0) "
+                "ON CONFLICT(key) DO UPDATE SET answer=excluded.answer, "
+                "searches=excluded.searches, ts=excluded.ts",
+                (key, answer,
+                 json.dumps(searches or [], ensure_ascii=False),
+                 time.time()))
     except Exception:
         pass
+
+
+# ---------------- Suggested follow-ups --------------------------------
+# The model appends a "**Next questions**" block (SYSTEM_PROMPT rule 6).
+# It is split off here rather than left in the prose so that exports,
+# shares and the PDF/Word output carry the answer only, and the chat UI
+# gets the questions as structured data to render as buttons.
+_FOLLOWUP_HEAD_RE = re.compile(
+    r"\n[ \t]*(?:\*\*|__|#{1,4}\s*)?next\s+questions?\s*:?\s*(?:\*\*|__)?"
+    r"[ \t]*\n", re.I)
+_FOLLOWUP_ITEM_RE = re.compile(r"^[-*\u2022\d.)\s]*(.+?\?)\s*$")
+MAX_FOLLOWUPS = 3
+
+
+def _split_followups(answer: str) -> tuple[str, list[str]]:
+    """(answer without the block, up to three follow-up questions)."""
+    if not answer:
+        return answer, []
+    m = _FOLLOWUP_HEAD_RE.search(answer)
+    if not m:
+        return answer, []
+    questions: list[str] = []
+    for line in answer[m.end():].splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        item = _FOLLOWUP_ITEM_RE.match(line)
+        if not item:
+            break          # prose after the list: stop, keep what we have
+        q = item.group(1).strip(" *_`")
+        if 12 <= len(q) <= 160 and q not in questions:
+            questions.append(q)
+        if len(questions) >= MAX_FOLLOWUPS:
+            break
+    if not questions:
+        return answer, []
+    return answer[:m.start()].rstrip() + "\n", questions
 
 
 class ChatRequest(BaseModel):
@@ -1491,20 +1585,26 @@ def bulk_download(doc_type: str, year: int, request: Request):
                              f'attachment; filename="{fname}"'})
 
 
-@app.get("/api/source")
-def resolve_source(title: str):
-    """Resolve an instrument title (as cited in an answer) to its source
-    document, so the UI can offer it as a download."""
+# "[Chapter 28:01]" as cited, and "Chapter 28 01" as some corpus titles
+# spell it after the punctuation is stripped out of the filename.
+_CHAPTER_RE = re.compile(r"chapter\s*\[?\s*(\d{1,2})\s*[:\s]\s*(\d{2})\b",
+                         re.I)
+
+
+def _best_instrument(title: str) -> tuple[str, str] | None:
+    """(corpus title, source file) for an instrument named the way an
+    answer cites it, or None when nothing matches well enough."""
     title = normalize_refs(title)
     # filler words must not count as title overlap ("...Of The Lisbon...")
     _FILLER = {"of", "the", "and", "as", "at", "on", "in", "for", "to",
                "a", "an", "section"}
     q = set(_tokenize(title)) - _FILLER
     if not q:
-        raise HTTPException(404, "No such document")
+        return None
     q_years = {t for t in q if t.isdigit() and len(t) == 4}
     # exact instrument references like "SI 127 of 2021" must match exactly
     refs = {(int(n), y) for n, y in Q_INSTR_RE.findall(title)}
+    q_chap = _CHAPTER_RE.search(title)
     best_file, best_title, best_score = None, None, 0.0
     seen: set[str] = set()
     for r in _retriever.records:
@@ -1515,12 +1615,29 @@ def resolve_source(title: str):
         tset = set(_tokenize(t)) - _FILLER
         if not tset:
             continue
+        suffix_pen = 0.0
         if refs:
             t_nums = {int(x) for x in tset if x.isdigit() and len(x) <= 4}
             if not any(n in t_nums and int(y) in t_nums for n, y in refs):
                 continue
+            # SI 127A of 2021 is a different instrument from SI 127 of
+            # 2021, but the letter is a filler token, so the two titles
+            # score identically. Prefer the unlettered one unless the
+            # citation itself carried the letter.
+            for n, _y in refs:
+                pat = rf"\b{n}\s*[A-Za-z]\b"
+                if re.search(pat, t, re.I) and not re.search(pat, title,
+                                                             re.I):
+                    suffix_pen = 1.0
+        # A chapter number is an identity, not a hint: tokens alone can't
+        # tell 13:11 from 11:13, which is how the Road Traffic Act used
+        # to resolve to the Unlawful Organizations Act.
+        if q_chap:
+            t_chap = _CHAPTER_RE.search(t)
+            if t_chap and t_chap.groups() != q_chap.groups():
+                continue
         overlap = len(q & tset)
-        score = overlap + overlap / len(tset)
+        score = overlap + overlap / len(tset) - suffix_pen
         # cited year must agree with the document's year
         t_years = {x for x in tset if x.isdigit() and len(x) == 4}
         if q_years:
@@ -1540,10 +1657,109 @@ def resolve_source(title: str):
             best_file = r.get("source_file")
             best_title, best_score = t, score
     if not best_file or best_score < 2:
+        return None
+    return best_title, best_file
+
+
+@app.get("/api/source")
+def resolve_source(title: str):
+    """Resolve an instrument title (as cited in an answer) to its source
+    document, so the UI can offer it as a download."""
+    hit = _best_instrument(title)
+    if not hit:
         raise HTTPException(404, "No such document")
+    best_title, best_file = hit
     best_file = _display_file(best_file)
     return {"title": best_title, "file": best_file,
             "url": f"/api/download/{best_file}"}
+
+
+# ---------------- Cited section text ----------------------------------
+# A citation chip in the chat opens the provision itself, straight from
+# the corpus the answer was written from. That is the whole promise of
+# the product — the reader never has to take the model's word for it —
+# so this reads the indexed chunks rather than re-deriving anything.
+
+PASSAGE_MAX_CHARS = 8000
+# "s 18", "section 12(4)", "ss. 3" — the subsection is dropped because
+# chunks are indexed per section.
+_CITED_SECTION_RE = re.compile(
+    r"\b(?:s|ss|sec|sects?|sections?)\.?\s*(\d{1,3}[A-Za-z]?)\b", re.I)
+
+
+def _split_citation(cite: str) -> tuple[str, str | None]:
+    """('Labour Act', '18') from either "Labour Act, s 18 (Maternity
+    leave)" or "section 18 of the Labour Act".
+
+    The section has to come out before the instrument is matched: left
+    in, its number competes with the numbers in instrument titles, and
+    "Labour Act, s 18" happily resolves to the Sericulture Act
+    [Chapter 18:18].
+    """
+    m = _CITED_SECTION_RE.search(cite)
+    if not m:
+        return cite, None
+    rest = cite[:m.start()] + " " + cite[m.end():]
+    rest = re.sub(r"\([^)]*\)\s*$", " ", rest)   # trailing section title
+    # a leading subsection and the "of the" that joined it to the name
+    rest = re.sub(r"^[\s,;.]*(?:\([^)]{1,10}\))?[\s,;.]*"
+                  r"(?:of\s+)?(?:the\s+)?", "", rest)
+    rest = rest.strip(" ,;.")
+    return (rest or cite), m.group(1)
+
+
+@app.get("/api/passage")
+def passage(title: str, section: str | None = None):
+    """The corpus text of a cited provision.
+
+    `title` is the citation as it appears in an answer, e.g.
+    "Labour Act, s 18 (Maternity leave)" — the section is read out of it
+    when not passed separately. When the section cannot be found the
+    instrument's opening text is returned with exact=false, which is
+    still more useful to the reader than an error.
+    """
+    name, cited = _split_citation(title)
+    section = section or cited
+    hit = _best_instrument(name)
+    if not hit:
+        raise HTTPException(404, "That instrument is not in the corpus.")
+    doc_title, source_file = hit
+    want = (section or "").strip().lstrip("0").lower() or None
+
+    chunks = [r for r in _retriever.records
+              if r.get("doc_title") == doc_title]
+    picked = [r for r in chunks
+              if want and str(r.get("section", "")).strip()
+              .lstrip("0").lower() == want]
+    exact = bool(picked)
+    if not picked:
+        picked = chunks[:3]
+    if not picked:
+        raise HTTPException(404, "That instrument is not in the corpus.")
+
+    parts, used, truncated = [], 0, False
+    for r in picked:
+        t = r.get("text", "")
+        room = PASSAGE_MAX_CHARS - used
+        if len(t) > room:
+            parts.append(t[:room])
+            truncated = True
+            break
+        parts.append(t)
+        used += len(t)
+    body = "\n\n".join(parts)
+    first = picked[0]
+    disp = _display_file(source_file)
+    return {"title": doc_title,
+            "section": first.get("section") if exact else None,
+            "section_title": first.get("section_title") if exact else None,
+            "citation": first.get("citation") if exact else doc_title,
+            "doc_type": first.get("doc_type", ""),
+            "text": body,
+            "exact": exact,
+            "truncated": truncated,
+            "file": disp,
+            "url": f"/api/download/{disp}"}
 
 
 _CASELAW_CACHE: dict = {"mtime": 0.0, "items": []}
@@ -1759,31 +1975,38 @@ def chat(req: ChatRequest, request: Request):
     sid, agent = _get_agent(req)
     ckey = _cache_key(req) if not req.session_id else None
     if ckey and (hit := _cache_get(ckey)):
-        answer, searches = hit
+        raw, searches = hit
+        # the cache holds the raw answer, so the follow-up block survives
+        # a cache hit and is split the same way on every path
+        answer, followups = _split_followups(raw)
         _seed_cached(sid, agent, req.message.strip(), answer)
         aid = _store_answer(req.message.strip(), answer, searches)
         log_chat(sid, req.message.strip(), answer=answer,
                  searches=searches, ms=0)
         return {"session_id": sid, "answer": answer,
-                "searches": searches, "answer_id": aid}
+                "searches": searches, "answer_id": aid,
+                "followups": followups}
     t0 = time.time()
     pro = _is_pro(request)
     try:
-        answer = _agent_ask(agent, req, pro)
+        raw = _agent_ask(agent, req, pro)
     except Exception as e:
         log_chat(sid, req.message.strip(), error=str(e),
                  ms=int((time.time() - t0) * 1000))
         code, msg = _friendly_error(e)
         raise HTTPException(code, msg)
     if ckey:
-        _cache_put(ckey, answer, agent.searches)
+        _cache_put(ckey, raw, agent.searches)
+    answer, followups = _split_followups(raw)
     _save_session(sid, agent)
     aid = _store_answer(req.message.strip(), answer, agent.searches)
     log_chat(sid, req.message.strip(), answer=answer,
              searches=agent.searches, ms=int((time.time() - t0) * 1000))
     return {"session_id": sid, "answer": answer,
-            "searches": agent.searches, "answer_id": aid,
-            "sources": getattr(agent, "sources", [])}
+            "searches": agent.searches, "steps": agent.steps,
+            "answer_id": aid,
+            "sources": getattr(agent, "sources", []),
+            "followups": followups}
 
 
 @app.post("/api/chat/stream")
@@ -1795,7 +2018,8 @@ def chat_stream(req: ChatRequest, request: Request):
 
     ckey = _cache_key(req) if not req.session_id else None
     if ckey and (hit := _cache_get(ckey)):
-        answer, searches = hit
+        raw, searches = hit
+        answer, followups = _split_followups(raw)
         _seed_cached(sid, agent, req.message.strip(), answer)
         aid = _store_answer(req.message.strip(), answer, searches)
         log_chat(sid, req.message.strip(), answer=answer,
@@ -1804,16 +2028,19 @@ def chat_stream(req: ChatRequest, request: Request):
         def cached_gen():
             for s in searches:
                 yield "data: " + json.dumps(
-                    {"type": "search", "query": s}) + "\n\n"
+                    {"type": "search", "query": s,
+                     "step": "search"}) + "\n\n"
             yield "data: " + json.dumps(
                 {"type": "done", "answer": answer, "session_id": sid,
-                 "searches": searches, "answer_id": aid}) + "\n\n"
+                 "searches": searches, "answer_id": aid,
+                 "followups": followups}) + "\n\n"
         return StreamingResponse(cached_gen(),
                                  media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache",
                                           "X-Accel-Buffering": "no"})
     q: queue.Queue = queue.Queue()
-    agent.on_event = lambda label: q.put(("search", label))
+    agent.on_event = lambda label, kind="search": q.put(("search",
+                                                         (label, kind)))
     agent.on_delta = lambda text: q.put(("delta", text))
     pro = _is_pro(request)
 
@@ -1821,14 +2048,15 @@ def chat_stream(req: ChatRequest, request: Request):
         t0 = time.time()
         msg = req.message.strip()
         try:
-            answer = _agent_ask(agent, req, pro)
+            raw = _agent_ask(agent, req, pro)
             if ckey:
-                _cache_put(ckey, answer, agent.searches)
+                _cache_put(ckey, raw, agent.searches)
+            answer, followups = _split_followups(raw)
             _save_session(sid, agent)
             aid = _store_answer(msg, answer, agent.searches)
             log_chat(sid, msg, answer=answer, searches=agent.searches,
                      ms=int((time.time() - t0) * 1000))
-            q.put(("done", (answer, aid)))
+            q.put(("done", (answer, aid, followups)))
         except Exception as e:
             log_chat(sid, msg, error=str(e),
                      ms=int((time.time() - t0) * 1000))
@@ -1840,18 +2068,22 @@ def chat_stream(req: ChatRequest, request: Request):
         while True:
             kind, payload = q.get()
             if kind == "search":
+                label, step = payload
                 yield "data: " + json.dumps(
-                    {"type": "search", "query": payload}) + "\n\n"
+                    {"type": "search", "query": label,
+                     "step": step}) + "\n\n"
             elif kind == "delta":
                 yield "data: " + json.dumps(
                     {"type": "delta", "text": payload}) + "\n\n"
             elif kind == "done":
-                answer, aid = payload
+                answer, aid, followups = payload
                 yield "data: " + json.dumps(
                     {"type": "done", "answer": answer, "session_id": sid,
                      "searches": agent.searches,
+                     "steps": getattr(agent, "steps", []),
                      "answer_id": aid,
-                     "sources": getattr(agent, "sources", [])}) + "\n\n"
+                     "sources": getattr(agent, "sources", []),
+                     "followups": followups}) + "\n\n"
                 return
             else:
                 yield "data: " + json.dumps(
@@ -1916,7 +2148,8 @@ def draft_stream(req: DraftRequest, request: Request):
         streamed["n"] += len(text)
         q.put(("delta", text))
 
-    agent.on_event = lambda label: q.put(("search", label))
+    agent.on_event = lambda label, kind="search": q.put(("search",
+                                                         (label, kind)))
     agent.on_delta = on_delta
     question = (f"Draft a {DRAFT_TYPES[dt]} based on the following "
                 f"instructions and facts:\n\n{facts}")
@@ -1947,8 +2180,10 @@ def draft_stream(req: DraftRequest, request: Request):
         while True:
             kind, payload = q.get()
             if kind == "search":
+                label, step = payload
                 yield "data: " + json.dumps(
-                    {"type": "search", "query": payload}) + "\n\n"
+                    {"type": "search", "query": label,
+                     "step": step}) + "\n\n"
             elif kind == "delta":
                 yield "data: " + json.dumps(
                     {"type": "delta", "text": payload}) + "\n\n"
@@ -1958,6 +2193,7 @@ def draft_stream(req: DraftRequest, request: Request):
                     {"type": "done", "answer": answer, "answer_id": aid,
                      "truncated": truncated,
                      "searches": agent.searches,
+                     "steps": getattr(agent, "steps", []),
                      "sources": getattr(agent, "sources", [])}) + "\n\n"
                 return
             else:

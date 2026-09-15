@@ -26,6 +26,9 @@ _QUOTA_RE = re.compile(
     r"|401|authentication|invalid.{0,8}key", re.I)
 
 MAX_ANSWER_TOKENS = 1000   # responses are cited summaries, not essays
+import decompose
+import verify
+from config import VERIFY_CITATIONS
 from index.retriever import HybridRetriever, STOPWORDS, _tokenize
 
 SYSTEM_PROMPT = """\
@@ -200,9 +203,19 @@ Writing style (follow strictly):
    answers for genuinely multi-part or "explain" questions. Greetings
    and small talk get one friendly line with no citations and no
    closing disclaimer.
-6. Where helpful, end with ONE short suggested follow-up question the
-   user might ask next, on its own line, phrased as a question.
-7. End every substantive answer (not greetings or small talk) with:
+6. Where helpful, finish a substantive answer with a final block:
+
+       **Next questions**
+       - <question the reader would sensibly ask next>
+       - <another>
+
+   Two or three, each a complete question ending in a question mark, each
+   answerable from Zimbabwean law, and none of them already answered
+   above. The app strips this block out and shows the questions as
+   buttons, so never refer to it in your prose. It goes at the very
+   end, after the closing note in rule 7. Omit it entirely for
+   greetings, small talk, refusals, or genuinely self-contained answers.
+7. End the answer itself (not greetings or small talk) with:
    "This answer is drawn from Zimbabwe's
    officially gazetted laws and is general information, not legal advice.
    Our records are updated regularly; anything missing may be found on
@@ -399,9 +412,16 @@ class LawAgent:
         self.system = system or SYSTEM_PROMPT
         self.max_tokens = max_tokens or MAX_ANSWER_TOKENS
         self.searches: list[str] = []  # queries run for the last ask()
+        # kind of each entry in self.searches, same length and order, so a
+        # re-rendered message keeps the icons the live trail showed
+        self.steps: list[str] = []
         self.sources: list[dict] = []  # instruments retrieved for last ask()
+        # (doc_title, section) of every chunk a tool returned this turn —
+        # the ground truth the answer's citations are checked against
+        self.retrieved: list[dict] = []
+        self._repaired = False         # one citation-repair round per ask
         self.deep = False              # Pro tier: more tool rounds + top_k
-        self.on_event = on_event       # optional callback(label) per tool run
+        self.on_event = on_event       # optional callback(label, kind) per tool
         self.on_delta = on_delta       # optional callback(text) per token chunk
         # Provider chain: PROVIDER first, the other as quota fallback.
         # Both are driven through OpenAI-compatible endpoints so the same
@@ -444,20 +464,36 @@ class LawAgent:
                 return p
         return self.chain[-1]
 
-    def _note(self, label: str) -> None:
-        self.searches.append(label)
+    def _event(self, label: str, kind: str) -> None:
+        """Research-trail event for the UI. `kind` is one of search /
+        read / history / list / verify and only drives presentation."""
         if self.on_event:
             try:
-                self.on_event(label)
+                self.on_event(label, kind)
             except Exception:
                 pass
+
+    def _note(self, label: str, kind: str = "search") -> None:
+        self.searches.append(label)
+        self.steps.append(kind)
+        self._event(label, kind)
+
+    def _subqueries(self, query: str) -> list[str]:
+        """Split a compound search query, or [] to search it as given.
+
+        Runs on the model's search query rather than the raw question,
+        which keeps it self-limiting: when the agent has already narrowed
+        to one topic, looks_compound says no and we skip the call.
+        """
+        p = self._provider()
+        return decompose.subqueries(p["client"], p["model"], query)
 
     def _run_tool(self, name: str, tool_input: dict) -> str:
         if name == "list_legislation":
             doc_type = tool_input.get("doc_type")
             year = tool_input.get("year")
             parts = " ".join(str(x) for x in (doc_type, year) if x)
-            self._note(f"listing {parts or 'all'}")
+            self._note(f"listing {parts or 'all'}", kind="list")
             items = self.retriever.catalog(doc_type=doc_type, year=year)
             if not items:
                 return "No instruments matching that filter in the corpus."
@@ -469,13 +505,13 @@ class LawAgent:
 
         if name == "get_amendment_history":
             iname = tool_input.get("name", "")
-            self._note(f"amendment history of {iname}")
+            self._note(f"amendment history of {iname}", kind="history")
             return json.dumps(self.retriever.amendment_history(iname),
                               ensure_ascii=False)
 
         if name == "read_instrument":
             iname = tool_input.get("name", "")
-            self._note(f"reading {iname}")
+            self._note(f"reading {iname}", kind="read")
             chunks = self.retriever.get_instrument(iname)
             if not chunks:
                 return ("No instrument matching that name in the corpus. "
@@ -484,6 +520,9 @@ class LawAgent:
                    "file": chunks[0].get("source_file", "")}
             if src not in self.sources:
                 self.sources.append(src)
+            self.retrieved.extend(
+                {"doc_title": c.get("doc_title", ""),
+                 "section": c.get("section", "")} for c in chunks)
             out = {"instrument": chunks[0]["doc_title"],
                    "sections": [{"citation": c.get("citation"),
                                  "text": c["text"][:2000]}
@@ -495,12 +534,22 @@ class LawAgent:
             return json.dumps(out, ensure_ascii=False)
 
         # search_legislation
-        self._note(tool_input.get("query", ""))
+        query = tool_input.get("query", "")
         kw = {"doc_type": tool_input.get("doc_type"),
               "year": tool_input.get("year")}
         if self.deep:
             kw["top_k"] = 14
-        results = self.retriever.search(tool_input.get("query", ""), **kw)
+        # A compound query ("evicted and deposit kept") embeds to a point
+        # between its topics and retrieves neither well. Split it and
+        # fuse the sub-searches; subs is [] whenever that isn't worth it.
+        subs = self._subqueries(query)
+        if subs:
+            for s in subs:
+                self._note(s)
+            results = self.retriever.multi_search(subs, **kw)
+        else:
+            self._note(query)
+            results = self.retriever.search(query, **kw)
         if not results:
             return "No matching provisions found in the corpus."
         for r in results:
@@ -509,6 +558,9 @@ class LawAgent:
                    "file": r.get("source_file", "")}
             if src not in self.sources:
                 self.sources.append(src)
+        self.retrieved.extend(
+            {"doc_title": r.get("doc_title", ""),
+             "section": r.get("section", "")} for r in results)
         payload = [{"instrument": r.get("doc_title", ""),
                     "citation": r["citation"],
                     "type": r.get("doc_type"),
@@ -575,7 +627,10 @@ class LawAgent:
 
     def ask(self, question: str) -> str:
         self.searches = []
+        self.steps = []
         self.sources = []
+        self.retrieved = []
+        self._repaired = False
         self._compact_history()
         return self._ask_openai_compat(question)
 
@@ -715,7 +770,45 @@ class LawAgent:
             self.messages.append({"role": "system",
                                   "content": self.system})
         self.messages.append({"role": "user", "content": question})
-        for _ in range(12 if self.deep else 8):  # max tool rounds
+        answer = self._run_rounds(tools, 12 if self.deep else 8)
+        return self._verify_citations(answer, tools)
+
+    def _verify_citations(self, answer: str, tools) -> str:
+        """Give the model one chance to fix citations it cannot support.
+
+        Runs on the finished draft, against the chunks the tools actually
+        returned. Only spends a round when verify.check finds a concrete
+        problem, so clean answers cost nothing but a regex pass.
+
+        The reader may already have seen the flawed draft stream past.
+        That is fine: the UI clears the interim prose when the "verify"
+        event arrives and renders the corrected answer from the final
+        payload, so what they are left with is the checked version.
+        """
+        if not VERIFY_CITATIONS or self._repaired or not answer:
+            return answer
+        problems = verify.check(answer, self.retrieved)
+        if not problems:
+            return answer
+        self._repaired = True
+        print(f"  [citation check: {len(problems)} unsupported]")
+        self._event("checking citations", "verify")
+        self.messages.append({"role": "user", "content": (
+            "CITATION CHECK — your draft was not shown to the reader yet. "
+            "These citations do not match anything your tools returned:\n"
+            + "\n".join(f"- {p}" for p in problems) +
+            "\n\nFor each one, either search for the correct provision and "
+            "cite it accurately, or drop the claim entirely. Never restate "
+            "a citation you cannot support from a tool result. Then give "
+            "the corrected answer in full, in the same format and with the "
+            "same Sources section. Output only the answer itself, with no "
+            "note about this correction.")})
+        fixed = self._run_rounds(tools, 4)
+        return fixed or answer
+
+    def _run_rounds(self, tools, max_rounds: int) -> str:
+        """Drive the model until it answers without calling a tool."""
+        for _ in range(max_rounds):
             try:
                 content, tcs = self._stream_round(tools)
             except Exception:
