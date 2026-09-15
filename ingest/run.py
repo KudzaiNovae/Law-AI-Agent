@@ -90,6 +90,70 @@ def infer_meta(path: Path) -> dict:
     return {"title": title, "doc_type": doc_type}
 
 
+# A Zimbabwean national ID ("63-1002015-E-42"), and the same digits as
+# pdfplumber renders them out of a right-to-left table, which is how the
+# deceased-voter registers come out.
+NATIONAL_ID_RE = re.compile(
+    r"\b\d{2}\s?-\s?\d{6,7}\s?-?\s?[A-Z]\b|\b[A-Z]\s?-\s?\d{6,7}\s?-\s?\d{2}\b")
+# A register has to be both long enough to be a bulk roll and mostly
+# made of ID numbers. Counting alone is not enough: the Constitutional
+# Court presidential election petition annexes voter affidavits and
+# carries 112 IDs, so a bare count threshold low enough to catch a small
+# roll also throws away a landmark judgment.
+#
+# Density separates them with room to spare. Measured over this corpus:
+#
+#   deceased-voter registers      1 ID per 140-155 chars
+#   presidential election petition    1 ID per 1 106 chars
+#   densest real Gazette issue        1 ID per 5 985 chars
+#
+# 500 sits between the first two groups with 3x margin below and 2x
+# above. Both conditions must hold, so a short document with a dense
+# handful of IDs — a deed transfer, say — is not a register either.
+MIN_NATIONAL_IDS = 100
+MIN_CHARS_PER_ID = 500
+
+
+def is_personal_register(text: str) -> bool:
+    """A bulk roll of named individuals — a voters roll, a deceased
+    register — rather than an instrument.
+
+    Worth its own rule for two reasons. Each row becomes a chunk, so one
+    such file can outweigh a hundred Acts in the index and answer
+    nothing. And the rows carry national ID numbers, addresses and dates
+    of birth, which have no business being served back out of a public
+    search API however lawfully the Gazette published them.
+
+    The test is density rather than count: a register is made of ID
+    numbers, where a judgment only mentions some.
+    """
+    found = len(NATIONAL_ID_RE.findall(text))
+    if found < MIN_NATIONAL_IDS:
+        return False
+    return len(text) / found < MIN_CHARS_PER_ID
+
+
+# Directories of named people or companies that carry no ID numbers, so
+# the rule above cannot see them. Listed one by one on purpose: every
+# general rule tried for these also caught real law — the closest put
+# the Criminal Procedure (Sentencing Guidelines) Regulations one point
+# away from a roll of election candidates. A list cannot make that
+# mistake, and it can be read and argued with.
+DIRECTORY_FILES = {
+    # 5 580 rows: company name, e-mail address and mobile number
+    "gn_gn_2022_1508_registered_suppliers_of_goods.pdf",
+    # 5 185 rows, one award recipient's name each
+    "gazette_government_gazette_extraordinary_vol_civ_no_59.pdf",
+    # rolls of 2023 election candidates. These answer "who stood in
+    # Mutare North", which is not a question about the law, and they
+    # crowd out the Electoral Act on "harmonised election nomination
+    # court" — see the eval of that name.
+    "gn_gn_2023_1129_party_list_nomination_results.pdf",
+    "gn_gn_2023_1130_nomination_court_results_for_national_assembly_"
+    "direct_election.pdf",
+}
+
+
 CACHE_DIR = PROCESSED_DIR / "file_cache"
 
 
@@ -135,6 +199,9 @@ def main() -> None:
             if re.search(r"voter_?s?_roll|voters_roll", path.name, re.I):
                 print(f"skip (voters-roll bulk list): {path.name}")
                 continue
+            if path.name in DIRECTORY_FILES:
+                print(f"skip (directory of names, not law): {path.name}")
+                continue
             # same judgment available from another source (see
             # ingest/dedupe_judgments.py) — index only the kept copy
             if RAW_MANIFEST.get(path.name, {}).get("duplicate_of"):
@@ -158,6 +225,11 @@ def main() -> None:
                 text = extract_text(path)
             except Exception as e:  # one bad file must not kill the run
                 print(f"  FAILED ({type(e).__name__}): {e}")
+                continue
+            # The filename rule above only catches registers that say so
+            # in their name; these arrive titled by Gazette volume.
+            if is_personal_register(text):
+                print("  skip (register of named individuals)")
                 continue
             chunks = chunk_document(text, meta["title"], meta["doc_type"],
                                     source_file=path.name)

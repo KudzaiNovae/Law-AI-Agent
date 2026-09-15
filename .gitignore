@@ -20,9 +20,19 @@ data/chroma/
 data/processed/
 vendor/
 
+# dedupe_raw's undo buffer, not source corpus. Every file in here was
+# tracked under data/raw until the commit that moved it, so the way back
+# is `git checkout <that commit>~1 -- data/raw/<name>`. Committing a
+# second copy would add weight without adding recoverability.
+data/raw_dupes/
+
 # misc
 *.tmp
 .DS_Store
 
 # Claude Code worktrees (2.6GB of checkouts, never a repo artefact)
 .claude/
+
+# ocr_scanned.py keeps the pre-OCR originals here; the OCR'd file
+# replaces them in data/raw, which is tracked.
+data/raw_prescan/
