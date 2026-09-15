@@ -10,6 +10,10 @@ fastapi>=0.110.0
 uvicorn>=0.29.0
 reportlab>=4.0
 python-docx>=1.1
+# Binary .doc and RTF judgments — Veritas publishes the older Supreme
+# Court ones that way — are converted by LibreOffice, which is not a pip
+# package: apt install libreoffice-writer. Needed only to ingest, never
+# to serve, so the container image does without it.
 
 # Cross-encoder reranking (index/rerank.py). ONNX on CPU: ~10ms a pair
 # and no torch, so unlike a sentence-transformers reranker it is cheap
