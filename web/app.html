@@ -322,6 +322,9 @@
     font-weight: 500;
     animation: rise .25s ease both;
   }
+  /* "Searching", "Reading", "Verifying" — the verb carries the meaning,
+     the query is what changes, so keep the verb quieter than the text. */
+  .search-tag .step-verb { opacity: .72; font-weight: 600; }
 
   .md { font-size: 14.5px; line-height: 1.7; overflow-wrap: break-word; }
   .md p { margin-bottom: 13px; }
@@ -503,6 +506,16 @@
     max-width: 100%; transition: border-color .15s, background .15s;
   }
   .src-chip:hover { border-color: var(--accent); }
+  /* Inline citations in the prose. Underlined rather than boxed: they
+     sit mid-sentence and a chip every second line would be unreadable. */
+  .cite-link {
+    display: inline; padding: 0; font: inherit; cursor: pointer;
+    color: var(--accent-ink); text-align: left;
+    text-decoration: underline; text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+  .cite-link:hover { text-decoration-style: solid;
+                     background: var(--accent-soft); border-radius: 4px; }
   .src-chip .t { overflow: hidden; text-overflow: ellipsis;
                  white-space: nowrap; max-width: 46ch; }
 
@@ -645,6 +658,10 @@
   }
   .draft-ex button:hover { border-color: var(--accent); color: var(--ink); }
   .followup:active { transform: scale(.98); }
+  /* Two or three suggested next questions. They wrap rather than
+     scroll: on a phone a chip that runs off the edge is never read. */
+  .followups { display: flex; flex-wrap: wrap; gap: 8px; }
+  .followups .followup { margin-top: 10px; }
   #jump-btn {
     position: absolute;
     bottom: 118px; left: 50%; transform: translateX(-50%);
@@ -889,6 +906,25 @@
              flex-direction: column; }
   .wp-view.on { display: flex; }
   #wp-browse { padding: 13px 15px; overflow-y: auto; }
+  #wp-cite { padding: 15px 17px; overflow-y: auto; }
+  .cite-instr { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .cite-sec { font-size: 15.5px; font-weight: 700; letter-spacing: -.01em;
+              margin-bottom: 11px; }
+  .cite-note, .cite-miss {
+    font-size: 12.5px; line-height: 1.55; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 10px;
+    padding: 8px 11px; margin-bottom: 11px;
+  }
+  /* The statute's own words: monospaced-ish and pre-wrapped, because
+     the indentation of paragraphs (a), (b), (c) carries meaning. */
+  .cite-text {
+    white-space: pre-wrap; font-size: 13.5px; line-height: 1.65;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 13px 15px;
+    overflow-wrap: break-word;
+  }
+  .cite-acts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 11px; }
+  .cite-acts .tool-btn { opacity: 1; border: 1px solid var(--border); }
   #wp-frame { flex: 1; width: 100%; border: 0; background: #fff;
               display: none; }
   .wp-doctools { display: flex; align-items: center; gap: 4px;
@@ -1132,6 +1168,8 @@
       <div class="wp-tabs">
         <button class="wp-tab on" id="wp-tab-browse" onclick="wpShow('browse')">
           Browse</button>
+        <button class="wp-tab" id="wp-tab-cite" onclick="wpShow('cite')"
+                style="display:none">Section</button>
         <button class="wp-tab" id="wp-tab-doc" onclick="wpShow('doc')"
                 style="display:none">Document</button>
       </div>
@@ -1143,6 +1181,7 @@
     </div>
     <div class="wp-body">
       <div class="wp-view on" id="wp-browse"></div>
+      <div class="wp-view" id="wp-cite"></div>
       <div class="wp-view" id="wp-doc">
         <div class="wp-doctools">
           <div class="wp-zoomgrp">
@@ -1423,11 +1462,32 @@ function welcomeHTML() {
     </div>`;
 }
 
-function followupOf(text) {
-  const qs = text.split('\n')
-    .map(l => l.replace(/^[-*>\s#]+/, '').replace(/\*\*/g, '').trim())
-    .filter(l => l.endsWith('?') && l.length > 12 && l.length < 140);
-  return qs.length ? qs[qs.length - 1] : null;
+/* The research trail. The server labels every tool call with a step kind
+   (agent.py _note), so the trail reads as work being done rather than as
+   an undifferentiated list of search strings. `prefix` is what the tag
+   says the agent is doing; `verb` replaces "Thinking" while it does it. */
+const STEPS = {
+  search:  { icon: '&#128269;', prefix: 'Searching',  verb: 'Reading legislation' },
+  read:    { icon: '&#128196;', prefix: 'Reading',    verb: 'Reading the instrument' },
+  history: { icon: '&#128338;', prefix: 'Checking amendments to',
+             verb: 'Checking for amendments' },
+  list:    { icon: '&#128218;', prefix: 'Browsing',   verb: 'Browsing the catalogue' },
+  verify:  { icon: '&#9989;',   prefix: 'Verifying',  verb: 'Checking citations' },
+};
+/* The model ends an answer with up to three ">> question" lines, which
+   the agent strips off into chips (LawAgent._extract_followups). The raw
+   text still streams past token by token, so hide those lines while they
+   type rather than letting them appear and then vanish when the final
+   answer lands. Trailing-only, matching the agent: a ">>" earlier in the
+   answer is a blockquote and must survive. */
+const FOLLOWUP_TAIL_RE = /(?:\n[ \t]*(?:>>|\u226b)[ \t]*[^\n]*)+\n?$/;
+function stripFollowups(text) {
+  return text.replace(FOLLOWUP_TAIL_RE, '');
+}
+
+function stepTag(label, step) {
+  const s = STEPS[step] || STEPS.search;
+  return `${s.icon} <span class="step-verb">${s.prefix}</span> ${esc(label)}`;
 }
 
 function msgHTML(m, isLast, idx) {
@@ -1436,22 +1496,24 @@ function msgHTML(m, isLast, idx) {
       title="Click to edit and resend"
       onclick="editMsg(this)">${esc(m.text)}</div></div>`;
   const tags = (m.searches && m.searches.length)
-    ? `<div class="searches">` + m.searches.map(q =>
-        `<span class="search-tag">&#128269; ${esc(q)}</span>`).join('') + `</div>`
+    ? `<div class="searches">` + m.searches.map((q, i) =>
+        `<span class="search-tag">${stepTag(q, (m.steps || [])[i])}</span>`
+      ).join('') + `</div>`
     : '';
-  const fus = isLast && !m.error
-    ? ((m.followups && m.followups.length) ? m.followups.slice(0, 3)
-       : (followupOf(m.text) ? [followupOf(m.text)] : []))
-    : [];
+  // Only the newest answer offers follow-ups: older ones were already
+  // followed up on, and a thread of stale chips is just noise.
+  const fus = (isLast && !m.error && m.followups)
+    ? m.followups.slice(0, 3) : [];
   const fuBtn = fus.length
-    ? `<div class="followups">` + fus.map(f =>
+    ? `<div class="followups">` + fus.map(q =>
         `<button class="followup"
-           onclick="ask(${JSON.stringify(f).replace(/"/g, '&quot;')})">
-           &#128172; ${esc(f)}</button>`).join('') + `</div>`
+           onclick="ask(${JSON.stringify(q).replace(/"/g, '&quot;')})">
+           &#128172; ${esc(q)}</button>`).join('') + `</div>`
     : '';
   const unv = (!m.error && m.unverified && m.unverified.length)
-    ? `<div class="unverified" title="These cited sections were not seen
-         in the retrieved documents; double-check them in the original.">
+    ? `<div class="unverified" title="These citations were not found in
+         the documents retrieved for this answer; check them against the
+         original before relying on them.">
          &#9888;&#65039; Could not verify: ${esc(m.unverified.join(', '))}</div>`
     : '';
   const tools = m.error
@@ -1475,7 +1537,10 @@ function msgHTML(m, isLast, idx) {
   const srcs = (!m.error && m.sources && m.sources.length)
     ? `<div class="src-chips">` + m.sources.slice(0, 6).map(s =>
         `<button class="src-chip" data-title="${esc(s.instrument)}"
-           onclick="openSrcChip(this)" title="Open the gazetted text">
+           data-cite="${esc(s.citation || '')}"
+           onclick="openSrcChip(this)"
+           title="${s.citation ? 'Read the provision itself'
+                               : 'Open the gazetted text'}">
            &#128196; <span class="t">${esc(s.instrument)}</span></button>`
       ).join('') + `</div>`
     : '';
@@ -1491,7 +1556,7 @@ function msgHTML(m, isLast, idx) {
     : '';
   return `<div class="row bot${m.error ? ' error' : ''}">
     <div class="avatar">ZW</div>
-    <div class="bot-body">${tags}<div class="md">${md(m.text)}</div>${draftRow}${srcs}${fuBtn}
+    <div class="bot-body">${tags}<div class="md">${md(m.text)}</div>${unv}${draftRow}${srcs}${fuBtn}
       <div class="bot-tools">${tools}</div>
     </div></div>`;
 }
@@ -1514,7 +1579,10 @@ function renderThread() {
   const n = current.messages.length;
   thread.innerHTML = current.messages
     .map((m, i) => msgHTML(m, i === n - 1, i)).join('');
-  thread.querySelectorAll('.md').forEach(decorateSources);
+  thread.querySelectorAll('.md').forEach(el => {
+    decorateSources(el);     // View buttons under **Sources**
+    linkifyCitations(el);    // clickable provisions in the prose
+  });
   clampLongAnswers();
   scrollDown(true);
 }
@@ -1537,6 +1605,72 @@ function clampLongAnswers() {
     };
     el.after(b);
   });
+}
+
+/* Turn every "section 71 of the Constitution" in the prose into a chip
+   that opens the provision itself (openCitation). Mirrors the claim
+   matcher the server verifies answers with (verify.py): anchor on
+   "section N of", then read the instrument's name out of the words that
+   follow, stopping at the first lowercase word that is not a connective
+   so that surrounding prose is not mistaken for part of a title. */
+const CITE_ANCHOR_RE =
+  /\bs(?:ection)?s?\.?\s*(\d{1,3}[A-Za-z]?)(?:\([^)]{1,8}\))?\s+of\s+(?:the\s+)?/gi;
+const CITE_JOINERS = new Set(['of', 'and', 'the', 'for', 'to', 'in']);
+const CITE_SKIP = 'A, CODE, PRE, BUTTON, H1, H2, H3, H4';
+
+function citeName(tail) {
+  const kept = [];
+  for (const w of tail.split(/\s+/).slice(0, 8)) {
+    const bare = w.replace(/[.,;:]+$/, '');
+    if (!bare) break;
+    if (!/^[A-Z0-9[(]/.test(bare) && !CITE_JOINERS.has(bare.toLowerCase()))
+      break;
+    kept.push(bare);
+    if (/[.,;:]$/.test(w)) break;      // punctuation ends the title
+  }
+  while (kept.length && CITE_JOINERS.has(kept[kept.length - 1].toLowerCase()))
+    kept.pop();
+  // one bare word is as likely to be prose ("section 4 of Part II") as a
+  // title; require either two words or something that looks like a name
+  return kept.length >= 2 || (kept[0] && kept[0].length > 3)
+    ? kept.join(' ') : '';
+}
+
+function linkifyCitations(mdEl) {
+  const walker = document.createTreeWalker(mdEl, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (n.parentElement.closest(CITE_SKIP) ||
+        n.parentElement.closest('.src-list')) continue;
+    if (CITE_ANCHOR_RE.test(n.nodeValue)) nodes.push(n);
+    CITE_ANCHOR_RE.lastIndex = 0;
+  }
+  for (const node of nodes) {
+    const text = node.nodeValue;
+    const frag = document.createDocumentFragment();
+    let at = 0;
+    CITE_ANCHOR_RE.lastIndex = 0;
+    for (let m; (m = CITE_ANCHOR_RE.exec(text));) {
+      const name = citeName(text.slice(m.index + m[0].length, m.index +
+                                       m[0].length + 80));
+      if (!name) continue;
+      const label = text.slice(m.index, m.index + m[0].length) + name;
+      frag.appendChild(document.createTextNode(text.slice(at, m.index)));
+      const b = document.createElement('button');
+      b.className = 'cite-link';
+      b.textContent = label;
+      b.title = 'Read this provision in the corpus';
+      b.dataset.cite = name;
+      b.dataset.section = m[1];
+      b.onclick = () => openCitation(name, m[1]);
+      frag.appendChild(b);
+      at = m.index + m[0].length + name.length;
+      CITE_ANCHOR_RE.lastIndex = at;
+    }
+    if (!at) continue;
+    frag.appendChild(document.createTextNode(text.slice(at)));
+    node.parentNode.replaceChild(frag, node);
+  }
 }
 
 /* Add a View button next to each cited instrument: under a **Sources**
@@ -1572,9 +1706,18 @@ function decorateSources(mdEl) {
         el.querySelector('.src-dl')) continue;
     const btn = document.createElement('button');
     btn.className = 'src-dl';
-    btn.textContent = 'View';
     btn.dataset.title = t.replace(/^[-*\u2022]\s*/, '').slice(0, 200);
-    btn.onclick = () => downloadSource(btn);
+    // A source cited down to the section opens that section; one cited
+    // as a whole instrument opens the document, as it always has.
+    const sec = /\bs(?:ection)?s?\.?\s*(\d{1,3}[A-Za-z]?)\b/i
+      .exec(btn.dataset.title);
+    if (sec) {
+      btn.textContent = 'Read';
+      btn.onclick = () => openCitation(btn.dataset.title, sec[1]);
+    } else {
+      btn.textContent = 'View';
+      btn.onclick = () => downloadSource(btn);
+    }
     el.appendChild(btn);
     const v = vintageOf(t);
     if (v && !el.querySelector('.vintage'))
@@ -1583,6 +1726,9 @@ function decorateSources(mdEl) {
 }
 
 async function openSrcChip(btn) {
+  // A chip that knows which provision it came from opens that provision;
+  // the whole PDF is one click further in, from the panel.
+  if (btn.dataset.cite) return openCitation(btn.dataset.cite);
   const t = btn.querySelector('.t');
   const old = t.textContent;
   t.textContent = 'Opening\u2026';
@@ -1712,20 +1858,22 @@ function typingRow() {
   thread.appendChild(el);
   return el;
 }
-function addLiveTag(row, query) {
+function addLiveTag(row, query, step) {
   const tags = row.querySelector('.live-tags');
   const t = document.createElement('span');
   t.className = 'search-tag';
-  t.innerHTML = '&#128269; ' + esc(query);
+  t.innerHTML = stepTag(query, step);
   tags.appendChild(t);
-  row.querySelector('.lbl').textContent = 'Reading legislation';
+  row.querySelector('.lbl').textContent = STEPS[step] ?
+    STEPS[step].verb : STEPS.search.verb;
   scrollIfNear();
 }
 
-function typewriter(text, searches) {
+function typewriter(text, searches, steps) {
   const tags = (searches && searches.length)
-    ? `<div class="searches">` + searches.map(q =>
-        `<span class="search-tag">&#128269; ${esc(q)}</span>`).join('') + `</div>`
+    ? `<div class="searches">` + searches.map((q, i) =>
+        `<span class="search-tag">${stepTag(q, (steps || [])[i])}</span>`
+      ).join('') + `</div>`
     : '';
   const row = document.createElement('div');
   row.className = 'row bot';
@@ -1733,11 +1881,11 @@ function typewriter(text, searches) {
     <div class="bot-body">${tags}<div class="md"></div></div>`;
   thread.appendChild(row);
   const mdEl = row.querySelector('.md');
-  const step = Math.max(6, Math.ceil(text.length / 150));
+  const chunk = Math.max(6, Math.ceil(text.length / 150));
   let i = 0;
   return new Promise(resolve => {
     const timer = setInterval(() => {
-      i += step;
+      i += chunk;
       mdEl.innerHTML = md(text.slice(0, i)) +
         (i < text.length ? '<span class="cursor-blink"></span>' : '');
       scrollIfNear();
@@ -1807,7 +1955,7 @@ async function ask(text, isRegen) {
     }
     await readStream(resp, ev => {
       if (ev.type === 'search') {
-        addLiveTag(typing, ev.query);
+        addLiveTag(typing, ev.query, ev.step);
         // model went back to searching; drop any interim prose
         if (liveMd) { liveMd.remove(); liveMd = null; liveText = ''; }
         typing.querySelector('.typing').style.display = '';
@@ -1819,12 +1967,14 @@ async function ask(text, isRegen) {
           typing.querySelector('.bot-body').appendChild(liveMd);
         }
         liveText += ev.text;
-        liveMd.innerHTML = md(liveText) + '<span class="cursor-blink"></span>';
+        liveMd.innerHTML = md(stripFollowups(liveText)) +
+          '<span class="cursor-blink"></span>';
         scrollIfNear();
       } else if (ev.type === 'done') {
         chat.session_id = ev.session_id;
         finalMsg = { role: 'bot', text: ev.answer,
                      searches: ev.searches || [],
+                     steps: ev.steps || [],
                      sources: ev.sources || [],
                      followups: ev.followups || [],
                      unverified: ev.unverified || [],
@@ -1835,7 +1985,8 @@ async function ask(text, isRegen) {
     typing.remove();
     chat.messages.push(finalMsg);
     save();
-    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches);
+    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches,
+                                    finalMsg.steps);
   } catch (err) {
     typing.remove();
     if (err.name !== 'AbortError') {
@@ -2020,7 +2171,7 @@ async function runDraft(dt, facts, prev) {
     }
     await readStream(resp, ev => {
       if (ev.type === 'search') {
-        addLiveTag(typing, ev.query);
+        addLiveTag(typing, ev.query, ev.step);
         if (liveMd) { liveMd.remove(); liveMd = null; liveText = ''; }
         typing.querySelector('.typing').style.display = '';
       } else if (ev.type === 'delta') {
@@ -2036,6 +2187,7 @@ async function runDraft(dt, facts, prev) {
       } else if (ev.type === 'done') {
         finalMsg = { role: 'bot', text: ev.answer,
                      searches: ev.searches || [],
+                     steps: ev.steps || [],
                      sources: ev.sources || [],
                      aid: ev.answer_id || null,
                      draft: ev.truncated ? null : dt };
@@ -2045,7 +2197,8 @@ async function runDraft(dt, facts, prev) {
     typing.remove();
     chat.messages.push(finalMsg);
     save();
-    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches);
+    if (!liveText) await typewriter(finalMsg.text, finalMsg.searches,
+                                    finalMsg.steps);
   } catch (err) {
     typing.remove();
     if (err.name !== 'AbortError') {
@@ -2290,12 +2443,13 @@ function closeModal() {
   modalBox.classList.remove('slim');
 }
 
+const WP_TABS = ['browse', 'cite', 'doc'];
 function wpShow(tab) {
-  wpBrowse.classList.toggle('on', tab === 'browse');
-  document.getElementById('wp-doc').classList.toggle('on', tab === 'doc');
-  document.getElementById('wp-tab-browse').classList
-    .toggle('on', tab === 'browse');
-  document.getElementById('wp-tab-doc').classList.toggle('on', tab === 'doc');
+  for (const t of WP_TABS) {
+    const view = t === 'browse' ? wpBrowse : document.getElementById('wp-' + t);
+    view.classList.toggle('on', t === tab);
+    document.getElementById('wp-tab-' + t).classList.toggle('on', t === tab);
+  }
   document.getElementById('wp-doc-title').style.display =
     tab === 'doc' ? '' : 'none';
 }
@@ -2490,6 +2644,85 @@ function wpAskDoc() {
   el.value = '';
   if (window.innerWidth < 900) closeWorkpane();
   ask('Regarding "' + wpDocTitle + '": ' + q);
+}
+
+/* ---------- Cited section, straight from the corpus ----------
+   Every citation in an answer opens the provision it points at, in the
+   words of the instrument itself. This is the one check a reader can
+   make without a law library, so it has to be one click and it has to
+   show the real text, not a paraphrase. */
+let citeDoc = null;                  // the passage now in the panel
+
+async function openCitation(title, section) {
+  openWorkpane();
+  document.getElementById('wp-tab-cite').style.display = '';
+  wpShow('cite');
+  const el = document.getElementById('wp-cite');
+  el.innerHTML = '<p style="color:var(--muted)">Looking up the ' +
+    'provision\u2026</p>';
+  let j;
+  try {
+    const r = await fetch('/api/passage?title=' + encodeURIComponent(title) +
+      (section ? '&section=' + encodeURIComponent(section) : ''));
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ||
+                               'Not found');
+    j = await r.json();
+  } catch (err) {
+    el.innerHTML = `<div class="cite-panel"><p class="cite-miss">
+      ${esc(String(err.message || err))}</p>
+      <p style="color:var(--muted);font-size:13px">
+        Nothing in the corpus matches ${esc(title)}. If the answer relied
+        on it, treat that part as unverified.</p></div>`;
+    citeDoc = null;
+    return;
+  }
+  citeDoc = j;
+  const head = j.exact
+    ? `Section ${esc(j.section)}${j.section_title ?
+         ' \u2014 ' + esc(j.section_title.replace(/\.$/, '')) : ''}`
+    : 'Opening text';
+  // An inexact hit is still worth showing, but the reader must not
+  // mistake the instrument's front matter for the section they clicked.
+  const note = j.exact ? '' :
+    `<p class="cite-note">That exact section is not separately indexed
+      here \u2014 showing the start of the instrument instead. Use
+      <b>Open full document</b> and search within it.</p>`;
+  el.innerHTML = `<div class="cite-panel">
+    <div class="cite-instr">${esc(j.title)}</div>
+    <div class="cite-sec">${head}</div>
+    ${note}
+    <div class="cite-text">${esc(j.text)}${j.truncated ?
+      '\n\n\u2026 (continues in the full document)' : ''}</div>
+    <div class="cite-acts">
+      <button class="tool-btn" onclick="citeOpenDoc()">Open full document</button>
+      <button class="tool-btn" onclick="citeCopy(this)">Copy text</button>
+      <button class="tool-btn" onclick="citeAsk()">Explain this</button>
+    </div></div>`;
+  el.scrollTop = 0;
+}
+
+function citeOpenDoc() {
+  if (!citeDoc) return;
+  viewDoc(citeDoc.url, citeDoc.title);
+  if (citeDoc.section) {
+    document.getElementById('wp-find').value = 'section ' + citeDoc.section;
+    wpFind();
+  }
+}
+function citeCopy(btn) {
+  if (!citeDoc) return;
+  navigator.clipboard.writeText(
+    citeDoc.citation + '\n\n' + citeDoc.text).then(() => {
+      btn.textContent = 'Copied';
+      setTimeout(() => btn.textContent = 'Copy text', 1500);
+    });
+}
+function citeAsk() {
+  if (!citeDoc) return;
+  if (window.innerWidth < 900) closeWorkpane();
+  ask('Explain ' + (citeDoc.exact
+    ? 'section ' + citeDoc.section + ' of the ' + citeDoc.title
+    : citeDoc.title) + ' in plain language.');
 }
 
 async function openBrowse() {
