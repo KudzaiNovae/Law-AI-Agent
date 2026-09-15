@@ -27,11 +27,25 @@ COPY data/processed/chunks.jsonl data/processed/chunks.jsonl
 # Knowledge graph (graph/build_graph.py) — optional but ship it if built
 COPY data/processed/graph.jsonl* data/processed/
 
-# Code — changes most often, kilobytes to push
-COPY config.py agent.py server.py ./
+# Code — changes most often, kilobytes to push.
+#
+# The glob is deliberate. This line used to name three modules, and when
+# decompose.py and verify.py were added nobody remembered to add them
+# here — so the image built and pushed clean and then crash-looped on
+# ModuleNotFoundError, which is a 9 GB round trip to discover a missing
+# 20 kB file. A hand-maintained list of imports is a list that goes
+# stale; a glob cannot.
+COPY *.py ./
 COPY index/ index/
 COPY ingest/ ingest/
 COPY web/ web/
+
+# Fail the build, not the deployment. Importing the app here turns a
+# missing module or a syntax error into a red build on the laptop that
+# made it, seconds after the edit, instead of a CrashLoopBackOff found
+# half an hour later in Azure. The import is side-effect free: it opens
+# no database and writes nothing.
+RUN python -c "import server"
 
 ENV PROVIDER=gemini
 EXPOSE 8000
