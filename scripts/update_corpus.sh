@@ -14,7 +14,12 @@ IMAGE=$ACR.azurecr.io/onegov:latest
 APP=onegov            # container app name
 RG=onegov-rg          # resource group — adjust if yours differs
 
-echo "== $(date -Is) ingest =="
+echo "== $(date -Is) dedupe raw =="
+# A fresh scrape re-downloads instruments already held under another
+# name. Moves to data/raw_dupes/, so a wrong call is reversible.
+$PY -m ingest.dedupe_raw --apply
+
+echo "== ingest =="
 $PY -m ingest.run
 
 echo "== rebuild index =="
@@ -23,6 +28,16 @@ $PY -m index.build_index
 echo "== rebuild knowledge graph =="
 # LLM extraction is cached per file; only new instruments hit the API.
 $PY -m graph.build_graph || $PY -m graph.build_graph --no-llm
+
+# Everything below this line changes what the public sees, so the
+# corpus has to answer for itself first. Both commands exit non-zero on
+# failure and `set -e` stops the script — a scrape that quietly drops an
+# instrument fails here rather than in front of a reader.
+echo "== tests =="
+$PY -m pytest tests/ -q
+
+echo "== evals =="
+$PY scripts/run_evals.py
 
 echo "== rebuild + push image =="
 docker build -t "$IMAGE" .
