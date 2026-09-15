@@ -40,6 +40,36 @@ def test_draft_types_have_structures():
         assert DRAFT_PROMPT.format(structure=s)  # formats cleanly
 
 
+def test_draft_prompt_asks_for_the_three_closing_sections_in_order():
+    """Every draft ends Drafting notes -> Sources -> What to do next.
+
+    The order is load-bearing rather than cosmetic: "What to do next" is
+    the only part a self-represented reader can act on, so it is the
+    part they should finish on. It is also easy to reintroduce the
+    ambiguity that was here before — two separate rules each said
+    "after the Drafting notes", and which section landed second was left
+    to the model.
+    """
+    p = DRAFT_PROMPT.format(structure=DRAFT_STRUCTURE["summons"])
+    order = [p.index("**Drafting notes**"),
+             p.index("**Sources**"),
+             p.index("**What to do next**")]
+    assert order == sorted(order), "closing sections named out of order"
+
+
+def test_draft_prompt_requires_a_jurisdiction_check():
+    """A summons issued out of a court that cannot hear the claim is a
+    nullity, and one issued out of the High Court when the Magistrates
+    Court would do costs the client more than the claim. The limits move
+    by statutory instrument, so the prompt must send the model to look
+    them up rather than trust a remembered figure."""
+    p = DRAFT_PROMPT.format(structure=DRAFT_STRUCTURE["summons"])
+    assert "Monetary Limits" in p and "Small Claims" in p
+    # The budget has to leave room for that search on top of the 2-4
+    # substantive ones the prompt already asks for.
+    assert "at most 7 tool calls" in p
+
+
 def test_draft_rejects_unknown_type():
     r = client.post("/api/draft/stream",
                     json={"doc_type": "poem", "facts": FACTS})

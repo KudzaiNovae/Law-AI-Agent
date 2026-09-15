@@ -648,7 +648,7 @@
   }
 
   /* Example chips inside the draft dialog */
-  .draft-ex { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+  .draft-ex { display: flex; flex-direction: column; gap: 6px; }
   .draft-ex button {
     text-align: left; font-size: 12px; line-height: 1.45;
     padding: 7px 10px; border-radius: 8px; cursor: pointer;
@@ -657,6 +657,95 @@
     transition: border-color .15s, color .15s;
   }
   .draft-ex button:hover { border-color: var(--accent); color: var(--ink); }
+
+  /* ---------- Draft dialog ---------- */
+  /* The document type used to be a <select>. Eleven options named in
+     the language of practice — "heads of argument", "plea" — tell a
+     non-lawyer nothing while they are collapsed, and most readers here
+     are not lawyers. Cards show the whole menu with a plain-English
+     line under each. */
+  .draft-types {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+  }
+  .draft-grp {
+    grid-column: 1 / -1; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    color: var(--muted); margin: 6px 0 0;
+  }
+  .draft-grp:first-child { margin-top: 0; }
+  .draft-type {
+    text-align: left; padding: 9px 11px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .draft-type b {
+    display: block; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); margin-bottom: 2px;
+  }
+  .draft-type span {
+    display: block; font-size: 11px; line-height: 1.35; color: var(--muted);
+  }
+  .draft-type:hover { border-color: var(--accent); }
+  .draft-type.on { border-color: var(--accent); background: var(--accent-soft); }
+  .draft-type.on b { color: var(--accent-ink); }
+  /* One column below 380px. Two would leave 143px a card, and "Court
+     application (notice of motion)" wraps to three lines in that — the
+     grid saves no height once every title triples. Tighten the cards
+     instead, which does. */
+  @media (max-width: 380px) {
+    .draft-types { grid-template-columns: 1fr; gap: 5px; }
+    .draft-type { padding: 8px 10px; }
+    .draft-type span { font-size: 10.5px; line-height: 1.3; }
+    .draft-grp { margin-top: 5px; }
+  }
+
+  .draft-lead { margin: 0; font-size: 13px; color: var(--muted);
+    line-height: 1.5; }
+  .draft-back {
+    align-self: flex-start; border: 0; background: none; cursor: pointer;
+    padding: 0; font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--muted);
+  }
+  .draft-back:hover { color: var(--accent-ink); }
+
+  .draft-field { display: flex; flex-direction: column; gap: 5px; }
+  .draft-field > label { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .draft-ta {
+    width: 100%; resize: vertical; font: inherit; font-size: 13.5px;
+    padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--ink);
+  }
+  .draft-ta:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  /* The draft is only as good as the facts given, so say so while the
+     box is being filled rather than after a thin draft comes back. */
+  .draft-needs {
+    font-size: 11.5px; line-height: 1.45; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 8px; padding: 6px 9px;
+  }
+  .draft-hint { font-size: 11.5px; color: var(--muted); }
+  .draft-hint.ok { color: #16a34a; }
+  [data-theme="dark"] .draft-hint.ok { color: #4ade80; }
+  /* The free/paid caveat used to open the dialog. It belongs here
+     instead: it is a fact about what pressing the button will produce,
+     and a reader choosing between eleven documents has no use for it
+     yet. */
+  .draft-note { margin: 0; font-size: 11.5px; line-height: 1.45;
+    color: var(--muted); text-align: center; }
+  .draft-note a { color: var(--accent-ink); font-weight: 600;
+    text-decoration: none; }
+  .draft-note a:hover { text-decoration: underline; }
+  .draft-more > summary {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    cursor: pointer; padding: 2px 0; list-style: none;
+  }
+  .draft-more > summary::-webkit-details-marker { display: none; }
+  .draft-more > summary::before { content: "+ "; }
+  .draft-more[open] > summary::before { content: "\2212 "; }
+  .draft-more > summary:hover { color: var(--ink); }
+  .draft-more .draft-ta { margin-top: 6px; }
   .followup:active { transform: scale(.98); }
   /* Two or three suggested next questions. They wrap rather than
      scroll: on a phone a chip that runs off the edge is never read. */
@@ -727,8 +816,23 @@
   .auth-err { color: #dc2626; font-size: 13px; min-height: 16px; }
   .auth-alt { font-size: 12.5px; color: var(--muted); }
   .auth-alt a { color: inherit; }
+  /* The dialog itself no longer scrolls; its body does. On a phone the
+     eleven-card picker is taller than the screen, and when the whole
+     dialog scrolled the title and the close button scrolled away with
+     it. Scrolling the body instead keeps them put and leaves a card
+     half-cut at the fold, which is what tells the reader there is more
+     below. The negative margin is so a focused field's ring is not
+     clipped by the new scroll container. */
   .modal.slim { width: min(440px, 100%); max-height: min(86vh, 720px);
-    overflow-y: auto; }
+    overflow: hidden; }
+  .modal.slim .auth-body { overflow-y: auto; min-height: 0;
+    margin: 0 -22px; padding: 2px 22px; }
+  /* The draft dialogs sit wider than the rest of slim. They carry a
+     two-column picker and a brief that runs to a paragraph, where
+     login carries an email and a password — stretching those to the
+     same width would only put more space between the label and the
+     field. */
+  .modal.slim.draft-dlg { width: min(560px, 100%); }
   .auth-hero { text-align: center; padding: 0 0 4px; }
   .auth-hero .mark { width: 44px; height: 44px; border-radius: 13px;
     margin: 0 auto 10px; display: flex; align-items: center;
@@ -1777,6 +1881,7 @@ function exportChat() {
   modalWrap.classList.add('show');
   modalBox.classList.remove('wide');
   modalBox.classList.add('slim');
+  modalBox.classList.remove('draft-dlg');   // may be left over from a draft dialog
   modalBox.innerHTML = `<h3>Download
     <button class="x" onclick="closeModal()">&times;</button></h3>
     <div class="auth-body">
@@ -2024,6 +2129,49 @@ const DRAFT_GROUPS = [
   ['Contracts & commercial', ['contract', 'lease', 'resolution']],
   ['Personal', ['will']],
 ];
+/* One plain line each. The formal names are terms of art — someone who
+   knows they are owed money does not know to ask for a "summons and
+   declaration", so the card has to say what the document does. */
+const DRAFT_DESC = {
+  demand:     'Demand payment or performance before going to court',
+  opinion:    'Written advice on the law that applies to your situation',
+  application: 'Start a case on notice of motion and founding affidavit',
+  summons:    'Start a claim for money or damages',
+  plea:       'Answer a claim or oppose an application against you',
+  heads:      'Written argument for a hearing or an appeal',
+  affidavit:  'Sworn statement of facts for use in court',
+  contract:   'Set out what each side agrees to do',
+  lease:      'Rent out a house, shop or other premises',
+  resolution: 'Record a decision of directors or shareholders',
+  will:       'Direct how your estate is handled, or appoint an agent',
+};
+/* What each document actually needs to be any good. A draft is only as
+   strong as the brief, and the commonest way to get a thin one is to
+   leave out the amount, the date or the relief sought — so ask for them
+   by name before the box is filled rather than after. */
+const DRAFT_NEEDS = {
+  demand:     ['who owes whom', 'how much, and what for', 'key dates',
+               'your deadline'],
+  opinion:    ['the facts', 'the question you want answered',
+               'any deadline'],
+  application: ['the order you want', 'why it is urgent, if it is',
+                'the parties', 'which court'],
+  summons:    ['what is claimed and why', 'the amount', 'key dates',
+               'the defendant'],
+  plea:       ['the claim you are answering', 'what you dispute',
+               'your version of events'],
+  heads:      ['the issues', 'which side you are on', 'the material facts',
+               'the court'],
+  affidavit:  ['who is swearing it', 'the facts they know personally',
+               'what it is for'],
+  contract:   ['the parties', 'what each side must do', 'price and payment',
+               'how it ends'],
+  lease:      ['the premises', 'rent and escalation', 'the term',
+               'deposit and utilities'],
+  resolution: ['the company', 'the decision taken', 'who is authorised'],
+  will:       ['the assets', 'who inherits', 'the executor',
+               'guardians for any minor children'],
+};
 const DRAFT_EXAMPLES = {
   demand: [
     'My client, a landlord in Harare, is owed four months rent of $200 per month by a commercial tenant. Lease signed January 2025. Demand payment within 7 days or eviction proceedings follow.',
@@ -2035,7 +2183,7 @@ const DRAFT_EXAMPLES = {
     'Urgent chamber application in the High Court at Harare to interdict a sale in execution of my client\u2019s house scheduled for next week; the judgment debt is disputed and an appeal is pending.',
     'Court application for a declaratory order that my client\u2019s suspension from a statutory board without a hearing was unlawful, with reinstatement and costs.'],
   summons: [
-    'Summons in the High Court claiming USD 45,000 for breach of a supply agreement: goods delivered in March, payment due in 30 days, still unpaid. Interest and costs claimed.',
+    'Summons claiming USD 45,000 for breach of a supply agreement: goods delivered in March, payment due in 30 days, still unpaid. Interest and costs claimed. Which court should this go to?',
     'Summons for damages of USD 20,000 arising from a road traffic accident at the corner of Samora Machel and Julius Nyerere caused by the defendant\u2019s negligent driving.'],
   plea: [
     'Draft a plea denying liability in a claim for USD 30,000 for goods sold and delivered; my client says the goods were defective and were rejected within 7 days.',
@@ -2060,66 +2208,159 @@ const DRAFT_EXAMPLES = {
     'Special resolution of shareholders to change the company name and increase share capital, with instructions for filing.'],
 };
 
+/* Selected document type, and the brief typed so far. Both live here
+   rather than in the DOM because the dialog is two steps and the second
+   replaces the first. */
+let draftType = 'demand';
+let draftFacts = '';
+const DRAFT_MIN_FACTS = 20;
+/* Documents that normally turn on a figure. */
+const MONEY_TYPES = new Set(['demand', 'summons', 'lease', 'contract']);
+
 function openDraft() {
   modalWrap.classList.add('show');
   modalBox.classList.remove('wide');
-  modalBox.classList.add('slim');
+  modalBox.classList.add('slim', 'draft-dlg');
+  draftStep1();
+}
+
+/* Step 1: what do you need. Showing all eleven at once costs a screen,
+   which is why this is its own step — with the picker and the brief on
+   one page the Generate button sat below eleven cards, so the reader
+   had to scroll past the whole menu to reach the thing they came for. */
+function draftStep1() {
+  const ta = document.getElementById('draft-facts');
+  if (ta) draftFacts = ta.value;            // keep the brief on the way back
   modalBox.innerHTML = `<h3>Draft a document
     <button class="x" onclick="closeModal()">&times;</button></h3>
     <div class="auth-body">
-      <p style="margin:0 0 10px;font-size:13px;color:var(--muted)">
-        Changamire researches the governing law, then writes a first
-        draft with citations. Free accounts get a preview; Plus and Pro
-        get the full draft with Word export.</p>
-      <label style="font-size:12px;font-weight:600">Document type</label>
-      <select id="draft-type" class="lang-sel" onchange="draftTypeChanged()"
-              style="width:100%;margin:4px 0 10px">
+      <p class="draft-lead">Changamire looks up the governing law, then
+        writes a first draft with citations. What do you need?</p>
+      <div class="draft-types" id="draft-types">
         ${DRAFT_GROUPS.map(([g, keys]) =>
-          `<optgroup label="${g}">` + keys.map(k =>
-            `<option value="${k}">${DRAFT_LABELS[k]}</option>`).join('')
-          + `</optgroup>`).join('')}
-      </select>
-      <label style="font-size:12px;font-weight:600">The matter: parties,
-        facts, what you want the document to achieve</label>
-      <textarea id="draft-facts" rows="4" style="width:100%;margin:4px 0 8px;
-        resize:vertical;font:inherit;padding:8px;border-radius:8px;
-        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
-        placeholder="Describe the parties, the facts and what you want the document to achieve \u2014 or tap an example below."></textarea>
+          `<div class="draft-grp">${g}</div>` + keys.map(k =>
+            `<button type="button" class="draft-type${k === draftType ? ' on' : ''}"
+               data-k="${k}" onclick="pickDraftType('${k}')">
+               <b>${DRAFT_LABELS[k]}</b><span>${DRAFT_DESC[k] || ''}</span>
+             </button>`).join('')).join('')}
+      </div>
+    </div>`;
+}
+
+function pickDraftType(k) {
+  draftType = k;
+  draftStep2();
+}
+
+/* Step 2: the brief. */
+function draftStep2() {
+  const firm = localStorage.getItem('onegov-firm') || '';
+  modalBox.innerHTML = `<h3>${esc(DRAFT_LABELS[draftType] || 'Draft')}
+    <button class="x" onclick="closeModal()">&times;</button></h3>
+    <div class="auth-body">
+      <button type="button" class="draft-back" onclick="draftStep1()">
+        &larr; Choose a different document</button>
+
+      <div class="draft-field">
+        <label for="draft-facts">The matter</label>
+        <div class="draft-needs">Include: ${
+          (DRAFT_NEEDS[draftType] || []).map(esc).join(' &middot; ')}</div>
+        <textarea id="draft-facts" class="draft-ta" rows="5"
+          oninput="draftFactsChanged()" onkeydown="draftKey(event)"
+          placeholder="Describe it in your own words \u2014 or tap an example below.">${esc(draftFacts)}</textarea>
+        <div class="draft-hint" id="draft-hint"></div>
+      </div>
+
       <div class="draft-ex" id="draft-ex"></div>
-      <label style="font-size:12px;font-weight:600">Your firm details
-        (optional — used on letterheads and signature blocks, saved on
-        this device)</label>
-      <textarea id="draft-firm" rows="2" style="width:100%;margin:4px 0 12px;
-        resize:vertical;font:inherit;padding:8px;border-radius:8px;
-        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
-        placeholder="Example: Moyo &amp; Partners, 12 Samora Machel Ave, Harare. Tel 024-000000."
-        >${localStorage.getItem('onegov-firm') || ''}</textarea>
+
+      <details class="draft-more">
+        <summary>Your firm or personal details (optional)</summary>
+        <textarea id="draft-firm" class="draft-ta" rows="2"
+          placeholder="Example: Moyo &amp; Partners, 12 Samora Machel Ave, Harare. Tel 024-000000."
+          >${esc(firm)}</textarea>
+        <div class="draft-hint">Used on the letterhead and signature
+          block. Saved on this device only.</div>
+      </details>
+
+      <div class="auth-err" id="draft-err"></div>
       <button class="auth-submit" onclick="submitDraft()">Generate draft</button>
+      ${authState.plan === 'plus' || authState.plan === 'pro' ? '' :
+        `<p class="draft-note">Free accounts get a preview.
+          <a href="#" onclick="openUpgrade();return false">Plus and Pro</a>
+          get the full draft with Word export.</p>`}
     </div>`;
   draftTypeChanged();
+  draftFactsChanged();
+  setTimeout(() => {
+    const ta = document.getElementById('draft-facts');
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }, 50);
 }
 
 function draftTypeChanged() {
-  const dt = document.getElementById('draft-type').value;
   const box = document.getElementById('draft-ex');
   if (!box) return;
-  box.innerHTML = (DRAFT_EXAMPLES[dt] || []).map(ex =>
+  box.innerHTML = (DRAFT_EXAMPLES[draftType] || []).map(ex =>
     `<button type="button" onclick="useDraftExample(this)"
        data-ex="${ex.replace(/"/g, '&quot;')}">
        &#128161; ${esc(ex)}</button>`).join('');
 }
 
+/* The draft is only as good as the facts it is given. Saying so while
+   the box is being filled beats letting a two-line brief come back as a
+   thin document the reader has no way to diagnose. */
+function draftFactsChanged() {
+  const ta = document.getElementById('draft-facts');
+  const hint = document.getElementById('draft-hint');
+  if (!ta || !hint) return;
+  draftFacts = ta.value;
+  const v = ta.value.trim();
+  const n = v.length;
+  // Money is the fact most often left out of the documents that turn on
+  // one, and the draft has to fall back to a placeholder without it.
+  const needsFigure = MONEY_TYPES.has(draftType) && !/\d/.test(v);
+  if (!n)                       hint.textContent = '';
+  else if (n < DRAFT_MIN_FACTS) hint.textContent =
+    'Keep going — name the parties, the amounts and the dates.';
+  else if (needsFigure)         hint.textContent =
+    'Add the amount and the dates if you have them, or the draft will '
+    + 'leave blanks.';
+  else if (n < 120)             hint.textContent =
+    'Good start. More detail gives a more useful draft.';
+  else                          hint.textContent = 'Good detail.';
+  hint.classList.toggle('ok', n >= 120 && !needsFigure);
+  if (n >= DRAFT_MIN_FACTS) draftErr('');
+}
+
+function draftErr(msg) {
+  const el = document.getElementById('draft-err');
+  if (el) el.textContent = msg;
+}
+
+/* Ctrl/Cmd+Enter submits. A plain Enter has to stay a newline: these
+   briefs run to several sentences. */
+function draftKey(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    submitDraft();
+  }
+}
+
 function useDraftExample(btn) {
   const ta = document.getElementById('draft-facts');
   ta.value = btn.dataset.ex;
+  draftFacts = ta.value;
   ta.focus();
+  draftFactsChanged();
 }
 
 function submitDraft() {
-  const dt = document.getElementById('draft-type').value;
   let facts = document.getElementById('draft-facts').value.trim();
   const firm = document.getElementById('draft-firm').value.trim();
-  if (facts.length < 20) {
+  if (facts.length < DRAFT_MIN_FACTS) {
+    // Used to focus the box and return, so the button looked broken.
+    draftErr('Describe the matter first — a sentence or two about the '
+             + 'parties and what happened.');
     document.getElementById('draft-facts').focus();
     return;
   }
@@ -2127,7 +2368,7 @@ function submitDraft() {
   if (firm) facts += '\n\nOur firm details (use on the letterhead and ' +
                      'signature blocks): ' + firm;
   closeModal();
-  runDraft(dt, facts);
+  runDraft(draftType, facts);
 }
 
 async function runDraft(dt, facts, prev) {
@@ -2221,15 +2462,17 @@ function openRefine(idx) {
   const label = DRAFT_LABELS[m.draft] || 'document';
   modalWrap.classList.add('show');
   modalBox.classList.remove('wide');
-  modalBox.classList.add('slim');
+  modalBox.classList.add('slim', 'draft-dlg');
   modalBox.innerHTML = `<h3>Refine: ${label}
     <button class="x" onclick="closeModal()">&times;</button></h3>
     <div class="auth-body">
-      <label style="font-size:12px;font-weight:600">What should change?</label>
-      <textarea id="refine-text" rows="4" style="width:100%;margin:4px 0 12px;
-        resize:vertical;font:inherit;padding:8px;border-radius:8px;
-        border:1px solid var(--line);background:var(--bg);color:var(--ink)"
-        placeholder="Example: Change the payment deadline to 7 days and add an interest clause at the prescribed rate."></textarea>
+      <div class="draft-field">
+        <label for="refine-text">What should change?</label>
+        <textarea id="refine-text" class="draft-ta" rows="4"
+          oninput="document.getElementById('refine-err').textContent=''"
+          placeholder="Example: Change the payment deadline to 7 days and add an interest clause at the prescribed rate."></textarea>
+      </div>
+      <div class="auth-err" id="refine-err"></div>
       <button class="auth-submit" onclick="submitRefine(${idx})">Revise
         draft</button>
     </div>`;
@@ -2240,6 +2483,10 @@ function submitRefine(idx) {
   const m = current && current.messages[idx];
   const txt = document.getElementById('refine-text').value.trim();
   if (!m || txt.length < 5) {
+    // Same silent failure the draft dialog had: say what is wrong.
+    document.getElementById('refine-err').textContent =
+      'Say what should change — for example the deadline, an amount, '
+      + 'or a clause to add.';
     document.getElementById('refine-text').focus();
     return;
   }
@@ -2439,8 +2686,7 @@ let wpDocUrl = null;
 
 function closeModal() {
   modalWrap.classList.remove('show');
-  modalBox.classList.remove('wide');
-  modalBox.classList.remove('slim');
+  modalBox.classList.remove('wide', 'slim', 'draft-dlg');
 }
 
 const WP_TABS = ['browse', 'cite', 'doc'];
@@ -3153,6 +3399,7 @@ function openAuth(mode, notice) {
   const signup = mode === 'signup';
   modalWrap.classList.add('show');
   modalBox.classList.add('slim');
+  modalBox.classList.remove('draft-dlg');   // may be left over from a draft dialog
   modalBox.innerHTML = `<h3 style="margin-bottom:2px">
     <button class="x" onclick="closeModal()">&times;</button></h3>
     <div class="auth-body">
@@ -3229,6 +3476,7 @@ function openForgot() {
     ? document.getElementById('auth-email').value : '';
   modalWrap.classList.add('show');
   modalBox.classList.add('slim');
+  modalBox.classList.remove('draft-dlg');   // may be left over from a draft dialog
   modalBox.innerHTML = `<h3 style="margin-bottom:2px">
     <button class="x" onclick="closeModal()">&times;</button></h3>
     <div class="auth-body">
