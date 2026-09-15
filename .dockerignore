@@ -16,6 +16,11 @@ data/processed/graph_cache
 data/quarantine
 backups
 data/backups
+# Undo buffers for dedupe_raw and ocr_scanned. Never copied into the
+# image, but without this they still travel to the daemon as build
+# context — ~160MB for nothing.
+data/raw_dupes
+data/raw_prescan
 scripts
 server.log
 *.log
