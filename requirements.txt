@@ -10,3 +10,9 @@ fastapi>=0.110.0
 uvicorn>=0.29.0
 reportlab>=4.0
 python-docx>=1.1
+
+# Optional: cross-encoder reranking (index/rerank.py), enabled with
+# RERANK=1. Deliberately not installed by default — it pulls torch
+# (~2GB), which would bloat the image for a feature the free tier does
+# not need. Retrieval falls back to RRF ranking when it is absent.
+#   pip install "sentence-transformers>=3.0"

@@ -13,3 +13,53 @@
 {"q": "licensing of drivers", "expect_any": ["Licensing Of Drivers", "Road Traffic"]}
 {"q": "Constitution of Zimbabwe Amendment No 3", "expect_any": ["Amendment Act No 6", "Amendment No 3"]}
 {"q": "insolvent companies reconstruction", "expect_any": ["Insolvent", "Reconstruction"]}
+{"q": "can I marry at 17 in Zimbabwe", "expect_any": ["Marriage"]}
+{"q": "registering a customary law marriage", "expect_any": ["Marriage"]}
+{"q": "protection order against an abusive partner", "expect_any": ["Domestic Violence"]}
+{"q": "who inherits if my husband dies without a will", "expect_any": ["Administration Of Estates", "Deceased Persons", "Wills"]}
+{"q": "requirements for a valid will", "expect_any": ["Wills"]}
+{"q": "maintenance for my child after separation", "expect_any": ["Maintenance", "Children"]}
+{"q": "child adoption procedure", "expect_any": ["Children"]}
+{"q": "unfair dismissal of an employee", "expect_any": ["Labour"]}
+{"q": "notice period to terminate a contract of employment", "expect_any": ["Labour"]}
+{"q": "retrenchment package entitlement", "expect_any": ["Labour"]}
+{"q": "NSSA pension contributions", "expect_any": ["National Social Security"]}
+{"q": "workers compensation for injury on duty", "expect_any": ["National Social Security", "Accident Prevention"], "known_gap": "The substantive rules are in the NSSA Accident Prevention and Workers Compensation Scheme Notice, 1990, which is not ingested; only its rate-amendment SIs are. The NSSA Act itself only empowers the scheme."}
+{"q": "transferring title deeds of a house", "expect_any": ["Deeds Registries"]}
+{"q": "rights to occupy communal land", "expect_any": ["Communal Land"]}
+{"q": "compulsory acquisition of land compensation", "expect_any": ["Constitution", "Land Acquisition"]}
+{"q": "rights of a person arrested by the police", "expect_any": ["Constitution"]}
+{"q": "penalty for assault", "expect_any": ["Criminal Law"]}
+{"q": "bail pending trial", "expect_any": ["Criminal Procedure", "Criminal"], "known_gap": "The Criminal Procedure and Evidence Act [Chapter 9:07] is not in the corpus — only judgments applying it, and SI 146 of 2023 on sentencing."}
+{"q": "drink driving blood alcohol limit", "expect_any": ["Road Traffic", "Breathalyser"]}
+{"q": "parole and release of prisoners", "expect_any": ["Prisons"]}
+{"q": "VAT registration threshold", "expect_any": ["Value Added Tax"]}
+{"q": "income tax on employment income", "expect_any": ["Income Tax", "Finance"]}
+{"q": "public procurement tender procedures", "expect_any": ["Public Procurement"]}
+{"q": "taking foreign currency out of the country", "expect_any": ["Exchange Control"]}
+{"q": "consumer rights for defective goods", "expect_any": ["Consumer Protection"]}
+{"q": "obligations of a data controller", "expect_any": ["Data Protection"]}
+{"q": "sending abusive messages online offence", "expect_any": ["Cyber", "Data Protection"]}
+{"q": "small claims court monetary limit", "expect_any": ["Small Claims"]}
+{"q": "prescription period for a debt", "expect_any": ["Prescription"]}
+{"q": "appealing a High Court decision to the Supreme Court", "expect_any": ["Supreme Court"]}
+{"q": "complaint against a legal practitioner", "expect_any": ["Legal Practitioners"]}
+{"q": "projects that require an environmental impact assessment", "expect_any": ["Environmental Management"]}
+{"q": "permit to use water from a river", "expect_any": ["Water"]}
+{"q": "reporting a notifiable disease", "expect_any": ["Public Health"]}
+{"q": "requesting information from a public body", "expect_any": ["Freedom of Information"]}
+{"q": "rights of persons with disabilities", "expect_any": ["Persons With Disabilities", "Disabled Persons"]}
+{"q": "benefits for older persons", "expect_any": ["Older Persons"]}
+{"q": "functions of traditional leaders", "expect_any": ["Traditional Leaders"]}
+{"q": "citizenship by birth", "expect_any": ["Citizenship", "Constitution"]}
+{"q": "permit to work in Zimbabwe as a foreigner", "expect_any": ["Immigration"]}
+{"q": "copyright in a musical work", "expect_any": ["Copyright"]}
+{"q": "registering a trade mark", "expect_any": ["Trade Marks"]}
+{"q": "registering a mining claim", "expect_any": ["Mines and Minerals"]}
+{"q": "licensing of an insurance broker", "expect_any": ["Insurance"]}
+{"q": "requirements for a banking licence", "expect_any": ["Banking"]}
+{"q": "duties of company directors", "expect_any": ["Companies"]}
+{"q": "exclusion of a pupil from school", "expect_any": ["Education"]}
+{"q": "powers of a municipal council to collect rates", "expect_any": ["Urban Councils", "Rural District Councils"]}
+{"q": "harmonised election nomination court", "expect_any": ["Electoral"]}
+{"q": "declaration of a state of public emergency", "expect_any": ["Constitution"]}

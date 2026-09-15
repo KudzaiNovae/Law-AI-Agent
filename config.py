@@ -50,5 +50,26 @@ TOP_K = 8            # results returned to the agent
 VECTOR_K = 20        # candidates from vector search
 BM25_K = 20          # candidates from keyword search
 
+# Optional cross-encoder reranking of the fused candidate pool.
+# Needs sentence-transformers + torch (~2GB of wheels), so it stays off
+# unless RERANK=1 — the base image and the free tier shouldn't pay for it.
+# See index/rerank.py; retrieval falls back to plain RRF when unavailable.
+RERANK = os.getenv("RERANK", "").lower() in ("1", "true", "yes", "on")
+RERANK_MODEL = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
+RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "40"))
+RERANK_MAX_CHARS = 1600   # chunk prefix fed to the cross-encoder
+# Reranking only pays off if the legs hand it more than it returns —
+# widen them so the cross-encoder has something to dig out. 20+20 barely
+# fills a 40-pool after citation dedupe, which wastes the model.
+RERANK_VECTOR_K = int(os.getenv("RERANK_VECTOR_K", "60"))
+RERANK_BM25_K = int(os.getenv("RERANK_BM25_K", "60"))
+
+# Check the answer's section citations against what the tools actually
+# returned, and give the model one round to fix any it cannot support
+# (verify.py). Costs nothing on clean answers; on by default because a
+# confidently wrong citation is this product's worst failure mode.
+VERIFY_CITATIONS = os.getenv("VERIFY_CITATIONS", "1").lower() not in (
+    "0", "false", "no", "off")
+
 for d in (RAW_DIR, PROCESSED_DIR, CHROMA_DIR):
     d.mkdir(parents=True, exist_ok=True)
