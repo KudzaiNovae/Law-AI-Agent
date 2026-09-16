@@ -1839,6 +1839,13 @@ def _caselaw_items() -> list[dict]:
                                     "%d %B %Y").strftime("%Y-%m-%d")
             except ValueError:
                 pass
+        # Upstream typos put judgments in the future ("20 November 2026"
+        # published in Sep 2026, "(118 of 2028)"). A court cannot deliver
+        # tomorrow's judgment: drop the impossible date and let the year
+        # come from the neutral citation instead.
+        if re.match(r"\d{4}-\d{2}-\d{2}", date) and \
+                date > datetime.date.today().isoformat():
+            date = ""
         ym = _YEAR_RE.search(date) or _YEAR_RE.search(title)
         original = m.get("original", "")
         summary = flynote = ""

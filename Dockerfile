@@ -17,6 +17,15 @@ COPY vendor/onnx_models/ /root/.cache/chroma/onnx_models/
 # Verify it loads (runs offline — model is already in the cache path).
 RUN python -c "from chromadb.utils.embedding_functions import DefaultEmbeddingFunction as F; F()(['warm up'])"
 
+# Reranker model (fastembed cross-encoder), vendored for the same
+# reason: without it the first user question after a deploy stalls
+# ~60s while HuggingFace serves an 88 MB download. fastembed's default
+# cache is <tmpdir>/fastembed_cache. Refresh with:
+#   cp -r /tmp/fastembed_cache vendor/fastembed_cache
+COPY vendor/fastembed_cache/ /tmp/fastembed_cache/
+# (Model name hardcoded: config.py lands in a later layer by design.)
+RUN HF_HUB_OFFLINE=1 python -c "from fastembed.rerank.cross_encoder import TextCrossEncoder as T; list(T('Xenova/ms-marco-MiniLM-L-6-v2').rerank('warm up', ['warm up']))"
+
 # Raw source documents — served by /api/download/ so readers can open the
 # original gazetted PDFs from the app.
 COPY data/raw/ data/raw/

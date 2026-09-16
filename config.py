@@ -51,19 +51,23 @@ VECTOR_K = 20        # candidates from vector search
 BM25_K = 20          # candidates from keyword search
 
 # Cross-encoder reranking of the fused candidate pool. Runs as ONNX on
-# CPU via fastembed — no torch, ~10ms a pair — so it is cheap enough to
-# leave on by default; RERANK=0 turns it off. The model must therefore be
-# an ONNX checkpoint fastembed can fetch, not a sentence-transformers one.
-# See index/rerank.py; retrieval falls back to plain RRF when unavailable.
+# CPU via fastembed — no torch — so it is on by default; RERANK=0 turns
+# it off. The model must therefore be an ONNX checkpoint fastembed can
+# fetch, not a sentence-transformers one. See index/rerank.py; retrieval
+# falls back to plain RRF when unavailable.
+#
+# Cost is real, not the ~10ms/pair the model card implies: measured
+# ~120ms a pair at 1600 chars on one CPU core, so a 40-pool added ~5s
+# to every search. 16 pairs x 800 chars keeps the accuracy win (the
+# right chunk is almost always in the fused top-16) at ~5-10x less cost.
 RERANK = os.getenv("RERANK", "1").lower() not in ("0", "false", "no", "off")
 RERANK_MODEL = os.getenv("RERANK_MODEL", "Xenova/ms-marco-MiniLM-L-6-v2")
-RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "40"))
-RERANK_MAX_CHARS = 1600   # chunk prefix fed to the cross-encoder
+RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "16"))
+RERANK_MAX_CHARS = int(os.getenv("RERANK_MAX_CHARS", "800"))
 # Reranking only pays off if the legs hand it more than it returns —
-# widen them so the cross-encoder has something to dig out. 20+20 barely
-# fills a 40-pool after citation dedupe, which wastes the model.
-RERANK_VECTOR_K = int(os.getenv("RERANK_VECTOR_K", "60"))
-RERANK_BM25_K = int(os.getenv("RERANK_BM25_K", "60"))
+# widen them so the cross-encoder has something to dig out.
+RERANK_VECTOR_K = int(os.getenv("RERANK_VECTOR_K", "30"))
+RERANK_BM25_K = int(os.getenv("RERANK_BM25_K", "30"))
 
 # Check the answer's section citations against what the tools actually
 # returned, and give the model one round to fix any it cannot support
