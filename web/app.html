@@ -2032,7 +2032,7 @@ async function ask(text, isRegen) {
   scrollDown();
 
   let finalMsg = null;
-  let liveText = '', liveMd = null;
+  let liveText = '', liveMd = null, verifying = false;
   try {
     const resp = await fetch('/api/chat/stream', {
       method: 'POST',
@@ -2061,10 +2061,17 @@ async function ask(text, isRegen) {
     await readStream(resp, ev => {
       if (ev.type === 'search') {
         addLiveTag(typing, ev.query, ev.step);
-        // model went back to searching; drop any interim prose
-        if (liveMd) { liveMd.remove(); liveMd = null; liveText = ''; }
-        typing.querySelector('.typing').style.display = '';
+        if (ev.step === 'verify' && liveMd) {
+          // citation check: keep the streamed answer on screen instead
+          // of dropping to dots; the corrected answer replaces it
+          verifying = true;
+        } else if (!verifying && liveMd) {
+          // model went back to searching; drop any interim prose
+          liveMd.remove(); liveMd = null; liveText = '';
+          typing.querySelector('.typing').style.display = '';
+        }
       } else if (ev.type === 'delta') {
+        if (verifying) { liveText = ''; verifying = false; }
         if (!liveMd) {
           typing.querySelector('.typing').style.display = 'none';
           liveMd = document.createElement('div');

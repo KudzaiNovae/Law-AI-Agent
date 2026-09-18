@@ -89,7 +89,8 @@ def _parse(raw: str) -> list[str]:
     return out[:MAX_SUBQUERIES]
 
 
-def subqueries(client, model: str, question: str) -> list[str]:
+def subqueries(client, model: str, question: str,
+               create_kwargs: dict | None = None) -> list[str]:
     """2-3 focused searches for a compound question, or [] to leave it be.
 
     [] is the "carry on as before" signal and is returned for anything
@@ -108,6 +109,9 @@ def subqueries(client, model: str, question: str) -> list[str]:
                        "content": _PROMPT % (MAX_SUBQUERIES, question)}],
             max_tokens=200,
             temperature=0,
+            # caller passes provider extras, e.g. Gemini's thinking cap —
+            # a splitter that "thinks" for 20 s defeats its own purpose
+            **(create_kwargs or {}),
         )
         subs = _parse(resp.choices[0].message.content or "")
     except Exception as exc:

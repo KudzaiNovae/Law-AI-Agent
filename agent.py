@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from config import (PROVIDER, ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL, MODEL,
                     GEMINI_API_KEY, GEMINI_MODELS, GEMINI_BASE_URL,
-                    OLLAMA_MODEL, OLLAMA_BASE_URL)
+                    GEMINI_REASONING, OLLAMA_MODEL, OLLAMA_BASE_URL)
 
 # Providers that hit a quota/credit wall are benched for a while; all
 # agent instances (one per chat session) share this so one 429 flips
@@ -653,7 +653,8 @@ class LawAgent:
         to one topic, looks_compound says no and we skip the call.
         """
         p = self._provider()
-        return decompose.subqueries(p["client"], p["model"], query)
+        return decompose.subqueries(p["client"], p["model"], query,
+                                    create_kwargs=self._create_kwargs(p))
 
     def _run_tool(self, name: str, tool_input: dict) -> str:
         if name == "list_legislation":
@@ -906,9 +907,14 @@ class LawAgent:
         (cache_control at top level) — tool schemas + system prompt +
         conversation prefix are cached, so each tool round of an agentic
         answer re-reads them at 10% of the input price instead of 100%.
-        Gemini flash models do implicit caching without being asked."""
+        Gemini flash models do implicit caching without being asked.
+        For Gemini: cap the hidden thinking budget (GEMINI_REASONING) —
+        uncapped dynamic thinking was measured at 76 s before the first
+        tool call of a question."""
         if p["name"] == "anthropic":
             return {"extra_body": {"cache_control": {"type": "ephemeral"}}}
+        if p["name"].startswith("gemini") and GEMINI_REASONING:
+            return {"reasoning_effort": GEMINI_REASONING}
         return {}
 
     def _stream_round_with(self, p: dict, tools) -> tuple[str, list[dict]]:
@@ -996,7 +1002,10 @@ class LawAgent:
             "the corrected answer in full, in the same format and with the "
             "same Sources section. Output only the answer itself, with no "
             "note about this correction.")})
-        fixed = self._run_rounds(tools, 4)
+        # Two rounds: one corrective search, then the rewritten answer.
+        # The reader is staring at a finished-looking draft while this
+        # runs, so the budget must stay tight.
+        fixed = self._run_rounds(tools, 2)
         return fixed or answer
 
     def _run_rounds(self, tools, max_rounds: int) -> str:

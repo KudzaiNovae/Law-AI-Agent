@@ -37,6 +37,17 @@ for _m in os.getenv(
     if _m and _m not in GEMINI_MODELS:
         GEMINI_MODELS.append(_m)
 
+# Gemini 2.5+ models "think" before every reply by default, with a
+# dynamic budget the model sets itself. On legal questions it routinely
+# burns 30-70 s of hidden reasoning per agent round (a live question
+# measured 76 s before its FIRST tool call). "low" caps the budget at
+# ~1024 thinking tokens, which keeps planning sharp but bounded; "none"
+# disables thinking entirely. Answers stay grounded either way — they
+# come from retrieved statute text, not from long chains of thought.
+GEMINI_REASONING = os.getenv("GEMINI_REASONING", "low").strip().lower()
+if GEMINI_REASONING in ("", "default", "dynamic"):
+    GEMINI_REASONING = ""        # send nothing: provider default
+
 # Local Ollama as last-resort fallback (OpenAI-compatible endpoint).
 # Empty OLLAMA_MODEL = disabled, so prod (no local Ollama) is unaffected.
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "")
